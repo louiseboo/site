@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Q3/Q4 恰巴塔产品验证报告（公开版） | Food Product Work</title>
+<style>
+:root {
+  --bg:#f5f7f6; --panel:#ffffff; --ink:#102033; --muted:#607080; --line:#dbe3e2;
+  --green:#245b44; --green2:#dceee6; --blue:#2f6f9f; --blue2:#e8f1f6;
+  --amber:#9a6a12; --amber2:#fff0c8; --red:#a33b2f; --red2:#fde7e2;
+  --shadow:0 18px 45px rgba(22,43,57,.08); --radius:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Sans GB","PingFang SC",Arial,sans-serif;line-height:1.55}
+main{max-width:1180px;margin:0 auto;padding:32px 28px 56px}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:28px 30px;box-shadow:var(--shadow)}
+.kicker{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+h1{margin:6px 0 12px;font-size:32px;line-height:1.15;letter-spacing:0;color:#0b2545}
+.meta{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:14px;margin-bottom:18px}
+.lead{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.note{border-radius:10px;padding:14px 16px;border:1px solid var(--line);background:#eef7f3}
+.note.warn{background:#fff6dc;border-color:#edd28c}
+.note b{color:#174d39}
+.section{margin-top:22px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:16px}
+h2{margin:0;font-size:22px;color:#174d39;letter-spacing:0}
+.sub{margin:3px 0 0;color:var(--muted);font-size:14px}
+.decision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.decision-card{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fff;min-height:172px}
+.decision-card.anchor{border-top:5px solid var(--green);background:linear-gradient(180deg,#f5fbf8,#fff)}
+.decision-card.watch{border-top:5px solid #d89820;background:linear-gradient(180deg,#fff9e9,#fff)}
+.decision-card.stop{border-top:5px solid var(--red);background:linear-gradient(180deg,#fff1ee,#fff)}
+.card-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.product-name{font-weight:800;font-size:17px}
+.pill{border-radius:999px;padding:4px 9px;font-size:12px;font-weight:800;background:#edf3f1;color:#245b44;white-space:nowrap}
+.watch .pill{background:var(--amber2);color:var(--amber)} .stop .pill{background:var(--red2);color:var(--red)}
+.score-row{display:flex;align-items:baseline;gap:10px;margin:14px 0 4px}
+.score{font-size:42px;font-weight:850;line-height:1;color:#102033}
+.delta{font-size:14px;color:var(--muted);font-weight:700}
+.action{font-weight:800;font-size:16px;margin:8px 0;color:#174d39}
+.stop .action{color:var(--red)} .watch .action{color:var(--amber)}
+.guard{margin:8px 0 0;color:var(--muted);font-size:13px}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.chart-card{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fff;min-height:360px}
+.chart-card h3{margin:0 0 10px;font-size:16px}
+canvas{width:100%;height:300px;display:block}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px}
+table{width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
+thead th, tr:first-child th{background:#eef3f1;font-weight:800}
+tbody tr:last-child td, tbody tr:last-child th{border-bottom:0}
+.num, td.heat{font-variant-numeric:tabular-nums}
+.heat{font-weight:800;text-align:center}
+.heat.high{background:#cdebd8;color:#174d39}
+.heat.mid{background:#eaf5d5;color:#466800}
+.heat.low{background:#fff0bb;color:#7a530e}
+.heat.risk{background:#f8c8bf;color:#8e2d22}
+.product-diagnosis{border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:12px;background:#fff}
+.product-diagnosis h3{margin:0 0 12px;font-size:18px;display:flex;gap:10px;align-items:center}
+.product-diagnosis h3 span{font-size:12px;border-radius:999px;padding:4px 8px;background:#edf3f1;color:#245b44}
+.product-diagnosis.watch h3 span{background:var(--amber2);color:var(--amber)} .product-diagnosis.stop h3 span{background:var(--red2);color:var(--red)}
+.diagnosis-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.diagnosis-grid div{background:#f7f9f8;border-radius:10px;padding:12px}
+.diagnosis-grid b{display:block;margin-bottom:6px;color:#174d39}
+.diagnosis-grid p{margin:0;color:#334155;font-size:14px}
+details.comment-block{border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:12px;overflow:hidden}
+details summary{cursor:pointer;padding:14px 16px;font-weight:850;list-style:none;display:flex;justify-content:space-between}
+details summary::-webkit-details-marker{display:none}
+details summary span{color:var(--muted);font-size:13px}
+.table-scroll{overflow:auto;border-top:1px solid var(--line)}
+.comments th:nth-child(1){width:100px} .comments th:nth-child(2){width:130px} .comments th:nth-child(3){width:90px}
+.footer-note{color:var(--muted);font-size:13px;margin-top:18px}
+@media (max-width:900px){.lead,.decision-grid,.chart-grid,.diagnosis-grid{grid-template-columns:1fr} main{padding:18px 14px} h1{font-size:26px}}
+@media print{body{background:#fff}main{max-width:none;padding:0}.section,.hero{box-shadow:none;break-inside:avoid}details.comment-block{break-inside:avoid}}
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="kicker">Product Validation · Benchmark Analysis</div>
+    <h1>Q3/Q4 恰巴塔产品验证报告 <span>Benchmark Analysis</span></h1>
+    <div class="meta"><span>测试时间：2026/4/16</span><span>样本：14 人</span><span>Benchmark：葱香培根芝士恰巴塔</span><span>候选新品：桑葚无花果 / 菠菜鸡肉</span></div>
+    <div class="lead">
+      <div class="note warn"><b>评估口径</b><br>决策不再看绝对加权分，而看“候选产品原始分 − Benchmark 原始分”，再由护栏规则下压。</div>
+      <div class="note"><b>Executive Summary</b><br>桑葚无花果处在 Benchmark 下沿，建议诊断后与 Benchmark 同场复测；菠菜鸡肉低于 Benchmark 且触发双护栏，建议暂缓/大改。</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>1. 决策摘要</h2><p class="sub">先看结论：Benchmark、相对差值、护栏和最终动作。</p></div></div>
+    <div class="decision-grid">
+      <article class="decision-card anchor">
+        <div class="card-top"><span class="product-name">葱香培根芝士</span><span class="pill">Benchmark</span></div>
+        <div class="score-row"><span class="score">3.89</span><span class="delta">Benchmark</span></div>
+        <p class="action">不参与候选排序</p>
+        <p class="guard">护栏：Benchmark，不适用</p>
+      </article>
+      <article class="decision-card watch">
+        <div class="card-top"><span class="product-name">桑葚无花果</span><span class="pill">Benchmark 下沿</span></div>
+        <div class="score-row"><span class="score">3.73</span><span class="delta">vs Benchmark -0.153</span></div>
+        <p class="action">诊断后带 Benchmark 复测</p>
+        <p class="guard">护栏：无硬护栏</p>
+      </article>
+      <article class="decision-card stop">
+        <div class="card-top"><span class="product-name">菠菜鸡肉</span><span class="pill">护栏降档</span></div>
+        <div class="score-row"><span class="score">3.57</span><span class="delta">vs Benchmark -0.316</span></div>
+        <p class="action">暂缓 / 大改</p>
+        <p class="guard">护栏：购买意愿&lt;3.5；味道平衡&lt;3.5</p>
+      </article></div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>2. Benchmark 差值与维度雷达图</h2><p class="sub">雷达图使用 3.0-5.0 的放大区间，只用于看维度差异，不作为最终复合分。</p></div></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>相对 Benchmark 差值</h3><canvas id="deltaChart" width="520" height="300"></canvas><div class="footer-note">±0.15 为死区，避免把边界小差异误读成确定判断。</div></div>
+      <div class="chart-card"><h3>7 维度对比雷达图</h3><canvas id="radarChart" width="520" height="300"></canvas><div class="legend"><span><i style="background:#245b44"></i>葱香 Benchmark</span><span><i style="background:#d89820"></i>桑葚无花果</span><span><i style="background:#a33b2f"></i>菠菜鸡肉</span></div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>3. 维度热力表</h2><p class="sub">用于定位问题，不折进新的复合分。红色为护栏风险或弱项。</p></div></div>
+    <table><thead><tr><th>维度</th><th>葱香培根芝士</th><th>桑葚无花果</th><th>菠菜鸡肉</th><th>诊断</th></tr></thead><tbody><tr><th>香气</th><td class="heat high">4.07</td><td class="heat mid">3.86</td><td class="heat low">3.50</td><td></td></tr><tr><th>味道平衡</th><td class="heat mid">3.93</td><td class="heat mid">3.93</td><td class="heat risk">3.43</td><td>菠菜鸡肉低于3.5</td></tr><tr><th>口感/质地</th><td class="heat mid">3.86</td><td class="heat low">3.64</td><td class="heat low">3.64</td><td></td></tr><tr><th>外观</th><td class="heat mid">3.93</td><td class="heat risk">3.43</td><td class="heat low">3.64</td><td>桑葚无花果外观弱</td></tr><tr><th>愉悦度</th><td class="heat mid">3.71</td><td class="heat mid">3.79</td><td class="heat low">3.57</td><td></td></tr><tr><th>完吃度</th><td class="heat high">4.00</td><td class="heat mid">3.79</td><td class="heat mid">3.86</td><td></td></tr><tr><th>购买意愿</th><td class="heat mid">3.71</td><td class="heat mid">3.71</td><td class="heat risk">3.36</td><td>菠菜鸡肉低于3.5</td></tr></tbody></table>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>4. 人群分层</h2><p class="sub">核心用户只做诊断和否决信号，不拿小样本均分去加权决策。</p></div></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h3>分层均分对比</h3><canvas id="segmentChart" width="520" height="300"></canvas></div>
+      <div><table><thead><tr><th>产品</th><th>核心目标用户</th><th>普通用户</th><th>弱相关用户</th><th>解读</th></tr></thead><tbody><tr><th>葱香培根芝士</th><td>4.05</td><td>3.86</td><td>3.71</td><td>Benchmark；核心用户最高</td></tr><tr><th>桑葚无花果</th><td>3.57</td><td>3.87</td><td>2.86</td><td>核心低于普通，需警惕泛人群拉分</td></tr><tr><th>菠菜鸡肉</th><td>3.57</td><td>3.66</td><td>2.71</td><td>核心与普通接近，问题更像产品本身</td></tr></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><div><h2>5. AI 评论总结与下一步</h2><p class="sub">评论用于解释“为什么”，不直接进入分数。</p></div></div>
+    
+      <section class="product-diagnosis anchor">
+        <h3>葱香培根芝士<span>Benchmark</span></h3>
+        <div class="diagnosis-grid">
+          <div><b>喜欢点</b><p>葱香突出，容易联想到葱油饼、苏打饼干、老式葱香面包，有“童年回忆”和“恰巴塔本该有的味道”的正向表达。</p></div>
+          <div><b>扣分点</b><p>培根肉量偏少；面包体外围偏硬；少数反馈朴素、表皮油腻或葱味偏重。</p></div>
+          <div><b>下一步</b><p>作为同 format Benchmark 继续使用；自身可顺带优化培根肉量和外皮硬度。</p></div>
+        </div>
+      </section>
+      <section class="product-diagnosis watch">
+        <h3>桑葚无花果<span>Benchmark 下沿</span></h3>
+        <div class="diagnosis-grid">
+          <div><b>喜欢点</b><p>面包体柔韧、口感好；甜度低，果干自然甜；部分人感到健康、干净、无负担。</p></div>
+          <div><b>扣分点</b><p>桑葚干果味压过无花果，风味不平衡；外皮偏硬偏韧；外观购买欲低；甜味分布不均。</p></div>
+          <div><b>下一步</b><p>调整桑葚/无花果比例，改善外皮和外观，再和葱香 Benchmark 同场复测。</p></div>
+        </div>
+      </section>
+      <section class="product-diagnosis stop">
+        <h3>菠菜鸡肉<span>护栏降档</span></h3>
+        <div class="diagnosis-grid">
+          <div><b>喜欢点</b><p>健康咸口、轻负担；个别用户认可咸咸的口感和层次。</p></div>
+          <div><b>扣分点</b><p>鸡肉味淡且肉量少；菠菜风味不明显或有怪味；绿橄榄不愉悦；黑胡椒存在感过强；面包体偏僵或干。</p></div>
+          <div><b>下一步</b><p>不是微调，建议重做味型结构：鸡肉存在感、菠菜表达、橄榄/黑胡椒都要重新判断。</p></div>
+        </div>
+      </section>
+  </section>
+
+  
+<section class="section light reveal"><div class="section-head"><div><div class="eyebrow">Public Version</div><h2>公开版说明</h2><p class="sub">本页面为公开资料库版本，仅保留结论、汇总评分、分层观察和开放评论摘要；个人明细与品牌标识不进入公开副本。</p></div></div></section>
+</main>
+<script>
+const DATA = {"products": ["葱香培根芝士恰巴塔", "桑葚无花果恰巴塔", "菠菜鸡肉恰巴塔"], "short": {"葱香培根芝士恰巴塔": "葱香培根芝士", "桑葚无花果恰巴塔": "桑葚无花果", "菠菜鸡肉恰巴塔": "菠菜鸡肉"}, "anchor": "葱香培根芝士恰巴塔", "dims": ["香气", "味道平衡", "口感/质地", "外观", "愉悦度", "完吃度", "购买意愿"], "scores": {"葱香培根芝士恰巴塔": 3.8877551020408165, "桑葚无花果恰巴塔": 3.7346938775510203, "菠菜鸡肉恰巴塔": 3.5714285714285716}, "deltas": {"葱香培根芝士恰巴塔": 0.0, "桑葚无花果恰巴塔": -0.1530612244897962, "菠菜鸡肉恰巴塔": -0.3163265306122449}, "dimScores": {"葱香培根芝士恰巴塔": {"香气": 4.071428571428571, "味道平衡": 3.9285714285714284, "口感/质地": 3.857142857142857, "外观": 3.9285714285714284, "愉悦度": 3.7142857142857144, "完吃度": 4.0, "购买意愿": 3.7142857142857144}, "桑葚无花果恰巴塔": {"香气": 3.857142857142857, "味道平衡": 3.9285714285714284, "口感/质地": 3.642857142857143, "外观": 3.4285714285714284, "愉悦度": 3.7857142857142856, "完吃度": 3.7857142857142856, "购买意愿": 3.7142857142857144}, "菠菜鸡肉恰巴塔": {"香气": 3.5, "味道平衡": 3.4285714285714284, "口感/质地": 3.642857142857143, "外观": 3.642857142857143, "愉悦度": 3.5714285714285716, "完吃度": 3.857142857142857, "购买意愿": 3.357142857142857}}, "segments": {"葱香培根芝士恰巴塔": {"核心目标用户": 4.0476190476190474, "普通咖啡用户": 3.8571428571428568, "弱相关用户": 3.7142857142857144}, "桑葚无花果恰巴塔": {"核心目标用户": 3.5714285714285716, "普通咖啡用户": 3.8714285714285714, "弱相关用户": 2.857142857142857}, "菠菜鸡肉恰巴塔": {"核心目标用户": 3.5714285714285716, "普通咖啡用户": 3.657142857142857, "弱相关用户": 2.7142857142857144}}};
+const COLORS = {'葱香培根芝士恰巴塔':'#245b44','桑葚无花果恰巴塔':'#d89820','菠菜鸡肉恰巴塔':'#a33b2f'};
+function setupCanvas(canvas){
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = Math.round(rect.width*dpr); canvas.height = Math.round(rect.height*dpr);
+  const ctx = canvas.getContext('2d'); ctx.scale(dpr,dpr); return {ctx,w:rect.width,h:rect.height};
+}
+function drawDelta(){
+  const canvas=document.getElementById('deltaChart'); const {ctx,w,h}=setupCanvas(canvas);
+  ctx.clearRect(0,0,w,h); const left=145,right=38,top=36,rowH=58; const axisX=left+(w-left-right)/2; const scale=(w-left-right)/1.0;
+  ctx.strokeStyle='#dbe3e2'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(axisX,20); ctx.lineTo(axisX,h-30); ctx.stroke();
+  [-0.5,-0.15,0,0.15,0.5].forEach(v=>{const x=axisX+v*scale; ctx.strokeStyle=(Math.abs(v)===0.15)?'#e0b74e':'#edf1f0'; ctx.beginPath(); ctx.moveTo(x,24); ctx.lineTo(x,h-38); ctx.stroke(); ctx.fillStyle='#607080'; ctx.font='12px system-ui'; ctx.textAlign='center'; ctx.fillText(v.toFixed(2),x,h-14);});
+  DATA.products.forEach((p,i)=>{const y=top+i*rowH; const d=DATA.deltas[p]; const x=axisX+Math.min(Math.max(d,-0.5),0.5)*scale; ctx.fillStyle='#102033'; ctx.font='700 14px system-ui'; ctx.textAlign='left'; ctx.fillText(DATA.short[p],12,y+7); ctx.fillStyle=COLORS[p]; ctx.fillRect(Math.min(axisX,x),y-12,Math.abs(x-axisX)||3,24); ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#102033'; ctx.textAlign='left'; ctx.font='700 13px system-ui'; ctx.fillText(p===DATA.anchor?'Benchmark':d.toFixed(3),Math.max(x,axisX)+10,y+5);});
+  ctx.fillStyle='#607080'; ctx.font='12px system-ui'; ctx.textAlign='left'; ctx.fillText('低于 Benchmark',left,20); ctx.textAlign='right'; ctx.fillText('高于 Benchmark',w-right,20);
+}
+function drawRadar(){
+  const canvas=document.getElementById('radarChart'); const {ctx,w,h}=setupCanvas(canvas); ctx.clearRect(0,0,w,h);
+  const cx=w/2, cy=h/2+8, r=Math.min(w,h)*0.33, min=3.0, max=5.0, n=DATA.dims.length;
+  function point(i,val){ const a=-Math.PI/2+i*2*Math.PI/n; const rr=(val-min)/(max-min)*r; return [cx+Math.cos(a)*rr, cy+Math.sin(a)*rr]; }
+  ctx.strokeStyle='#e1e8e6'; ctx.fillStyle='#607080'; ctx.font='12px system-ui';
+  [3,3.5,4,4.5,5].forEach(level=>{ctx.beginPath(); for(let i=0;i<n;i++){const [x,y]=point(i,level); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y)} ctx.closePath(); ctx.stroke(); ctx.fillText(level.toFixed(level%1?1:0),cx+4,cy-((level-min)/(max-min)*r)-2);});
+  DATA.dims.forEach((d,i)=>{const [x,y]=point(i,5); ctx.strokeStyle='#e1e8e6'; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke(); ctx.fillStyle='#102033'; ctx.font='12px system-ui'; ctx.textAlign=x<cx-10?'right':(x>cx+10?'left':'center'); ctx.fillText(d,x+(x<cx?-8:8),y+(y<cy?-4:14));});
+  DATA.products.forEach(p=>{ctx.beginPath(); DATA.dims.forEach((d,i)=>{const [x,y]=point(i,DATA.dimScores[p][d]); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);}); ctx.closePath(); ctx.strokeStyle=COLORS[p]; ctx.lineWidth=2.5; ctx.stroke(); ctx.globalAlpha=.10; ctx.fillStyle=COLORS[p]; ctx.fill(); ctx.globalAlpha=1;});
+}
+function drawSegments(){
+  const canvas=document.getElementById('segmentChart'); const {ctx,w,h}=setupCanvas(canvas); ctx.clearRect(0,0,w,h);
+  const groups=['核心目标用户','普通咖啡用户','弱相关用户']; const left=90, top=36, barH=14, gap=58, x0=left, max=5;
+  ctx.font='12px system-ui'; ctx.strokeStyle='#edf1f0';
+  [0,1,2,3,4,5].forEach(v=>{const x=x0+(w-left-28)*v/max; ctx.beginPath(); ctx.moveTo(x,18); ctx.lineTo(x,h-28); ctx.stroke(); ctx.fillStyle='#607080'; ctx.textAlign='center'; ctx.fillText(String(v),x,h-8);});
+  DATA.products.forEach((p,pi)=>{const y=top+pi*gap; ctx.fillStyle='#102033'; ctx.textAlign='left'; ctx.font='700 13px system-ui'; ctx.fillText(DATA.short[p],8,y+20); groups.forEach((g,gi)=>{const val=DATA.segments[p][g]||0; const x=x0; const yy=y+gi*(barH+4); ctx.fillStyle=COLORS[p]; ctx.globalAlpha=gi===0?1:(gi===1?.72:.42); ctx.fillRect(x,yy,(w-left-28)*val/max,barH); ctx.globalAlpha=1; ctx.fillStyle='#102033'; ctx.font='11px system-ui'; ctx.fillText(val.toFixed(2),x+(w-left-28)*val/max+5,yy+11);});});
+  ctx.fillStyle='#607080'; ctx.font='12px system-ui'; ctx.fillText('每组从上到下：核心 / 普通 / 弱相关',left,18);
+}
+window.addEventListener('resize',()=>{drawDelta();drawRadar();drawSegments();});
+drawDelta(); drawRadar(); drawSegments();
+</script>
+</body>
+</html>
