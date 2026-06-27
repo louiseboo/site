@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="Louise Boo PPT Library mark">
+  <rect width="76" height="76" rx="8" fill="#111315"/>
+  <rect x="16" y="17" width="37" height="42" rx="4" fill="#fff7ea"/>
+  <rect x="23" y="25" width="19" height="4" rx="2" fill="#ff622e"/>
+  <rect x="23" y="35" width="22" height="3" rx="1.5" fill="#63765b"/>
+  <rect x="23" y="43" width="15" height="3" rx="1.5" fill="#d9ad63"/>
+  <path d="M53 24h7v42H24v-7h29V24Z" fill="#d9ad63"/>
+  <path d="M60 24v42h-7V31H16v-7h44Z" fill="#b9401e"/>
+</svg>
