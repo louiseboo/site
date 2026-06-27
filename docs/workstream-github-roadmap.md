@@ -72,7 +72,7 @@ Use three layers instead of one raw upload.
 | `03 Category Lab & Know-how` | Mixed | Generic frameworks may be public; images, SOP, BOM, and videos need review |
 | `04 Store Display & Launch` | Private only | Packaging, costs, store execution, launch detail |
 | `05 Leadership Weekly` | Private only | Management communication and risks |
-| `06 Product Meeting & Decks` | Curated public candidates | Best source for polished deck artifacts after redaction |
+| `06 Product Meeting & Decks` | Exclude for now | Product-meeting materials should not be part of the public first batch |
 | `07 PMO & Automation` | Private only | Owners, dates, blockers, automation notes |
 | `08 Market Intelligence` | Mixed | Own summaries may be public; paid or third-party reports need rights check |
 | `09 Strategic Projects` | Mixed/private by default | Strategy and cross-team decisions need review |
@@ -82,13 +82,25 @@ Use three layers instead of one raw upload.
 
 ## Public Site Queue
 
-First-pass candidates to consider for the public site:
+Confirmed first-batch priority:
 
-1. Sanitized product-meeting decks from `06 Product Meeting & Decks`.
-2. One-page anonymized consumer-testing HTML reports from `02 Consumer Testing & Points/outputs/众测评分口径`.
-3. Category Lab interface prototypes from `12 Category Lab System`, after removing internal data.
-4. Public-facing food trend summaries rewritten from `08 Market Intelligence`, not raw third-party PDFs.
-5. High-level AI workflow or product-management decks that describe process, not confidential product data.
+1. PPT
+2. PDF
+3. Word
+4. Excel
+5. HTML reports
+6. Consumer-testing reports
+
+Current public batch:
+
+1. One-page anonymized consumer-testing HTML reports from `02 Consumer Testing & Points/outputs/众测评分口径`.
+
+Excluded from the public batch:
+
+1. Original/raw data files.
+2. Product-meeting materials.
+3. Third-party market reports.
+4. Company-brand references; public copy should say "Food Product Work".
 
 ## GitHub Rules
 
@@ -101,19 +113,23 @@ Default rules for `louiseboo/site`:
 5. Deploy after each batch and return the live URL.
 6. Never publish raw Excel data, supplier documents, cost sheets, personnel files, or unredacted survey exports.
 
-## Open Questions For Louise
+## Confirmed Decisions
 
-These need confirmation before any batch upload:
+1. Keep `louiseboo/site` public.
+2. Public pages should use "Food Product Work" instead of company-brand language.
+3. Original/raw data is not uploaded.
+4. HTML files can be uploaded after cleanup.
+5. Product-meeting materials are excluded for now.
+6. Third-party market reports are excluded.
 
-1. Should `louiseboo/site` remain public, or should work materials go into a new private repo?
-2. Can the site mention company brands directly, or should public copy say only "Food Product Work"?
-3. Which artifact type should be uploaded first: PPT, PDF, or exported HTML?
-4. Are anonymized consumer-testing reports allowed on a public site?
-5. Are internal product-meeting decks allowed after redaction, or should they stay private?
-6. Should third-party market reports be excluded entirely, with only Louise-written summaries published?
-7. Do you want a private GitHub archive for original files, or should original files stay local only?
-8. Should large files be compressed/exported before upload, or should we install and use Git LFS for a private archive?
-9. Which 5-10 files should become the first real public batch?
+## Remaining Questions For Louise
+
+These are the useful next decisions after the first public batch:
+
+1. Should public Word and Excel files be converted to PDF first, or uploaded as editable downloads?
+2. Should PPT files be published as PDF-only for easier browser review?
+3. Should any Category Lab prototypes be published after removing cost, supplier, and internal-operating fields?
+4. What is the maximum level of product detail allowed in public consumer-testing summaries?
 
 ## Next Execution Path
 
