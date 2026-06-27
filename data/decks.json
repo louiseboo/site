@@ -1,0 +1,35 @@
+{
+  "updatedAt": "2026-06-27",
+  "decks": [
+    {
+      "title": "实验版资料入口",
+      "category": "System",
+      "status": "system",
+      "date": "2026-06-27",
+      "summary": "用于验证站点结构、资料卡片、筛选交互和部署路径，不包含真实内部 PPT。",
+      "href": "",
+      "tags": ["main", "static", "prototype"],
+      "theme": "gold"
+    },
+    {
+      "title": "PPT 上传占位",
+      "category": "Deck",
+      "status": "draft",
+      "date": "待上传",
+      "summary": "后续 PPT 放入 decks/ 后，在 data/decks.json 里补链接即可显示打开按钮。",
+      "href": "",
+      "tags": ["PPT", "PDF", "HTML"],
+      "theme": "sage"
+    },
+    {
+      "title": "部署回看入口",
+      "category": "Review",
+      "status": "draft",
+      "date": "每次部署后",
+      "summary": "部署完成后把线上 URL 贴回对话，用于快速点开检查页面和资料链接。",
+      "href": "",
+      "tags": ["URL", "review", "deploy"],
+      "theme": "orange"
+    }
+  ]
+}
