@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#111315">
+    <title>Louise Boo · PPT Library</title>
+    <link rel="icon" href="assets/library-mark.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="topbar" aria-label="Site header">
+        <a class="brand" href="#library" aria-label="Louise Boo PPT Library home">
+          <img src="assets/library-mark.svg" alt="" width="38" height="38">
+          <span>
+            <strong>Louise Boo</strong>
+            <small>PPT Library</small>
+          </span>
+        </a>
+        <nav class="topnav" aria-label="Primary navigation">
+          <a href="#library">资料库</a>
+          <a href="#workflow">上传流程</a>
+          <a href="#rules">规则</a>
+        </nav>
+      </header>
+
+      <main>
+        <section class="command-surface" id="library" aria-labelledby="page-title">
+          <div class="surface-main">
+            <p class="section-kicker">Experiment v0.1 · Main branch deploy</p>
+            <h1 id="page-title">PPT 资料集中入口</h1>
+            <p class="lead">
+              这里会承接后续上传的 PPT、PDF 和 HTML 汇报文件。实验版先验证资料展示、筛选、上传规则和部署路径，不放真实内部资料。
+            </p>
+            <div class="quick-stats" aria-label="Library status">
+              <div>
+                <span id="deck-count">0</span>
+                <small>资料记录</small>
+              </div>
+              <div>
+                <span id="live-count">0</span>
+                <small>已挂链接</small>
+              </div>
+              <div>
+                <span>Main</span>
+                <small>固定分支</small>
+              </div>
+            </div>
+          </div>
+
+          <aside class="surface-side" aria-label="Current deployment rule">
+            <p class="side-label">Current rule</p>
+            <p class="side-title">直接在 main 更新和部署</p>
+            <p class="side-copy">
+              后续每次上传资料后，只更新清单并部署，完成后返回一个可点击 URL。
+            </p>
+          </aside>
+        </section>
+
+        <section class="library-panel" aria-label="Deck library controls">
+          <div class="toolbar">
+            <label class="search-box" for="deck-search">
+              <span aria-hidden="true">⌕</span>
+              <input id="deck-search" type="search" placeholder="搜索标题、分类、摘要">
+            </label>
+            <div class="filters" role="group" aria-label="Filter deck list">
+              <button class="filter-button is-active" type="button" data-filter="all">全部</button>
+              <button class="filter-button" type="button" data-filter="live">已上线</button>
+              <button class="filter-button" type="button" data-filter="draft">待上传</button>
+              <button class="filter-button" type="button" data-filter="system">系统</button>
+            </div>
+          </div>
+
+          <div class="deck-grid" id="deck-grid" aria-live="polite"></div>
+          <div class="empty-state" id="empty-state" hidden>
+            <strong>没有匹配资料</strong>
+            <span>换一个关键词或筛选条件。</span>
+          </div>
+        </section>
+
+        <section class="workflow-grid" id="workflow" aria-labelledby="workflow-title">
+          <div class="section-heading">
+            <p class="section-kicker">Upload workflow</p>
+            <h2 id="workflow-title">以后每次上传资料，按这个路径走</h2>
+          </div>
+          <div class="step-grid">
+            <article class="step-card">
+              <span>01</span>
+              <h3>放入资料</h3>
+              <p>把 PPT、PDF 或 HTML 文件放在 <code>decks/</code> 目录。</p>
+            </article>
+            <article class="step-card">
+              <span>02</span>
+              <h3>更新清单</h3>
+              <p>在 <code>data/decks.json</code> 中补标题、分类、日期、文件链接。</p>
+            </article>
+            <article class="step-card">
+              <span>03</span>
+              <h3>部署确认</h3>
+              <p>直接从 <code>main</code> 部署，返回线上 URL 给你点开检查。</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="rules-band" id="rules" aria-labelledby="rules-title">
+          <div>
+            <p class="section-kicker">Design rule</p>
+            <h2 id="rules-title">克制、清晰、像可长期维护的资料库</h2>
+          </div>
+          <ul>
+            <li>暖中性色底、炭黑文字、少量橙金强调。</li>
+            <li>资料卡只放真实状态，不用假下载按钮。</li>
+            <li>避免营销页结构，首页直接进入资料管理场景。</li>
+          </ul>
+        </section>
+      </main>
+    </div>
+
+    <template id="deck-card-template">
+      <article class="deck-card">
+        <div class="deck-visual" aria-hidden="true">
+          <div class="visual-topline"></div>
+          <div class="visual-title"></div>
+          <div class="visual-row short"></div>
+          <div class="visual-row"></div>
+          <div class="visual-blocks">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+        <div class="deck-body">
+          <div class="deck-meta">
+            <span class="deck-category"></span>
+            <span class="deck-date"></span>
+          </div>
+          <h3 class="deck-title"></h3>
+          <p class="deck-summary"></p>
+          <div class="tag-row"></div>
+          <div class="deck-actions"></div>
+        </div>
+      </article>
+    </template>
+
+    <script>
+      const fallbackLibrary = {
+        updatedAt: "2026-06-27",
+        decks: [
+          {
+            title: "实验版资料入口",
+            category: "System",
+            status: "system",
+            date: "2026-06-27",
+            summary: "用于验证站点结构、资料卡片、筛选交互和部署路径，不包含真实内部 PPT。",
+            href: "",
+            tags: ["main", "static", "prototype"],
+            theme: "gold"
+          },
+          {
+            title: "PPT 上传占位",
+            category: "Deck",
+            status: "draft",
+            date: "待上传",
+            summary: "后续 PPT 放入 decks/ 后，在 data/decks.json 里补链接即可显示打开按钮。",
+            href: "",
+            tags: ["PPT", "PDF", "HTML"],
+            theme: "sage"
+          },
+          {
+            title: "部署回看入口",
+            category: "Review",
+            status: "draft",
+            date: "每次部署后",
+            summary: "部署完成后把线上 URL 贴回对话，用于快速点开检查页面和资料链接。",
+            href: "",
+            tags: ["URL", "review", "deploy"],
+            theme: "orange"
+          }
+        ]
+      };
+
+      const state = {
+        query: "",
+        filter: "all",
+        library: fallbackLibrary
+      };
+
+      const grid = document.querySelector("#deck-grid");
+      const emptyState = document.querySelector("#empty-state");
+      const searchInput = document.querySelector("#deck-search");
+      const filterButtons = [...document.querySelectorAll(".filter-button")];
+      const template = document.querySelector("#deck-card-template");
+
+      function normalize(value) {
+        return String(value || "").trim().toLowerCase();
+      }
+
+      function matchesFilter(deck) {
+        if (state.filter === "all") return true;
+        if (state.filter === "live") return Boolean(deck.href);
+        return deck.status === state.filter;
+      }
+
+      function matchesQuery(deck) {
+        if (!state.query) return true;
+        const haystack = [
+          deck.title,
+          deck.category,
+          deck.summary,
+          ...(deck.tags || [])
+        ].map(normalize).join(" ");
+        return haystack.includes(state.query);
+      }
+
+      function buildAction(deck) {
+        const holder = document.createElement("div");
+        if (deck.href) {
+          const link = document.createElement("a");
+          link.className = "action-link";
+          link.href = deck.href;
+          link.target = "_blank";
+          link.rel = "noopener";
+          link.textContent = "打开资料";
+          holder.append(link);
+          return holder;
+        }
+
+        const disabled = document.createElement("span");
+        disabled.className = "action-link is-disabled";
+        disabled.textContent = "待上传";
+        holder.append(disabled);
+        return holder;
+      }
+
+      function render() {
+        const decks = state.library.decks || [];
+        const visibleDecks = decks.filter((deck) => matchesFilter(deck) && matchesQuery(deck));
+
+        grid.replaceChildren();
+        visibleDecks.forEach((deck) => {
+          const node = template.content.cloneNode(true);
+          const card = node.querySelector(".deck-card");
+          card.classList.add(`theme-${deck.theme || "gold"}`);
+          node.querySelector(".deck-category").textContent = deck.category || "Deck";
+          node.querySelector(".deck-date").textContent = deck.date || "";
+          node.querySelector(".deck-title").textContent = deck.title || "Untitled";
+          node.querySelector(".deck-summary").textContent = deck.summary || "";
+
+          const tagRow = node.querySelector(".tag-row");
+          (deck.tags || []).slice(0, 4).forEach((tag) => {
+            const item = document.createElement("span");
+            item.textContent = tag;
+            tagRow.append(item);
+          });
+
+          node.querySelector(".deck-actions").replaceWith(buildAction(deck));
+          grid.append(node);
+        });
+
+        emptyState.hidden = visibleDecks.length > 0;
+        document.querySelector("#deck-count").textContent = String(decks.length);
+        document.querySelector("#live-count").textContent = String(decks.filter((deck) => deck.href).length);
+      }
+
+      async function loadLibrary() {
+        try {
+          const response = await fetch("data/decks.json", { cache: "no-store" });
+          if (!response.ok) throw new Error("Library data unavailable");
+          state.library = await response.json();
+        } catch (error) {
+          state.library = fallbackLibrary;
+        }
+        render();
+      }
+
+      searchInput.addEventListener("input", (event) => {
+        state.query = normalize(event.target.value);
+        render();
+      });
+
+      filterButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          filterButtons.forEach((item) => item.classList.remove("is-active"));
+          button.classList.add("is-active");
+          state.filter = button.dataset.filter;
+          render();
+        });
+      });
+
+      loadLibrary();
+    </script>
+  </body>
+</html>
