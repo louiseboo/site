@@ -2,34 +2,54 @@
   "updatedAt": "2026-06-27",
   "decks": [
     {
-      "title": "实验版资料入口",
-      "category": "System",
-      "status": "system",
-      "date": "2026-06-27",
-      "summary": "用于验证站点结构、资料卡片、筛选交互和部署路径，不包含真实内部 PPT。",
-      "href": "",
-      "tags": ["main", "static", "prototype"],
+      "title": "杨枝甘露蛋糕众测结果报告（公开版）",
+      "category": "Consumer Testing",
+      "status": "live",
+      "date": "2026-06-10",
+      "summary": "脱敏公开版 HTML 报告，保留总体结论、维度表现、JAR 分析、人群分层和开放评论摘要。",
+      "href": "decks/consumer-testing/20260610-mango-pomelo-cake-public.html",
+      "tags": ["HTML", "consumer testing", "cake", "public copy"],
       "theme": "gold"
     },
     {
-      "title": "PPT 上传占位",
-      "category": "Deck",
-      "status": "draft",
-      "date": "待上传",
-      "summary": "后续 PPT 放入 decks/ 后，在 data/decks.json 里补链接即可显示打开按钮。",
-      "href": "",
-      "tags": ["PPT", "PDF", "HTML"],
+      "title": "Q4/Q1 恰巴塔众测报告（公开版）",
+      "category": "Consumer Testing",
+      "status": "live",
+      "date": "2026-06-17",
+      "summary": "脱敏公开版 HTML 报告，用于查看恰巴塔方向的评分、分层反馈和产品修正线索。",
+      "href": "decks/consumer-testing/20260617-q4q1-ciabatta-public.html",
+      "tags": ["HTML", "consumer testing", "ciabatta", "public copy"],
       "theme": "sage"
     },
     {
-      "title": "部署回看入口",
-      "category": "Review",
-      "status": "draft",
-      "date": "每次部署后",
-      "summary": "部署完成后把线上 URL 贴回对话，用于快速点开检查页面和资料链接。",
-      "href": "",
-      "tags": ["URL", "review", "deploy"],
+      "title": "雪花奶酥糖众测报告（公开版）",
+      "category": "Consumer Testing",
+      "status": "live",
+      "date": "2026-06-12",
+      "summary": "脱敏公开版 HTML 报告，保留产品表现、JAR 判断和开放评论摘要。",
+      "href": "decks/consumer-testing/20260612-snowflake-milk-crisp-candy-public.html",
+      "tags": ["HTML", "consumer testing", "candy", "public copy"],
       "theme": "orange"
+    },
+    {
+      "title": "桂花酒酿绿豆糕众测报告（公开版）",
+      "category": "Consumer Testing",
+      "status": "live",
+      "date": "2026-05-19",
+      "summary": "脱敏公开版 HTML 报告，用于沉淀产品验证结论和口味方向反馈。",
+      "href": "decks/consumer-testing/20260519-osmanthus-fermented-rice-mungbean-cake-public.html",
+      "tags": ["HTML", "consumer testing", "cake", "public copy"],
+      "theme": "gold"
+    },
+    {
+      "title": "Q3/Q4 恰巴塔产品验证报告（公开版）",
+      "category": "Product Validation",
+      "status": "live",
+      "date": "2026-06-03",
+      "summary": "脱敏公开版 HTML 报告，保留验证结论、基准对比和产品动作建议。",
+      "href": "decks/consumer-testing/20260603-q3q4-ciabatta-validation-public.html",
+      "tags": ["HTML", "validation", "ciabatta", "public copy"],
+      "theme": "sage"
     }
   ]
 }
