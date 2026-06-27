@@ -1,6 +1,6 @@
-# My website, my field.
+# Food Product Work
 
-Louise's public-facing home for food-product decks, launch materials, and review-ready PPT artifacts.
+Louise's public-facing library for food-product work: readable decks, report pages, and review-ready artifacts without raw business data.
 
 [Open the site](https://louiseboo-site.vercel.app) · [Browse the deck data](data/decks.json)
 
@@ -19,12 +19,14 @@ A practical field library for the work behind food products.
 
 ## What lives here
 
-- Product committee and leadership decks
-- PPT / PDF / HTML versions of launch and review materials
-- Food category strategy, product-testing, and rollout documentation
+- PPT, PDF, Word, Excel, and exported HTML files that are safe to publish
+- Anonymized consumer-testing report pages
+- Food category, product-testing, and rollout summaries
 - Lightweight public-facing pages that make materials easier to inspect
 
-The current version is an experiment build. It validates the site shell, deck-card system, search/filter interaction, upload workflow, and Vercel deployment path before real PPT files are added.
+Raw data, third-party market reports, product-meeting materials, and company-brand references are kept out of the public repository.
+
+The current version is an experiment build. It validates the site shell, deck-card system, search/filter interaction, upload workflow, and Vercel deployment path with the first public HTML report batch.
 
 ## How I use it
 
@@ -33,6 +35,8 @@ The current version is an experiment build. It validates the site shell, deck-ca
 3. Commit directly on `main`.
 4. Deploy with Vercel.
 5. Open the live URL and review the page like a real reader would.
+
+For public uploads, make a clean copy first: remove raw rows, names, private notes, company marks, supplier details, cost data, and third-party report content.
 
 ## Design principles
 
