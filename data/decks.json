@@ -2,6 +2,16 @@
   "updatedAt": "2026-06-27",
   "decks": [
     {
+      "title": "Category Lab 个人工作台",
+      "category": "Personal Workbench",
+      "status": "live",
+      "date": "2026-06-27",
+      "summary": "Category Lab 个人品类工作台 HTML 原版文件，用于在线打开和查看。",
+      "href": "decks/category-lab/category-lab.html",
+      "tags": ["HTML", "category lab", "workbench", "food product work"],
+      "theme": "sage"
+    },
+    {
       "title": "杨枝甘露蛋糕众测结果报告（公开版）",
       "category": "Consumer Testing",
       "status": "live",
