@@ -3,15 +3,20 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#111315">
+    <meta name="theme-color" content="#fff5e7">
+    <meta
+      name="description"
+      content="Louise Boo's Food Product Work homepage, featuring Category Lab, consumer testing reports, and food product notes."
+    >
     <title>Louise Boo · Food Product Work</title>
     <link rel="icon" href="assets/library-mark.svg" type="image/svg+xml">
+    <link rel="preload" href="assets/kawaii-food-cat.jpg" as="image">
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <div class="site-shell">
       <header class="topbar" aria-label="Site header">
-        <a class="brand" href="#library" aria-label="Louise Boo Food Product Work library home">
+        <a class="brand" href="#home" aria-label="Louise Boo Food Product Work home">
           <img src="assets/library-mark.svg" alt="" width="38" height="38">
           <span>
             <strong>Louise Boo</strong>
@@ -19,100 +24,131 @@
           </span>
         </a>
         <nav class="topnav" aria-label="Primary navigation">
-          <a href="#library">资料库</a>
-          <a href="#workflow">上传流程</a>
-          <a href="#rules">规则</a>
+          <a href="#category-lab">Category Lab</a>
+          <a href="#library">Library</a>
+          <a href="#profile">Profile</a>
         </nav>
       </header>
 
-      <main>
-        <section class="command-surface" id="library" aria-labelledby="page-title">
-          <div class="surface-main">
-            <p class="section-kicker">Food Product Work · Main branch deploy</p>
-            <h1 id="page-title">Food Product Work 资料库</h1>
+      <main id="home">
+        <section class="hero" aria-labelledby="page-title">
+          <div class="hero-copy">
+            <p class="section-kicker">Food product systems · Consumer reads · Category notes</p>
+            <h1 id="page-title">Food product work, made easy to open.</h1>
             <p class="lead">
-              这里承接脱敏后的 PPT、PDF、HTML 报告和产品工作材料。公开站点只放可阅读的交付版本，不放原始数据、第三方市场报告或产品会内部材料。
+              A personal workspace for category thinking, product validation, and food-focused reports.
+              It keeps the work readable, visual, and easy to revisit.
             </p>
-            <div class="quick-stats" aria-label="Library status">
+            <div class="hero-actions" aria-label="Primary actions">
+              <a class="button button-primary" href="decks/category-lab/category-lab.html" target="_blank" rel="noopener">
+                Open Category Lab
+              </a>
+              <a class="button button-secondary" href="#library">Browse library</a>
+            </div>
+            <dl class="signal-row" aria-label="Homepage signals">
               <div>
-                <span id="deck-count">0</span>
-                <small>资料记录</small>
+                <dt id="deck-count">0</dt>
+                <dd>materials</dd>
               </div>
               <div>
-                <span id="live-count">0</span>
-                <small>已挂链接</small>
+                <dt id="live-count">0</dt>
+                <dd>live links</dd>
               </div>
               <div>
-                <span>Main</span>
-                <small>固定分支</small>
+                <dt>Food</dt>
+                <dd>product lens</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="hero-visual" aria-label="Food product profile artwork">
+            <img
+              class="cat-illustration"
+              src="assets/kawaii-food-cat.jpg"
+              alt="Original kawaii cat illustration with cake, croissant, coffee, and product notes"
+              width="1024"
+              height="768"
+            >
+            <div class="floating-chip chip-cake">cake</div>
+            <div class="floating-chip chip-matcha">matcha</div>
+            <div class="floating-chip chip-coffee">coffee</div>
+          </div>
+        </section>
+
+        <section class="featured-lab" id="category-lab" aria-labelledby="category-title">
+          <div class="featured-copy">
+            <p class="section-kicker">Featured workspace</p>
+            <h2 id="category-title">Category Lab 个人工作台</h2>
+            <p>
+              The main entry point for my food category system: product ideas, category logic,
+              validation thinking, and interface experiments in one browser-ready workspace.
+            </p>
+            <a class="button button-light" href="decks/category-lab/category-lab.html" target="_blank" rel="noopener">
+              Enter Category Lab
+            </a>
+          </div>
+          <div class="lab-preview" aria-hidden="true">
+            <div class="preview-header">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="preview-body">
+              <div class="preview-sidebar"></div>
+              <div class="preview-main">
+                <div class="preview-title"></div>
+                <div class="preview-bars">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="preview-grid">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
               </div>
             </div>
           </div>
-
-          <aside class="surface-side" aria-label="Current deployment rule">
-            <p class="side-label">Current rule</p>
-            <p class="side-title">直接在 main 更新和部署</p>
-            <p class="side-copy">
-              每次上传前先做公开性检查，上传后更新清单并部署，完成后返回一个可点击 URL。
-            </p>
-          </aside>
         </section>
 
-        <section class="library-panel" aria-label="Deck library controls">
-          <div class="toolbar">
+        <section class="profile-band" id="profile" aria-labelledby="profile-title">
+          <div>
+            <p class="section-kicker">Profile</p>
+            <h2 id="profile-title">Food product work with a little character.</h2>
+          </div>
+          <p>
+            I work across category strategy, product testing, launch review, and practical systems
+            that help food ideas move from signal to decision. The visual language here is warm,
+            product-minded, and deliberately more personal than a standard file dump.
+          </p>
+        </section>
+
+        <section class="library-panel" id="library" aria-label="Food product work library">
+          <div class="library-heading">
+            <div>
+              <p class="section-kicker">Library</p>
+              <h2>Reports and work surfaces</h2>
+            </div>
             <label class="search-box" for="deck-search">
               <span aria-hidden="true">⌕</span>
-              <input id="deck-search" type="search" placeholder="搜索标题、分类、摘要">
+              <input id="deck-search" type="search" placeholder="Search title, category, notes">
             </label>
-            <div class="filters" role="group" aria-label="Filter deck list">
-              <button class="filter-button is-active" type="button" data-filter="all">全部</button>
-              <button class="filter-button" type="button" data-filter="live">已上线</button>
-              <button class="filter-button" type="button" data-filter="draft">待上传</button>
-              <button class="filter-button" type="button" data-filter="system">系统</button>
-            </div>
+          </div>
+
+          <div class="filters" role="group" aria-label="Filter deck list">
+            <button class="filter-button is-active" type="button" data-filter="all">All</button>
+            <button class="filter-button" type="button" data-filter="system">System</button>
+            <button class="filter-button" type="button" data-filter="testing">Testing</button>
+            <button class="filter-button" type="button" data-filter="report">Reports</button>
           </div>
 
           <div class="deck-grid" id="deck-grid" aria-live="polite"></div>
           <div class="empty-state" id="empty-state" hidden>
-            <strong>没有匹配资料</strong>
-            <span>换一个关键词或筛选条件。</span>
+            <strong>No matching materials</strong>
+            <span>Try another keyword or filter.</span>
           </div>
-        </section>
-
-        <section class="workflow-grid" id="workflow" aria-labelledby="workflow-title">
-          <div class="section-heading">
-            <p class="section-kicker">Upload workflow</p>
-            <h2 id="workflow-title">以后每次上传资料，按这个路径走</h2>
-          </div>
-          <div class="step-grid">
-            <article class="step-card">
-              <span>01</span>
-              <h3>放入资料</h3>
-            <p>把公开版 PPT、PDF、Word、Excel 或 HTML 文件放在 <code>decks/</code> 目录。</p>
-            </article>
-            <article class="step-card">
-              <span>02</span>
-              <h3>更新清单</h3>
-            <p>在 <code>data/decks.json</code> 中补标题、分类、日期、文件链接和公开状态。</p>
-            </article>
-            <article class="step-card">
-              <span>03</span>
-              <h3>部署确认</h3>
-            <p>直接从 <code>main</code> 部署，返回线上 URL 给你点开检查。</p>
-            </article>
-          </div>
-        </section>
-
-        <section class="rules-band" id="rules" aria-labelledby="rules-title">
-          <div>
-            <p class="section-kicker">Publishing rule</p>
-            <h2 id="rules-title">公开版优先，原始数据不进站点</h2>
-          </div>
-          <ul>
-            <li>页面统一使用 Food Product Work，不直接写公司品牌。</li>
-            <li>产品会材料、第三方市场报告和原始数据先不放公开站点。</li>
-            <li>众测 HTML 只发布公开副本，保留结论和摘要，不放个人明细。</li>
-          </ul>
         </section>
       </main>
     </div>
@@ -145,66 +181,66 @@
 
     <script>
       const fallbackLibrary = {
-        updatedAt: "2026-06-27",
+        updatedAt: "2026-06-28",
         decks: [
           {
             title: "Category Lab 个人工作台",
             category: "Personal Workbench",
             status: "live",
             date: "2026-06-27",
-            summary: "Category Lab 个人品类工作台 HTML 原版文件，用于在线打开和查看。",
+            summary: "A browser-ready category workspace for food ideas, product signals, and practical product-system thinking.",
             href: "decks/category-lab/category-lab.html",
-            tags: ["HTML", "category lab", "workbench", "food product work"],
+            tags: ["HTML", "category lab", "workbench", "system"],
             theme: "sage"
           },
           {
-            title: "杨枝甘露蛋糕众测结果报告（公开版）",
+            title: "杨枝甘露蛋糕众测结果报告",
             category: "Consumer Testing",
             status: "live",
             date: "2026-06-10",
-            summary: "脱敏公开版 HTML 报告，保留总体结论、维度表现、JAR 分析、人群分层和开放评论摘要。",
+            summary: "A one-page readout for cake performance, preference signals, JAR findings, audience segments, and comment themes.",
             href: "decks/consumer-testing/20260610-mango-pomelo-cake-public.html",
-            tags: ["HTML", "consumer testing", "cake", "public copy"],
+            tags: ["HTML", "consumer testing", "cake", "report"],
             theme: "gold"
           },
           {
-            title: "Q4/Q1 恰巴塔众测报告（公开版）",
+            title: "Q4/Q1 恰巴塔众测报告",
             category: "Consumer Testing",
             status: "live",
             date: "2026-06-17",
-            summary: "脱敏公开版 HTML 报告，用于查看恰巴塔方向的评分、分层反馈和产品修正线索。",
+            summary: "A structured ciabatta readout covering score patterns, segment feedback, and product-improvement clues.",
             href: "decks/consumer-testing/20260617-q4q1-ciabatta-public.html",
-            tags: ["HTML", "consumer testing", "ciabatta", "public copy"],
+            tags: ["HTML", "consumer testing", "ciabatta", "report"],
             theme: "sage"
           },
           {
-            title: "雪花奶酥糖众测报告（公开版）",
+            title: "雪花奶酥糖众测报告",
             category: "Consumer Testing",
             status: "live",
             date: "2026-06-12",
-            summary: "脱敏公开版 HTML 报告，保留产品表现、JAR 判断和开放评论摘要。",
+            summary: "A compact testing page for product performance, JAR direction, and open-comment patterns.",
             href: "decks/consumer-testing/20260612-snowflake-milk-crisp-candy-public.html",
-            tags: ["HTML", "consumer testing", "candy", "public copy"],
-            theme: "orange"
+            tags: ["HTML", "consumer testing", "candy", "report"],
+            theme: "tomato"
           },
           {
-            title: "桂花酒酿绿豆糕众测报告（公开版）",
+            title: "桂花酒酿绿豆糕众测报告",
             category: "Consumer Testing",
             status: "live",
             date: "2026-05-19",
-            summary: "脱敏公开版 HTML 报告，用于沉淀产品验证结论和口味方向反馈。",
+            summary: "A food-product readout that keeps the flavor direction, validation result, and next-step signals easy to scan.",
             href: "decks/consumer-testing/20260519-osmanthus-fermented-rice-mungbean-cake-public.html",
-            tags: ["HTML", "consumer testing", "cake", "public copy"],
+            tags: ["HTML", "consumer testing", "cake", "report"],
             theme: "gold"
           },
           {
-            title: "Q3/Q4 恰巴塔产品验证报告（公开版）",
+            title: "Q3/Q4 恰巴塔产品验证报告",
             category: "Product Validation",
             status: "live",
             date: "2026-06-03",
-            summary: "脱敏公开版 HTML 报告，保留验证结论、基准对比和产品动作建议。",
+            summary: "A validation report for comparing product baselines, reading preference signals, and deciding product actions.",
             href: "decks/consumer-testing/20260603-q3q4-ciabatta-validation-public.html",
-            tags: ["HTML", "validation", "ciabatta", "public copy"],
+            tags: ["HTML", "validation", "ciabatta", "report"],
             theme: "sage"
           }
         ]
@@ -228,7 +264,11 @@
 
       function matchesFilter(deck) {
         if (state.filter === "all") return true;
-        if (state.filter === "live") return Boolean(deck.href);
+        const category = normalize(deck.category);
+        const tags = (deck.tags || []).map(normalize);
+        if (state.filter === "system") return category.includes("workbench") || tags.includes("system");
+        if (state.filter === "testing") return category.includes("consumer") || tags.includes("consumer testing");
+        if (state.filter === "report") return category.includes("validation") || tags.includes("report");
         return deck.status === state.filter;
       }
 
@@ -251,14 +291,14 @@
           link.href = deck.href;
           link.target = "_blank";
           link.rel = "noopener";
-          link.textContent = "打开资料";
+          link.textContent = deck.title.includes("Category Lab") ? "Open workspace" : "Open material";
           holder.append(link);
           return holder;
         }
 
         const disabled = document.createElement("span");
         disabled.className = "action-link is-disabled";
-        disabled.textContent = "待上传";
+        disabled.textContent = "Coming soon";
         holder.append(disabled);
         return holder;
       }
@@ -272,7 +312,8 @@
           const node = template.content.cloneNode(true);
           const card = node.querySelector(".deck-card");
           card.classList.add(`theme-${deck.theme || "gold"}`);
-          node.querySelector(".deck-category").textContent = deck.category || "Deck";
+          if (deck.title.includes("Category Lab")) card.classList.add("is-featured-card");
+          node.querySelector(".deck-category").textContent = deck.category || "Material";
           node.querySelector(".deck-date").textContent = deck.date || "";
           node.querySelector(".deck-title").textContent = deck.title || "Untitled";
           node.querySelector(".deck-summary").textContent = deck.summary || "";

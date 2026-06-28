@@ -1,67 +1,47 @@
-# Food Product Work
+# Louise Boo / Food Product Work
 
-Louise's public-facing library for food-product work: readable decks, report pages, and review-ready artifacts without raw business data.
+Personal food-product workspace for category systems, consumer-testing readouts,
+and browser-ready product notes.
 
-[Open the site](https://louiseboo-site.vercel.app) · [Browse the deck data](data/decks.json)
+[Open the site](https://louiseboo-site.vercel.app) · [Open Category Lab](https://louiseboo-site.vercel.app/decks/category-lab/category-lab)
 
 ---
 
-## Why this exists
+## What This Is
 
-I work in food product management: category strategy, product development, consumer testing, supplier coordination, launch execution, and post-launch review.
+This repo powers a public-facing homepage for Louise Boo's food product work.
+It is designed like a working field shelf: fast to open, easy to scan, and
+warm enough to feel personal.
 
-This site is the place where those materials can become easy to open, easy to review, and easy to keep over time.
+The first featured workspace is **Category Lab**, a browser page for category
+thinking, product signals, and system experiments. The library also includes
+consumer-testing and product-validation report pages.
 
-Not a portfolio page.
-Not a generic slide dump.
+## Current Highlights
 
-A practical field library for the work behind food products.
+- **Category Lab 个人工作台** - the main food category workbench.
+- **Consumer Testing Reports** - product readouts for cakes, candy, and bread.
+- **Food Product Lens** - category strategy, testing signals, launch thinking,
+  and practical product systems.
 
-## What lives here
+## Design Direction
 
-- PPT, PDF, Word, Excel, and exported HTML files that are safe to publish
-- Anonymized consumer-testing report pages
-- Food category, product-testing, and rollout summaries
-- Lightweight public-facing pages that make materials easier to inspect
+The homepage uses a personal-profile structure with a food-product identity:
+warm paper, tomato red, matcha green, butter yellow, charcoal type, and an
+original kawaii cat food illustration for a softer profile signal.
 
-Raw data, third-party market reports, product-meeting materials, and company-brand references are kept out of the public repository.
-
-The current version is an experiment build. It validates the site shell, deck-card system, search/filter interaction, upload workflow, and Vercel deployment path with the first public HTML report batch.
-
-## How I use it
-
-1. Put PPT, PDF, or exported HTML files under `decks/`.
-2. Add or update the matching record in `data/decks.json`.
-3. Commit directly on `main`.
-4. Deploy with Vercel.
-5. Open the live URL and review the page like a real reader would.
-
-For public uploads, make a clean copy first: remove raw rows, names, private notes, company marks, supplier details, cost data, and third-party report content.
-
-## Design principles
-
-Food work needs evidence, not decoration.
-
-- Keep the page restrained, warm, and business-readable.
-- Let real materials carry the story.
-- Make every card answer: what is this, why does it matter, and where should I open it?
-- Prefer clear product-manager language over vague strategy language.
-- Build for repeated use, not one-off presentation drama.
-
-## File map
+## File Map
 
 | Path | Role |
 | --- | --- |
-| `index.html` | Static PPT library page |
+| `index.html` | Homepage and library UI |
 | `styles.css` | Visual system and responsive layout |
-| `data/decks.json` | Editable deck library data |
-| `decks/` | Upload target for PPT, PDF, and exported HTML |
-| `assets/` | Visual assets used by the site |
+| `data/decks.json` | Editable library data |
+| `decks/` | Browser-ready materials |
+| `assets/` | Site imagery and marks |
 | `vercel.json` | Vercel static-site settings |
 
-## Current live URL
-
-The working deployment is:
+## Live URL
 
 ```text
 https://louiseboo-site.vercel.app
