@@ -5718,6 +5718,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return { id: crypto.randomUUID(), name: "", category: "", spec: "", images: [], price: "", weight: "", length: "", width: "", height: "", appearance: "", appearanceScore: "", flavor: "", flavorScore: "", aroma: "", aromaScore: "", texture: "", textureScore: "", note: "" };
     }
 
+    function competitorAlbumDefaultItemCount(type = document.querySelector("#competitorAlbumType")?.value || "单品") {
+      return type === "系列" ? 2 : 1;
+    }
+
+    function blankCompetitorItems(count = 1) {
+      return Array.from({ length: Math.max(1, count) }, () => blankCompetitorItem());
+    }
+
     function competitorProductLabel(index) {
       return "产品" + (cnNumerals[index] || (index + 1));
     }
@@ -5734,11 +5742,21 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       select.value = competitorAlbumCategoryOptions.includes(value) ? value : "其他";
     }
 
-    function syncCompetitorAlbumCategoryVisibility() {
+    function syncCompetitorAlbumCategoryVisibility(options = {}) {
       const isSeries = document.querySelector("#competitorAlbumType")?.value === "系列";
       const field = document.querySelector("#competitorAlbumCategoryField");
       if (field) field.classList.toggle("hidden-file", isSeries);
       if (isSeries) setCompetitorCategories([]);
+      const shouldAdjustItems = options?.type === "change" || options?.adjustBlankItems;
+      if (!shouldAdjustItems) return;
+      const currentItems = readCompetitorAlbumItems({ keepBlank: true });
+      const targetCount = competitorAlbumDefaultItemCount();
+      if (!currentItems.some(competitorAlbumItemHasContent)) {
+        competitorAlbumItems = blankCompetitorItems(targetCount);
+        renderCompetitorAlbumItems();
+        return;
+      }
+      competitorAlbumItems = currentItems.length ? currentItems : blankCompetitorItems(targetCount);
     }
 
     function renderCompetitorProductImages(images = competitorProductImagesData) {
@@ -5843,8 +5861,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function resetCompetitorAlbumModal() {
       editingCompetitorAlbumId = null;
       competitorProductImagesData = [];
-      competitorAlbumItems = [blankCompetitorItem(), blankCompetitorItem()];
       document.querySelector("#competitorAlbumForm")?.reset();
+      competitorAlbumItems = blankCompetitorItems(competitorAlbumDefaultItemCount());
       document.querySelector("#competitorAlbumModalTitle").textContent = "新增竞品";
       setCompetitorCategories([]);
       syncCompetitorAlbumCategoryVisibility();
@@ -5860,9 +5878,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         const normalizedAlbum = migrateCompetitorAlbum(album);
         editingCompetitorAlbumId = id;
         competitorProductImagesData = structuredClone(normalizedAlbum.productImages || []);
-        competitorAlbumItems = (normalizedAlbum.items || []).length ? structuredClone(normalizedAlbum.items) : [blankCompetitorItem()];
         document.querySelector("#competitorAlbumModalTitle").textContent = "编辑竞品";
-        document.querySelector("#competitorAlbumType").value = normalizedAlbum.type || "单品";
+        const albumType = normalizedAlbum.type || "单品";
+        document.querySelector("#competitorAlbumType").value = albumType;
+        competitorAlbumItems = (normalizedAlbum.items || []).length ? structuredClone(normalizedAlbum.items) : blankCompetitorItems(competitorAlbumDefaultItemCount(albumType));
         document.querySelector("#competitorAlbumDate").value = normalizedAlbum.date || "";
         document.querySelector("#competitorAlbumStore").value = normalizedAlbum.store || "";
         setCompetitorCategories(normalizedAlbum.categories || normalizeCompetitorCategories(normalizedAlbum));
@@ -5891,7 +5910,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         location: document.querySelector("#competitorAlbumLocation").value.trim(),
         productImages: competitorProductImagesData,
         note: document.querySelector("#competitorAlbumNote").value.trim(),
-        items: items.length ? items : [blankCompetitorItem()]
+        items: items.length ? items : blankCompetitorItems(competitorAlbumDefaultItemCount(albumType))
       });
       album.name = album.store || competitorAlbumProductSummary(album);
       if (!album.store && !album.note && !album.items.some(item => item.name || item.note)) return;
