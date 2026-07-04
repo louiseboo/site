@@ -231,17 +231,16 @@
       border-color: var(--accent);
       color: #fff;
     }
-    .btn.danger { color: var(--red); }
-    /* 表格内的删除按钮默认隐藏，悬停整行或键盘聚焦时才显示，减少视觉噪音并避免误点 */
-    table tbody tr .btn.danger {
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.15s ease;
+    .btn.danger {
+      color: var(--red);
+      border-color: #e5c7b8;
+      background: #fff;
     }
-    table tbody tr:hover .btn.danger,
-    table tbody tr:focus-within .btn.danger {
-      opacity: 1;
-      pointer-events: auto;
+    .btn.danger:hover,
+    .btn.danger:focus-visible {
+      color: var(--red);
+      border-color: var(--red);
+      background: #fff4ef;
     }
     .btn.ghost { background: transparent; }
     .btn.compact {
