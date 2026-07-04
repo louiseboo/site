@@ -314,15 +314,18 @@
       border: 1px solid var(--line);
       border-radius: 8px;
       box-shadow: var(--shadow);
+      min-width: 0;
     }
     .panel-head {
       padding: 14px 16px;
       border-bottom: 1px solid var(--line);
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
       gap: 12px;
     }
+    .panel-head h2 { min-width: 0; }
     .panel-body { padding: 16px; }
     .form {
       display: grid;
@@ -364,6 +367,8 @@
     .toolbar .search { flex: 1 1 220px; max-width: 360px; }
     .toolbar select { flex: 0 0 auto; width: auto; min-width: 150px; max-width: 220px; }
     .table-wrap {
+      min-width: 0;
+      max-width: 100%;
       overflow-x: scroll;
       overflow-y: auto;
       border: 1px solid var(--line);
@@ -427,6 +432,18 @@
       gap: 6px;
       justify-content: flex-end;
       white-space: nowrap;
+    }
+    .url-load-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+    .field-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
     }
     .recipe-footer-actions {
       justify-content: space-between;
@@ -759,6 +776,7 @@
       background: #faf6ef;
       cursor: zoom-in;
     }
+    [data-preview-image] { cursor: zoom-in; }
     .image-preview {
       display: none;
       width: 100%;
@@ -921,6 +939,90 @@
       border: 1px solid var(--line);
       border-radius: 6px;
       background: #faf6ef;
+    }
+    .img-count {
+      display: inline-block;
+      margin-left: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--gold-soft);
+      border-radius: 999px;
+      padding: 1px 7px;
+      vertical-align: top;
+    }
+    .sensory-gallery,
+    .competitor-item-gallery,
+    #competitorProductImagesPreview {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 12px;
+      margin: 10px 0 8px;
+    }
+    .sensory-figure {
+      position: relative;
+      margin: 0;
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #faf6ef;
+    }
+    .sensory-figure img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+    .competitor-item-gallery img,
+    #competitorProductImagesPreview img {
+      height: 170px;
+      object-fit: cover;
+      object-position: center;
+      background: #faf6ef;
+    }
+    .sensory-figure figcaption {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      padding: 4px 0;
+    }
+    .sensory-figure .img-remove {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      width: 22px;
+      height: 22px;
+      min-height: 22px;
+      padding: 0;
+      border: 0;
+      border-radius: 999px;
+      background: rgba(42, 29, 16, 0.65);
+      color: #fff;
+      font-size: 14px;
+      line-height: 1;
+    }
+    .detail-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+      margin: 8px 0;
+    }
+    .detail-gallery figure { margin: 0; }
+    .detail-gallery img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      display: block;
+    }
+    .detail-gallery figcaption {
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 3px;
     }
     .dev-board-grid {
       display: grid;
@@ -1349,6 +1451,176 @@
     .record-list td:last-child {
       width: 72px;
     }
+    .record-list.wide { min-width: 1240px; }
+    .account-strip {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 5px 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #faf6ef;
+    }
+    .account-strip select {
+      min-height: 30px;
+      width: 150px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .card-stack {
+      display: grid;
+      gap: 10px;
+    }
+    .mini-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 12px;
+    }
+    .mini-card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .mini-card-title {
+      font-size: 13px;
+      font-weight: 760;
+    }
+    .competitor-item-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #faf6ef;
+      padding: 12px;
+      display: grid;
+      gap: 10px;
+    }
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .checkbox-grid label,
+    .flow-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .checkbox-grid input,
+    .flow-check input {
+      width: auto;
+      min-height: auto;
+      padding: 0;
+    }
+    .category-check-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .category-check-grid label {
+      min-height: 30px;
+      padding: 5px 7px;
+    }
+    .category-custom-input {
+      margin-top: 8px;
+    }
+    .launch-workspace {
+      display: grid;
+      gap: 12px;
+    }
+    .launch-dashboard {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .launch-metric {
+      min-height: 58px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow);
+    }
+    .launch-metric span {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 760;
+      line-height: 1.2;
+    }
+    .launch-metric b {
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 780;
+      line-height: 1;
+    }
+    .launch-metric.bad b { color: var(--red); }
+    .launch-metric.warn b { color: var(--amber); }
+    .launch-metric.done b { color: var(--green); }
+    .launch-project-selector {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .launch-project-chip {
+      min-height: 54px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      display: grid;
+      gap: 3px;
+      text-align: left;
+    }
+    .launch-project-chip.active {
+      border-color: var(--gold);
+      background: #f7f0e4;
+      box-shadow: inset 3px 0 0 var(--gold);
+    }
+    .launch-project-chip span {
+      font-size: 13px;
+      font-weight: 760;
+      line-height: 1.25;
+    }
+    .launch-project-chip small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 650;
+      line-height: 1.2;
+    }
+    .launch-reminders {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .reminder-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      font-size: 12px;
+    }
+    .reminder-row.bad { border-color: #ecc7bd; background: #fff7f4; }
+    .reminder-row.warn { border-color: #ead4a6; background: #fffaf0; }
+    .permission-hidden { display: none !important; }
     .score-input-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1392,10 +1664,14 @@
       .nav::-webkit-scrollbar { display: none; }
       .grid, .recipe-layout, .split, .form.three, .recipe-list-grid, .workspace-grid, .logic-grid, .list-form, .score-input-grid, .detail-grid, .import-strip { grid-template-columns: 1fr; }
       .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .launch-dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .validation-kpis .kpi,
       .validation-kpis .kpi.total { grid-column: span 1; }
       .recipe-meta { grid-template-columns: 1fr; }
       .section-head { grid-template-columns: 1fr 1fr; }
+      .sensory-gallery,
+      .competitor-item-gallery,
+      #competitorProductImagesPreview { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
     }
     @media (max-width: 700px) {
       .side { padding: 0 14px; gap: 12px; }
@@ -1403,7 +1679,11 @@
       .topbar { flex-direction: column; }
       .actions { justify-content: flex-start; }
       .kpis { grid-template-columns: 1fr; }
+      .launch-dashboard { grid-template-columns: 1fr; }
       .detail-grid, .yield-stage-grid { grid-template-columns: 1fr; }
+      .sensory-gallery,
+      .competitor-item-gallery,
+      #competitorProductImagesPreview { grid-template-columns: 1fr; }
       h1 { font-size: 21px; }
     }
     .home-stats {
@@ -1474,6 +1754,31 @@
     .ai-chat-msg.user { align-self: flex-end; background: var(--accent); color: #fff; }
     .ai-chat-input { display: flex; gap: 8px; margin-top: 12px; }
     .ai-chat-input input { flex: 1; }
+    .ai-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .ai-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--gold);
+      background: var(--gold-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 13px;
+      font-weight: 650;
+    }
+    .ai-action:hover { background: #e2d2b0; }
+    .ai-soon-mini {
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--accent);
+      border-radius: 999px;
+      padding: 1px 6px;
+    }
+    .ai-chat-msg ul { margin: 4px 0 0; padding-left: 18px; }
+    .ai-chat-msg li { margin: 2px 0; }
+    .ai-gap-ok { color: var(--green); font-weight: 650; }
     .global-search.global-search--home { width: 100%; max-width: 100%; }
     .global-search { position: relative; width: 260px; max-width: 42vw; }
     .global-search .search { width: 100%; }
@@ -1525,6 +1830,7 @@
       <nav class="nav">
         <button data-view="home" data-short="家"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/></svg></span><span class="nav-text"><span>Home</span><small>首页 · 我的沉淀</small></span></button>
         <button data-view="opportunity" data-short="机"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.1 14c.2-1 .7-1.7 1.4-2.5A4.6 4.6 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.8 1.2 1.5 1.4 2.5"/></svg></span><span class="nav-text"><span>My Inspirations</span><small>机会池</small></span></button>
+        <button data-view="launch" data-short="档"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M8 14h3"/><path d="M13 14h3"/><path d="M8 18h3"/></svg></span><span class="nav-text"><span>My Calendar</span><small>档期产品开发</small></span></button>
         <button data-view="development" data-short="开"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6.5L5.6 17a2 2 0 0 0 1.8 3h9.2a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.7 14h8.6"/></svg></span><span class="nav-text"><span>My Recipes</span><small>产品开发</small></span></button>
         <button class="active" data-view="validation" data-short="验"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="3" width="8" height="4" rx="1"/><path d="M16 5h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2"/><path d="M9 13l2 2 4-4"/></svg></span><span class="nav-text"><span>My Standards</span><small>产品验证</small></span></button>
         <button data-view="execution" data-short="落"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-4.5h15L21 9"/><path d="M4.5 9v9.5a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1V9"/><path d="M3 9h18"/><path d="M9.5 19.5V14h5v5.5"/></svg></span><span class="nav-text"><span>My Fieldnotes</span><small>产品落地</small></span></button>
@@ -1543,6 +1849,10 @@
           </div>
         </div>
         <div class="actions">
+          <div class="account-strip">
+            <select id="accountSwitch" aria-label="切换账户"></select>
+            <button class="btn ghost compact" id="accountPermissionBtn" type="button">权限</button>
+          </div>
           <button class="btn ghost compact" id="downloadJsonBtn" type="button">备份数据 JSON</button>
           <button class="btn ghost compact" id="importJsonBtn" type="button">导入备份</button>
           <input id="jsonFile" class="hidden-file" type="file" accept="application/json">
@@ -1564,10 +1874,15 @@
         </div>
 
         <div class="home-section">
-          <div class="home-section-title">AI 助手<span class="ai-soon">即将接入 DeepSeek</span></div>
+          <div class="home-section-title">AI 助手<span class="ai-soon">轻 Agent · 基于你的数据</span></div>
           <div class="ai-chat">
+            <div class="ai-actions">
+              <button class="ai-action" type="button" data-ai-action="gaps">找数据缺口</button>
+              <button class="ai-action" type="button" data-ai-action="summarize">总结沉淀<span class="ai-soon-mini">DeepSeek</span></button>
+              <button class="ai-action" type="button" data-ai-action="link">串联关系<span class="ai-soon-mini">DeepSeek</span></button>
+            </div>
             <div class="ai-chat-log" id="aiChatLog">
-              <div class="ai-chat-msg ai">接入 DeepSeek 后，我会基于你沉淀的配方、供应商、测评数据帮你总结和串联。先随便问问试试。</div>
+              <div class="ai-chat-msg ai">我是你的品类助手，只基于你沉淀的数据工作。点上面的动作，或直接问。「找数据缺口」现在就能用；「总结 / 串联」接入 DeepSeek 后开启。</div>
             </div>
             <form class="ai-chat-input" id="aiChatForm">
               <input id="aiChatText" type="text" autocomplete="off" placeholder="问问你的配方 / 供应商 / 测评…">
@@ -1591,12 +1906,12 @@
             </div>
             <div class="panel-body">
               <div class="toolbar">
-                <input class="search" id="opportunityIdeasSearch" placeholder="搜索名称、类型、状态、备注">
+                <input class="search" id="opportunityIdeasSearch" placeholder="搜索名称、类型、状态、备注、小红书">
                 <select id="opportunityIdeasCategory"><option value="">全部类型</option></select>
               </div>
               <div class="table-wrap">
                 <table class="compact-table record-list">
-                  <thead><tr><th>名称</th><th>类型</th><th>状态</th><th>备注</th><th>操作</th></tr></thead>
+                  <thead><tr><th>图片</th><th>名称</th><th>类型</th><th>状态</th><th>小红书</th><th>备注</th><th>操作</th></tr></thead>
                   <tbody id="opportunityIdeasTbody"></tbody>
                 </table>
               </div>
@@ -1606,17 +1921,17 @@
         <div class="section-panel" data-tab-panel="opportunity:competitors">
           <div class="panel">
             <div class="panel-head">
-              <h2>竞品测试</h2>
-              <div class="actions"><span class="pill" id="competitorTestsCount">0 条</span><button class="btn compact primary" data-open-sensory-opportunity="竞品测试" type="button">新增竞品测试</button></div>
+              <h2>竞品册</h2>
+              <div class="actions"><span class="pill" id="competitorTestsCount">0 条</span><button class="btn compact primary" id="openCompetitorAlbumBtn" type="button">新增竞品</button></div>
             </div>
             <div class="panel-body">
               <div class="toolbar">
-                <input class="search" id="competitorTestsSearch" placeholder="搜索品牌、品类、产品、备注">
+                <input class="search" id="competitorTestsSearch" placeholder="搜索门店、品牌、品类、产品、备注">
                 <select id="competitorTestsCategory"><option value="">全部品类</option></select>
               </div>
               <div class="table-wrap">
-                <table class="compact-table record-list">
-                  <thead><tr><th>图片</th><th>测试日期</th><th>品牌</th><th>品类</th><th>产品名称</th><th>价格(RMB)</th><th>重量(g)</th><th>长度(mm)</th><th>宽度(mm)</th><th>高度(mm)</th><th>感官均分</th><th>操作</th></tr></thead>
+                <table class="compact-table record-list wide">
+                  <thead><tr><th>图片</th><th>测试日期</th><th>竞品册</th><th>类型</th><th>门店/品牌</th><th>品类</th><th>产品数</th><th>产品摘要</th><th>感官均分</th><th>备注</th><th>操作</th></tr></thead>
                   <tbody id="competitorTestsTbody"></tbody>
                 </table>
               </div>
@@ -1655,6 +1970,37 @@
         <div class="panel">
           <div class="panel-body">
             <p>请选择上方产品开发分类。日常使用会直接进入对应完整页面，不在这里堆入口卡片。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="launch" class="view">
+        <div class="launch-dashboard" id="launchDashboard"></div>
+        <div class="launch-workspace">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>关键节点与 Coffee Bar 全流程</h2>
+              <div class="actions"><span class="pill" id="launchProjectsCount">0 个档期</span><button class="btn compact primary" id="openLaunchProjectModalBtn" type="button">新增档期</button></div>
+            </div>
+            <div class="panel-body">
+              <div class="toolbar">
+                <input class="search" id="launchSearch" placeholder="搜索档期、品类、负责人、节点">
+                <select id="launchStatusFilter"><option value="">全部状态</option><option value="overdue">逾期</option><option value="upcoming">临近</option><option value="done">已完成</option></select>
+              </div>
+              <div class="launch-project-selector" id="launchProjectSelector"></div>
+              <div class="launch-reminders" id="launchReminders"></div>
+              <div class="table-wrap">
+                <table class="compact-table record-list wide">
+                  <thead><tr><th>档期</th><th>上市日</th><th>品类</th><th>关键节点</th><th>计划日期</th><th>实际日期</th><th>预期天数</th><th>状态</th><th>操作</th></tr></thead>
+                  <tbody id="launchMilestonesTbody"></tbody>
+                </table>
+              </div>
+              <div class="compact-block">
+                <h3>Coffee Bar 全流程</h3>
+                <p class="small" id="launchActiveProjectLabel"></p>
+                <div class="checkbox-grid" id="coffeeBarChecklist"></div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1940,16 +2286,32 @@
             <div class="panel-head"><h2>陈列验证</h2><span class="pill" id="displayChecksCount">0 条</span></div>
             <div class="panel-body">
               <div class="table-wrap"><table class="compact-table record-list"><thead><tr><th>项目</th><th>类型</th><th>状态</th><th>备注</th><th></th></tr></thead><tbody id="displayChecksTbody"></tbody></table></div>
-              <form class="list-form" data-list-form="displayChecks"><input name="name" placeholder="新增陈列验证"><select name="type"><option>陈列验证</option><option>加价购</option><option>柜台位置</option></select><input name="note" placeholder="门店 / UPT / 观察点"><button class="btn compact primary" type="submit">新增</button></form>
+              <form class="list-form" data-list-form="displayChecks"><input name="name" required placeholder="新增陈列验证"><input name="type" list="displayChecksTypeList" autocomplete="off" placeholder="选择或手填"><datalist id="displayChecksTypeList"><option value="陈列验证"><option value="加价购"><option value="柜台位置"></datalist><input name="note" placeholder="门店 / UPT / 观察点"><button class="btn compact primary" type="submit">新增</button></form>
             </div>
           </div>
         </div>
         <div class="section-panel" data-tab-panel="execution:bake">
           <div class="panel">
-            <div class="panel-head"><h2>烤程验证</h2><span class="pill" id="bakeChecksCount">0 条</span></div>
+            <div class="panel-head">
+              <h2>烤程验证</h2>
+              <div class="row-actions">
+                <span class="pill" id="bakeChecksCount">0 条</span>
+                <button class="btn compact primary" id="openBakeRecordModalBtn" type="button">新增烤程</button>
+              </div>
+            </div>
             <div class="panel-body">
-              <div class="table-wrap"><table class="compact-table record-list"><thead><tr><th>项目</th><th>类型</th><th>状态</th><th>备注</th><th></th></tr></thead><tbody id="bakeChecksTbody"></tbody></table></div>
-              <form class="list-form" data-list-form="bakeChecks"><input name="name" placeholder="新增烤程验证"><select name="type"><option>烤程验证</option><option>加热参数</option><option>出品稳定性</option></select><input name="note" placeholder="温度 / 时间 / 门店反馈"><button class="btn compact primary" type="submit">新增</button></form>
+              <div class="toolbar">
+                <input class="search" id="bakeSearch" placeholder="搜索产品、品类、品牌、烤箱、结论">
+                <select id="bakeCategoryFilter"><option value="">全部品类</option><option value="烘焙">烘焙</option><option value="三明治">三明治</option><option value="蛋糕">蛋糕</option><option value="其他">其他</option></select>
+                <select id="bakeBrandFilter"><option value="">全部品牌/来源</option><option value="Peets">Peets</option><option value="Ora">Ora</option><option value="其他烤箱">其他烤箱</option></select>
+                <select id="bakeOvenFilter"><option value="">全部烤箱</option><option value="极效">极效</option><option value="SOTA">SOTA</option><option value="其他">其他</option></select>
+              </div>
+              <div class="table-wrap">
+                <table class="compact-table record-list wide">
+                  <thead><tr><th>产品</th><th>品类</th><th>品牌/来源</th><th>烤箱</th><th>测试日期</th><th>总加热时间</th><th>陈列条件</th><th>实测℃</th><th>外观</th><th>口感</th><th>结论</th><th>操作</th></tr></thead>
+                  <tbody id="bakeChecksTbody"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
@@ -1958,7 +2320,7 @@
             <div class="panel-head"><h2>门店问题反馈</h2><span class="pill" id="storeFeedbackCount">0 条</span></div>
             <div class="panel-body">
               <div class="table-wrap"><table class="compact-table record-list"><thead><tr><th>问题</th><th>类型</th><th>状态</th><th>备注</th><th></th></tr></thead><tbody id="storeFeedbackTbody"></tbody></table></div>
-              <form class="list-form" data-list-form="storeFeedback"><input name="name" placeholder="新增门店问题"><select name="type"><option>门店反馈</option><option>操作问题</option><option>顾客反馈</option></select><input name="note" placeholder="影响 / 修正动作"><button class="btn compact primary" type="submit">新增</button></form>
+              <form class="list-form" data-list-form="storeFeedback"><input name="name" placeholder="新增门店问题"><input name="type" list="storeFeedbackTypeList" autocomplete="off" placeholder="选择或手填"><datalist id="storeFeedbackTypeList"><option value="门店反馈"><option value="操作问题"><option value="顾客反馈"></datalist><input name="note" placeholder="影响 / 修正动作"><button class="btn compact primary" type="submit">新增</button></form>
             </div>
           </div>
         </div>
@@ -1967,54 +2329,20 @@
       <section id="knowledge" class="view">
         <div class="section-tabs">
           <button class="tab-btn active" data-tab-group="knowledge" data-tab-target="playbook" type="button">经验法则</button>
-          <button class="tab-btn" data-tab-group="knowledge" data-tab-target="scoring" type="button">评分口径</button>
-          <button class="tab-btn" data-tab-group="knowledge" data-tab-target="standards" type="button">产品标准</button>
-          <button class="tab-btn" data-tab-group="knowledge" data-tab-target="sop" type="button">SOP 模板</button>
-          <button class="tab-btn" data-tab-group="knowledge" data-tab-target="history" type="button">历史结论</button>
         </div>
         <div class="section-panel active" data-tab-panel="knowledge:playbook">
           <div class="panel">
-            <div class="panel-head"><h2>我的经验法则</h2><span class="pill" id="playbookCount">0 条</span></div>
-            <div class="panel-body">
-              <p class="ai-reserved-desc" style="margin-bottom:12px;">把"踩过的坑"沉成一条条可复用的法则。将来接入 DeepSeek 后，可从感官记录和改进方向里自动提炼补充。</p>
-              <div class="table-wrap"><table class="compact-table record-list"><thead><tr><th>法则</th><th>标签</th><th>状态</th><th>做法 / 经验</th><th></th></tr></thead><tbody id="playbookTbody"></tbody></table></div>
-              <form class="list-form" data-list-form="playbook"><input name="name" placeholder="新增经验法则（如：低糖香气不足怎么补）"><select name="type"><option>风味</option><option>工艺</option><option>原料</option><option>成本</option><option>门店</option><option>其他</option></select><input name="note" placeholder="可复用的做法 / 经验"><button class="btn compact primary" type="submit">新增</button></form>
+            <div class="panel-head">
+              <h2>我的经验法则</h2>
+              <div class="actions"><span class="pill" id="playbookCount">0 条</span><button class="btn compact primary" id="openPlaybookModalBtn" type="button">新增经验法则</button></div>
             </div>
-          </div>
-        </div>
-        <div class="section-panel" data-tab-panel="knowledge:scoring">
-          <div class="panel">
-            <div class="panel-head"><h2>评分口径</h2><span class="pill" id="scoringGuidesCount">0 条</span></div>
             <div class="panel-body">
-              <div class="table-wrap"><table class="compact-table record-list"><thead><tr><th>标题</th><th>类型</th><th>状态</th><th>备注</th><th></th></tr></thead><tbody id="scoringGuidesTbody"></tbody></table></div>
-              <form class="list-form" data-list-form="scoringGuides"><input name="name" placeholder="新增评分口径"><select name="type"><option>评分口径</option><option>样本规则</option><option>销售回看</option></select><input name="note" placeholder="规则说明"><button class="btn compact primary" type="submit">新增</button></form>
-            </div>
-          </div>
-        </div>
-        <div class="section-panel" data-tab-panel="knowledge:standards">
-          <div class="panel">
-            <div class="panel-head"><h2>产品标准</h2><span class="pill" id="productStandardsCount">0 条</span></div>
-            <div class="panel-body">
-              <div class="table-wrap"><table class="compact-table record-list"><thead><tr><th>标题</th><th>类型</th><th>状态</th><th>备注</th><th></th></tr></thead><tbody id="productStandardsTbody"></tbody></table></div>
-              <form class="list-form" data-list-form="productStandards"><input name="name" placeholder="新增产品标准"><select name="type"><option>产品标准</option><option>规格标准</option><option>感官标准</option></select><input name="note" placeholder="适用品类 / 验收线"><button class="btn compact primary" type="submit">新增</button></form>
-            </div>
-          </div>
-        </div>
-        <div class="section-panel" data-tab-panel="knowledge:sop">
-          <div class="panel">
-            <div class="panel-head"><h2>SOP 模板</h2><button class="btn compact" data-workspace-view="sop" type="button">打开 SOP</button></div>
-            <div class="panel-body">
-              <div class="table-wrap"><table class="compact-table record-list"><thead><tr><th>标题</th><th>类型</th><th>状态</th><th>备注</th><th></th></tr></thead><tbody id="sopTemplatesTbody"></tbody></table></div>
-              <form class="list-form" data-list-form="sopTemplates"><input name="name" placeholder="新增 SOP 模板"><select name="type"><option>SOP 模板</option><option>门店操作</option><option>研发测试</option></select><input name="note" placeholder="使用场景"><button class="btn compact primary" type="submit">新增</button></form>
-            </div>
-          </div>
-        </div>
-        <div class="section-panel" data-tab-panel="knowledge:history">
-          <div class="panel">
-            <div class="panel-head"><h2>历史结论</h2><span class="pill" id="historyConclusionsCount">0 条</span></div>
-            <div class="panel-body">
-              <div class="table-wrap"><table class="compact-table record-list"><thead><tr><th>产品/项目</th><th>类型</th><th>状态</th><th>备注</th><th></th></tr></thead><tbody id="historyConclusionsTbody"></tbody></table></div>
-              <form class="list-form" data-list-form="historyConclusions"><input name="name" placeholder="新增历史结论"><select name="type"><option>历史结论</option><option>上市复盘</option><option>淘汰原因</option></select><input name="note" placeholder="结论 / 经验"><button class="btn compact primary" type="submit">新增</button></form>
+              <p class="ai-reserved-desc" style="margin-bottom:12px;">把"踩过的坑"沉成一条条经验法则。将来接入 DeepSeek 后，可从感官记录和改进方向里自动提炼补充。</p>
+              <div class="toolbar">
+                <input class="search" id="playbookSearch" placeholder="搜索法则、产品类别、标签、经验">
+                <select id="playbookCategoryFilter"><option value="">全部产品类别</option></select>
+              </div>
+              <div class="table-wrap"><table class="compact-table record-list"><thead><tr><th>法则</th><th>产品类别</th><th>标签</th><th>做法 / 经验</th><th>操作</th></tr></thead><tbody id="playbookTbody"></tbody></table></div>
             </div>
           </div>
         </div>
@@ -2120,6 +2448,7 @@
               <div id="recipeEditor"></div>
               <datalist id="materialCodeList"></datalist>
               <datalist id="materialNameList"></datalist>
+              <datalist id="categoryCoreList"><option value="烘焙"></option><option value="三明治"></option><option value="蛋糕"></option><option value="其他"></option></datalist>
               <div class="recipe-image-row" id="recipeImageRow">
                 <div class="field" id="recipeImageField"><label>产品图片</label><input id="recipeImageInput" type="file" accept="image/*"></div>
                 <div>
@@ -2227,7 +2556,7 @@
           <div class="field"><label>物料编号</label><input id="matCode" required placeholder="M025"></div>
           <div class="field"><label>物料名称</label><input id="matName" required placeholder="原料名称"></div>
           <div class="form two">
-            <div class="field"><label>分类</label><select id="matCategory"></select></div>
+            <div class="field"><label>分类</label><input id="matCategory" list="matCategoryList" autocomplete="off" placeholder="选择或手填"><datalist id="matCategoryList"></datalist></div>
             <div class="field"><label>品牌/供应商</label><input id="matSupplier" placeholder="供应商"></div>
           </div>
           <div class="form two">
@@ -2236,7 +2565,7 @@
           </div>
           <div class="form two">
             <div class="field"><label>单价(RMB/kg)</label><input id="matUnitPrice" type="number" min="0" step="0.01"></div>
-            <div class="field"><label>来源</label><select id="matSource"></select></div>
+            <div class="field"><label>来源</label><input id="matSource" list="matSourceList" autocomplete="off" placeholder="选择或手填"><datalist id="matSourceList"></datalist></div>
           </div>
           <div class="field"><label>来源图片 / 商品图片</label><input id="matImage" type="file" accept="image/*"></div>
           <img id="matImagePreview" class="image-preview" alt="来源图片预览">
@@ -2338,28 +2667,29 @@
         <form class="form" id="sensoryForm">
           <input id="sensoryRecordType" type="hidden" value="OEM 品类测试">
           <div class="form three">
-            <div class="field"><label id="sensoryCategoryLabel">产品类别</label><select id="sensoryCategory"></select></div>
+            <div class="field"><label id="sensoryCategoryLabel">产品类别</label><input id="sensoryCategory" list="categoryCoreList" autocomplete="off" placeholder="烘焙 / 三明治 / 蛋糕 / 其他"><datalist id="sensoryCategoryList"></datalist></div>
             <div class="field" id="sensoryCampaignField"><label>档期名称</label><input id="sensoryCampaign" list="campaignList" placeholder="选择或手动填写档期"></div>
             <div class="field"><label>产品名称</label><input id="sensoryName" placeholder="产品名称"></div>
           </div>
           <datalist id="campaignList"></datalist>
           <div class="form three">
-            <div class="field" id="sensorySupplierField"><label>供应商</label><select id="sensorySupplier"></select></div>
+            <div class="field" id="sensorySupplierField"><label>供应商</label><input id="sensorySupplier" list="sensorySupplierList" autocomplete="off" placeholder="选择或手填"><datalist id="sensorySupplierList"></datalist></div>
             <div class="field"><label>版本号</label><select id="sensoryVersion"></select></div>
             <div class="field"><label>测试日期</label><input id="sensoryDate" type="date"></div>
           </div>
           <div class="form three hidden-file" id="competitorMetaFields">
             <div class="field"><label>品牌</label><input id="sensoryBrand" placeholder="竞品品牌"></div>
+            <div class="field"><label>规格</label><input id="sensorySpec" placeholder="如：85g/个、2枚装"></div>
             <div class="field"><label>价格(RMB)</label><input id="sensoryPrice" type="number" min="0" step="0.01" placeholder="0.00"></div>
-            <div class="field"><label>重量(g)</label><input id="sensoryWeight" type="number" min="0" step="0.01" placeholder="0.00"></div>
           </div>
           <div class="form three hidden-file" id="competitorSizeFields">
+            <div class="field"><label>重量(g)</label><input id="sensoryWeight" type="number" min="0" step="0.01" placeholder="0.00"></div>
             <div class="field"><label>长度(mm)</label><input id="sensoryLength" type="number" min="0" step="0.01" placeholder="0.00"></div>
             <div class="field"><label>宽度(mm)</label><input id="sensoryWidth" type="number" min="0" step="0.01" placeholder="0.00"></div>
             <div class="field"><label>高度(mm)</label><input id="sensoryHeight" type="number" min="0" step="0.01" placeholder="0.00"></div>
           </div>
-          <div class="field"><label>产品图片</label><input id="sensoryImage" type="file" accept="image/*"></div>
-          <img id="sensoryPreview" class="image-preview" alt="产品图片预览">
+          <div class="field"><label>产品图片（可多张，自动标注图一、图二…）</label><input id="sensoryImage" type="file" accept="image/*" multiple></div>
+          <div class="sensory-gallery" id="sensoryGallery"></div>
           <div class="sensory-score-grid">
             <div class="sensory-score-row">
               <div class="field"><label>外观评分</label><select id="sensoryAppearanceScore"></select></div>
@@ -2379,9 +2709,51 @@
             </div>
           </div>
           <p class="small">评分标准：1分=明显不合格；2分=问题较多；3分=可接受但需优化；4分=表现良好；5分=优秀，可作为确认方向。</p>
+          <div class="field" id="sensoryOverallEvaluationField"><label>总体评价</label><textarea id="sensoryOverallEvaluation" placeholder="本版本测试结论、当前状态、是否进入下一轮"></textarea></div>
           <div class="field"><label>下一步改进方向</label><textarea id="sensoryNote" placeholder="问题判断、下一轮调整方向、需要供应商反馈的事项"></textarea></div>
           <button class="btn primary" id="sensorySubmitBtn" type="submit">保存 OEM 品类测试</button>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="competitorAlbumModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2 id="competitorAlbumModalTitle">新增竞品</h2><button class="btn" data-close-modal="competitorAlbumModal">关闭</button></div>
+      <div class="panel-body">
+        <form class="form" id="competitorAlbumForm">
+          <div class="form three">
+            <div class="field"><label>竞品册类型</label><select id="competitorAlbumType"><option value="单品">单品</option><option value="系列">系列</option></select></div>
+            <div class="field"><label>测试日期</label><input id="competitorAlbumDate" type="date"></div>
+            <div class="field"><label>门店 / 品牌</label><input id="competitorAlbumStore" placeholder="门店或品牌"></div>
+          </div>
+          <div class="form three">
+            <div class="field" id="competitorAlbumCategoryField"><label>品类</label><select id="competitorAlbumCategory"><option value="烘焙">烘焙</option><option value="蛋糕">蛋糕</option><option value="三明治">三明治</option><option value="其他">其他</option></select></div>
+            <div class="field"><label>城市 / 商圈</label><input id="competitorAlbumLocation" placeholder="城市、商圈、门店位置"></div>
+            <div class="field"><label>产品图片</label><input id="competitorProductImages" type="file" accept="image/*" multiple></div>
+          </div>
+          <div class="detail-gallery compact-block" id="competitorProductImagesPreview"></div>
+          <div class="field"><label>总体观察</label><textarea id="competitorAlbumNote" placeholder="一张照片覆盖的食品、陈列、价格带、对 Peet's 的启发"></textarea></div>
+          <div class="mini-card">
+            <div class="mini-card-head">
+              <div class="mini-card-title">新增产品</div>
+              <button class="btn compact" id="addCompetitorItemBtn" type="button">新增产品</button>
+            </div>
+            <div class="card-stack" id="competitorAlbumItems"></div>
+          </div>
+          <button class="btn primary" type="submit">保存竞品</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="accountPermissionModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2>账户与板块权限</h2><button class="btn" data-close-modal="accountPermissionModal">关闭</button></div>
+      <div class="panel-body">
+        <div class="small compact-block">当前为前端协作权限，用于隐藏侧栏和面板入口；正式线上访问控制需要后端登录鉴权。</div>
+        <div class="card-stack compact-block" id="accountPermissionList"></div>
+        <div class="row-actions compact-block"><button class="btn primary" id="saveAccountPermissionsBtn" type="button">保存权限</button></div>
       </div>
     </div>
   </div>
@@ -2394,12 +2766,74 @@
           <input id="opportunityListKey" type="hidden" value="opportunityIdeas">
           <input id="opportunityListId" type="hidden">
           <div class="form three">
-            <div class="field"><label>名称</label><input id="opportunityListName" placeholder="轻负担早餐杯"></div>
-            <div class="field"><label>类型</label><select id="opportunityListType"><option>产品灵感</option><option>场景机会</option><option>价格带机会</option><option>竞品测试</option><option>门店观察</option><option>外卖观察</option></select></div>
-            <div class="field"><label>状态</label><select id="opportunityListStatus"><option>待处理</option><option>观察中</option><option>待评估</option><option>待测试</option><option>已转开发</option><option>已归档</option></select></div>
+            <div class="field"><label>名称</label><input id="opportunityListName" required placeholder="轻负担早餐杯"></div>
+            <div class="field"><label>类型</label><select id="opportunityListType"><option value="烘焙">烘焙</option><option value="蛋糕">蛋糕</option><option value="三明治">三明治</option><option value="其他">其他</option><option value="自定义">自定义</option></select><input class="category-custom-input hidden-file" id="opportunityListTypeCustom" list="categoryCoreList" autocomplete="off" placeholder="自定义类型"></div>
+            <div class="field"><label>状态</label><select id="opportunityListStatus"><option value="待处理">待处理</option><option value="观察中">观察中</option><option value="待评估">待评估</option><option value="待测试">待测试</option><option value="已转开发">已转开发</option><option value="已归档">已归档</option></select></div>
+          </div>
+          <div class="field" id="opportunityListXhsUrlField">
+            <label>小红书 URL</label>
+            <div class="url-load-row">
+              <input id="opportunityListXhsUrl" type="url" placeholder="https://www.xiaohongshu.com/...">
+              <button class="btn compact" id="loadOpportunityImageFromUrlBtn" type="button">自动加载</button>
+            </div>
+            <input id="opportunityListImageUrl" type="hidden">
+            <p class="field-hint" id="opportunityListImageStatus">自动加载标题、描述、图片；小红书笔记页需要后端抓取/登录态。</p>
+            <img class="image-preview" id="opportunityListImagePreview" alt="产品灵感图片预览">
           </div>
           <div class="field"><label>备注</label><textarea id="opportunityListNote" placeholder="机会点、价格带、场景或下一步判断"></textarea></div>
           <button class="btn primary" id="opportunityListSubmitBtn" type="submit">保存</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="launchProjectModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2 id="launchProjectModalTitle">新增档期</h2><button class="btn" data-close-modal="launchProjectModal">关闭</button></div>
+      <div class="panel-body">
+        <form class="form" id="launchProjectForm">
+          <div class="form two">
+            <div class="field"><label>档期 / 项目名称</label><input id="launchName" placeholder="如：Q4 三明治 LTO"></div>
+            <div class="field"><label>上市日期</label><input id="launchDateInput" type="date"></div>
+          </div>
+          <div class="form two">
+            <div class="field"><label>品类</label><input id="launchCategory" list="categoryCoreList" autocomplete="off" placeholder="烘焙 / 三明治 / 蛋糕 / 其他"></div>
+            <div class="field"><label>负责人 / 协作人</label><input id="launchOwner" placeholder="Owner"></div>
+          </div>
+          <div class="field"><label>备注</label><textarea id="launchNote" placeholder="档期目标、供应商、风险点"></textarea></div>
+          <div class="row-actions"><button class="btn primary" type="submit">保存档期</button><button class="btn" id="clearLaunchFormBtn" type="button">清空</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="bakeRecordModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2 id="bakeRecordModalTitle">新增烤程</h2><button class="btn" data-close-modal="bakeRecordModal">关闭</button></div>
+      <div class="panel-body">
+        <form class="form" id="bakeRecordForm">
+          <div class="form three">
+            <div class="field"><label>产品</label><input id="bakeProduct" placeholder="如：厚切鸡排贝果"></div>
+            <div class="field"><label>品类</label><input id="bakeCategory" list="categoryCoreList" autocomplete="off" placeholder="烘焙 / 三明治 / 蛋糕 / 其他"></div>
+            <div class="field"><label>品牌/来源</label><select id="bakeBrand"><option value="Peets">Peets</option><option value="Ora">Ora</option><option value="其他烤箱">其他烤箱</option></select></div>
+          </div>
+          <div class="form three">
+            <div class="field"><label>烤箱</label><select id="bakeOven"><option value="极效">极效</option><option value="SOTA">SOTA</option><option value="其他">其他</option></select></div>
+            <div class="field"><label>测试日期</label><input id="bakeDate" type="date"></div>
+            <div class="field"><label>总加热时间</label><input id="bakeTime" placeholder="如：180s / 两段式加热"></div>
+          </div>
+          <div class="form three">
+            <div class="field"><label>陈列时长</label><input id="bakeDisplayDuration" placeholder="0h / 24h / 48h"></div>
+            <div class="field"><label>陈列状态</label><input id="bakeDisplayState" placeholder="标准样 / 加包装 / 无包装"></div>
+            <div class="field"><label>实测℃</label><input id="bakeMeasuredTemp" type="number" step="0.1"></div>
+          </div>
+          <div class="form three">
+            <div class="field"><label>外观评分</label><select id="bakeAppearanceScore"></select></div>
+            <div class="field"><label>口感评分</label><select id="bakeTasteScore"></select></div>
+            <div class="field"><label>结论</label><input id="bakeResult" placeholder="通过 / 待调整 / 复测"></div>
+          </div>
+          <div class="field"><label>备注</label><textarea id="bakeNote" placeholder="口感、失水、硬度、门店操作风险、下一轮方向"></textarea></div>
+          <div class="row-actions"><button class="btn primary" type="submit">保存烤程</button><button class="btn" id="clearBakeFormBtn" type="button">清空</button></div>
         </form>
       </div>
     </div>
@@ -2437,6 +2871,25 @@
           <div class="field"><label>操作说明</label><textarea id="sopAction" placeholder="具体工艺动作、顺序、用量控制"></textarea></div>
           <div class="field"><label>关键控制点</label><textarea id="sopControl" placeholder="风味、质构、食品安全或出品一致性控制点"></textarea></div>
           <button class="btn primary" type="submit">保存步骤</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="playbookModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2 id="playbookModalTitle">新增经验法则</h2><button class="btn" data-close-modal="playbookModal">关闭</button></div>
+      <div class="panel-body">
+        <form class="form" id="playbookForm">
+          <input id="playbookId" type="hidden">
+          <div class="form three">
+            <div class="field"><label>经验法则</label><input id="playbookName" required placeholder="如：低糖香气不足怎么补"></div>
+            <div class="field"><label>产品类别</label><input id="playbookCategory" list="categoryCoreList" autocomplete="off" placeholder="烘焙 / 三明治 / 蛋糕 / 其他"></div>
+            <div class="field"><label>标签</label><input id="playbookType" list="playbookTypeList" autocomplete="off" placeholder="选择或手填"></div>
+          </div>
+          <datalist id="playbookTypeList"><option value="风味"><option value="工艺"><option value="原料"><option value="成本"><option value="门店"><option value="其他"></datalist>
+          <div class="field"><label>做法 / 经验</label><textarea id="playbookNote" placeholder="记录具体做法、适用条件和注意事项"></textarea></div>
+          <div class="row-actions"><button class="btn primary" type="submit">保存经验法则</button><button class="btn" id="clearPlaybookFormBtn" type="button">清空</button></div>
         </form>
       </div>
     </div>
@@ -2934,7 +3387,10 @@
 
     const materialCategories = ["面包", "肉制品", "乳制品", "蔬菜", "基础调味品", "复合粉料", "复合酱料", "复合配料（自制）", "其他"];
     const sourceOptions = ["淘宝", "盒马", "OEM 供应商", "自制", "其他"];
-    const productCategories = ["蛋糕", "烘焙", "三明治", "汉堡", "小料", "其他"];
+    const coreCategoryOptions = ["烘焙", "三明治", "蛋糕", "其他"];
+    const competitorAlbumCategoryOptions = ["烘焙", "蛋糕", "三明治", "其他"];
+    const opportunityTypeOptions = ["烘焙", "蛋糕", "三明治", "其他"];
+    const productCategories = coreCategoryOptions;
     const campaignOptions = [
       "0106 Q1 烘焙换新",
       "0106 Q2 三明治换新",
@@ -3033,6 +3489,169 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     const WORKSPACE_LIST_STORAGE_KEY = "categorylab-workspace-lists-v1";
     const WORKSPACE_LIST_CLEANUP_KEY = "categorylab-workspace-lists-cleanup-v1";
     const WORKSPACE_LIST_CLEANUP_VERSION = "2026-06-16-clear-product-ideas";
+    const ACCOUNT_STORAGE_KEY = "categorylab-accounts-v1";
+    const ACTIVE_ACCOUNT_KEY = "categorylab-active-account-v1";
+    const categoryLabViews = [
+      { id: "home", label: "首页" },
+      { id: "opportunity", label: "机会池" },
+      { id: "launch", label: "档期产品开发" },
+      { id: "development", label: "产品开发" },
+      { id: "validation", label: "产品验证" },
+      { id: "execution", label: "产品落地" },
+      { id: "suppliers", label: "供应商管理" },
+      { id: "knowledge", label: "知识库" }
+    ];
+    const categoryLabAccounts = [
+      { id: "owner", name: "Louise", role: "Owner", permissions: categoryLabViews.map(view => view.id) },
+      { id: "assistant", name: "助手协作", role: "Editor", permissions: ["home", "opportunity", "development", "launch", "execution", "knowledge"] },
+      { id: "viewer", name: "只读协作", role: "Viewer", permissions: ["home", "opportunity", "launch"] }
+    ];
+    const ovenProfiles = {
+      "极效": { mechanism: "上下风可调", fields: ["上风/热风", "下风", "时间"] },
+      "SOTA": { mechanism: "仅上风可调", fields: ["上风/热风", "时间"] },
+      "其他": { mechanism: "其他", fields: ["参数", "时间"] }
+    };
+    const launchMilestoneTemplates = [
+      { key: "brief", label: "Brief / 立项", offsetDays: -90 },
+      { key: "sample", label: "打样确认", offsetDays: -70 },
+      { key: "consumer", label: "众测", offsetDays: -45 },
+      { key: "npc", label: "NPC", offsetDays: -35 },
+      { key: "pilot", label: "中试", offsetDays: -28 },
+      { key: "mass", label: "大生产", offsetDays: -14 },
+      { key: "training", label: "门店培训 / SOP", offsetDays: -7 },
+      { key: "launch", label: "上市", offsetDays: 0 }
+    ];
+    const coffeeBarFlowItems = [
+      "产品 Brief", "配方/BOM", "供应商试样", "众测", "NPC", "中试", "大生产",
+      "规格书 / QA", "SOP / 烤程", "门店培训", "陈列物料", "上市复盘"
+    ];
+    const feishuCoffeeBarLaunchProjects = [
+      { id: "feishu-coffee-bar-blueberry-cheesecake-20260702", name: "蓝莓芝士蛋糕", launchDate: "2026-07-02", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true }) },
+      { id: "feishu-coffee-bar-high-protein-bagel-20260702", name: "高蛋白全麦贝果", launchDate: "2026-07-02", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
+      { id: "feishu-coffee-bar-fig-cheese-bun-20260702", name: "无花果乳酪包", launchDate: "2026-07-02", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
+      { id: "feishu-coffee-bar-mulberry-fig-ciabatta-20260702", name: "桑葚无花果恰巴塔", launchDate: "2026-07-02", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
+      { id: "feishu-coffee-bar-basil-pesto-panini-20260702", name: "罗勒青酱帕尼尼", launchDate: "2026-07-02", category: "三明治", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true }) },
+      { id: "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702", name: "黑松露厚切鸡排贝果三明治", launchDate: "2026-07-02", category: "三明治", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：鸡排和面包改进。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
+      { id: "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806", name: "桂花酒酿蛋糕", launchDate: "2026-08-06", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
+      { id: "feishu-coffee-bar-core-chocolate-cake-20260806", name: "核心品巧克力蛋糕", launchDate: "2026-08-06", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
+      { id: "feishu-coffee-bar-mango-pomelo-sago-cake-20260924", name: "杨枝甘露蛋糕", launchDate: "2026-09-24", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
+      { id: "feishu-coffee-bar-q4-sandwich-refresh-20260924", name: "Q4三明治换新", launchDate: "2026-09-24", category: "三明治", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) },
+      { id: "feishu-coffee-bar-q4-bakery-refresh-20260924", name: "Q4烘焙换新", launchDate: "2026-09-24", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) },
+      { id: "feishu-coffee-bar-holiday-cake-20261208", name: "12月：节日蛋糕", launchDate: "2026-12-08", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) }
+    ];
+    function feishuCoffeeBarFlow(flags = {}) {
+      return {
+        "产品 Brief": Boolean(flags.brief),
+        "配方/BOM": Boolean(flags.formula),
+        "供应商试样": Boolean(flags.sample),
+        "众测": Boolean(flags.consumer),
+        "NPC": Boolean(flags.npc),
+        "中试": Boolean(flags.pilot),
+        "大生产": Boolean(flags.mass),
+        "规格书 / QA": Boolean(flags.spec),
+        "SOP / 烤程": Boolean(flags.sop),
+        "门店培训": Boolean(flags.training),
+        "陈列物料": Boolean(flags.display),
+        "上市复盘": Boolean(flags.review)
+      };
+    }
+    const feishuBakeRecords = [
+      {
+        id: "feishu-bake-thick-cut-chicken-bagel-sandwich-jixiao-20260624",
+        product: "黑松露厚切鸡排贝果三明治",
+        category: "三明治",
+        brand: "Peets",
+        oven: "极效",
+        mechanism: "上下风可调",
+        date: "2026-06-24",
+        topAir: "待补",
+        bottomAir: "待补",
+        time: "两段式加热",
+        displayDuration: "加热后",
+        displayState: "面包单独后加热",
+        measuredTemp: "",
+        appearanceScore: "",
+        tasteScore: "",
+        result: "产品会通过 / SOP 待发布",
+        note: "Feishu/周报沉淀：厚切鸡排 2 段式加热方式已通过，面包单独后加热；含黑松露和经典原味。Kava 回来后与 Louise Review SOP 后正式发布。"
+      },
+      {
+        id: "feishu-bake-thick-cut-chicken-bagel-sandwich-sota-20260624",
+        product: "经典厚切鸡排贝果三明治",
+        category: "三明治",
+        brand: "Peets",
+        oven: "SOTA",
+        mechanism: "仅上风可调",
+        date: "2026-06-24",
+        topAir: "待补",
+        bottomAir: "",
+        time: "两段式加热",
+        displayDuration: "加热后",
+        displayState: "面包单独后加热",
+        measuredTemp: "",
+        appearanceScore: "",
+        tasteScore: "",
+        result: "产品会通过 / SOP 待发布",
+        note: "Feishu/周报沉淀：厚切鸡排 2 段式加热方式已通过，面包单独后加热；含黑松露和经典原味。SOTA 仅上风可调，待补实测参数。"
+      },
+      {
+        id: "feishu-bake-high-protein-bagel-20260702",
+        product: "高蛋白全麦贝果",
+        category: "烘焙",
+        brand: "Peets",
+        oven: "极效",
+        mechanism: "上下风可调",
+        date: "2026-07-02",
+        topAir: "待补",
+        bottomAir: "待补",
+        time: "待补",
+        displayDuration: "",
+        displayState: "Feishu SOP / 烤程已勾选",
+        measuredTemp: "",
+        appearanceScore: "",
+        tasteScore: "",
+        result: "Feishu导入 / 待补时间",
+        note: "来自 Feishu coffee bar全周期任务池，已勾选 SOP / 烤程；总加热时间待补齐。"
+      },
+      {
+        id: "feishu-bake-fig-cheese-bun-20260702",
+        product: "无花果乳酪包",
+        category: "烘焙",
+        brand: "Peets",
+        oven: "极效",
+        mechanism: "上下风可调",
+        date: "2026-07-02",
+        topAir: "待补",
+        bottomAir: "待补",
+        time: "待补",
+        displayDuration: "",
+        displayState: "Feishu SOP / 烤程已勾选",
+        measuredTemp: "",
+        appearanceScore: "",
+        tasteScore: "",
+        result: "Feishu导入 / 待补时间",
+        note: "来自 Feishu coffee bar全周期任务池，已勾选 SOP / 烤程；总加热时间待补齐。"
+      },
+      {
+        id: "feishu-bake-mulberry-fig-ciabatta-20260702",
+        product: "桑葚无花果恰巴塔",
+        category: "烘焙",
+        brand: "Peets",
+        oven: "极效",
+        mechanism: "上下风可调",
+        date: "2026-07-02",
+        topAir: "待补",
+        bottomAir: "待补",
+        time: "待补",
+        displayDuration: "",
+        displayState: "Feishu SOP / 烤程已勾选",
+        measuredTemp: "",
+        appearanceScore: "",
+        tasteScore: "",
+        result: "Feishu导入 / 待补时间",
+        note: "来自 Feishu coffee bar全周期任务池，已勾选 SOP / 烤程；总加热时间待补齐。"
+      }
+    ];
     const validationScoreMeta = {
       aroma: { name: "香气", weight: 3 },
       balance: { name: "味道平衡", weight: 18 },
@@ -3075,8 +3694,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         { id: "history-1", name: "高推荐低购买产品", type: "历史结论", status: "待沉淀", note: "可能偏话题，不一定能复购。" }
       ],
       playbook: [
-        { id: "playbook-1", name: "低糖配方香气不足怎么补", type: "风味", status: "可复用", note: "提高烘焙度补前香，或用 0.1% 天然香兰素，避免直接加糖。" },
-        { id: "playbook-2", name: "三明治冷藏后口感变干", type: "工艺", status: "可复用", note: "面包夹层先涂一层油脂或酱料做隔水层，延缓水分迁移。" }
+        { id: "playbook-1", name: "低糖配方香气不足怎么补", category: "烘焙", type: "风味", note: "提高烘焙度补前香，或用 0.1% 天然香兰素，避免直接加糖。" },
+        { id: "playbook-2", name: "三明治冷藏后口感变干", category: "三明治", type: "工艺", note: "面包夹层先涂一层油脂或酱料做隔水层，延缓水分迁移。" }
       ]
     };
 
@@ -3111,15 +3730,39 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let sopPageSize = 5;
     const devPageSizes = { formula: 5, yield: 5 };
     const devBoardPages = { formula: 0, yield: 0 };
-    const opportunityPageSizes = { opportunityIdeas: 5, competitorTests: 5, oemRecords: 5 };
-    const opportunityPages = { opportunityIdeas: 0, competitorTests: 0, oemRecords: 0 };
+    const opportunityPageSizes = { opportunityIdeas: 5, competitorTests: 5, oemRecords: 5, playbook: 5 };
+    const opportunityPages = { opportunityIdeas: 0, competitorTests: 0, oemRecords: 0, playbook: 0 };
     let editingDevRecordId = null;
+    let sensoryImages = [];
+    const cnNumerals = ["一","二","三","四","五","六","七","八","九","十","十一","十二","十三","十四","十五","十六","十七","十八","十九","二十"];
+    function imageLabel(index) { return "图" + (cnNumerals[index] || (index + 1)); }
+    function previewImageAttrs(src, title = "图片预览") {
+      return src ? `data-preview-image="${escapeAttr(src)}" data-preview-title="${escapeAttr(title || "图片预览")}"` : "";
+    }
+    function setImagePreviewTarget(img, src, title = "图片预览") {
+      if (!img) return;
+      if (src) {
+        img.setAttribute("data-preview-image", src);
+        img.setAttribute("data-preview-title", title || "图片预览");
+      } else {
+        img.removeAttribute("data-preview-image");
+        img.removeAttribute("data-preview-title");
+      }
+    }
     let editingOpportunityListItem = null;
     let editingValidationTestId = null;
     let editingValidationSalesId = null;
     let validationTests = loadValidationTests();
     let validationSalesRows = loadValidationSalesRows();
     let workspaceLists = loadWorkspaceLists();
+    let categoryLabAccountProfiles = loadCategoryLabAccounts();
+    let activeAccountId = localStorage.getItem(ACTIVE_ACCOUNT_KEY) || categoryLabAccountProfiles[0]?.id || "owner";
+    let editingCompetitorAlbumId = null;
+    let competitorAlbumItems = [];
+    let competitorProductImagesData = [];
+    let editingBakeRecordId = null;
+    let editingLaunchProjectId = null;
+    let activeLaunchProjectId = null;
 
     const els = {
       pageTitle: document.querySelector("#pageTitle"),
@@ -3185,7 +3828,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             devRecords: cleanDevRecords((saved.devRecords || []).map(migrateDevRecord)),
             sopRecords: withRequiredSopRecords(saved.sopRecords || []),
             sopProcesses: withRequiredSopProcesses(saved.sopProcesses || []),
-            sensoryRecords: saved.sensoryRecords || []
+            sensoryRecords: saved.sensoryRecords || [],
+            competitorAlbums: (saved.competitorAlbums || []).map(migrateCompetitorAlbum),
+            bakeRecords: withRequiredBakeRecords(saved.bakeRecords || []),
+            launchProjects: withRequiredLaunchProjects(saved.launchProjects || [])
           };
         }
       } catch (error) {}
@@ -3198,7 +3844,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         devRecords: [],
         sopRecords: structuredClone(initialSopRecords).map(migrateSopRecord),
         sopProcesses: structuredClone(initialSopProcesses),
-        sensoryRecords: []
+        sensoryRecords: [],
+        competitorAlbums: [],
+        bakeRecords: withRequiredBakeRecords([]),
+        launchProjects: withRequiredLaunchProjects([])
       };
     }
 
@@ -3343,11 +3992,41 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return [...savedRecords, ...required];
     }
 
+    function launchProjectIdentity(project) {
+      return `${project.name || ""}__${project.launchDate || ""}`;
+    }
+
+    function withRequiredLaunchProjects(projects) {
+      const savedProjects = (projects || []).map(migrateLaunchProject);
+      const savedIds = new Set(savedProjects.map(project => project.id));
+      const savedKeys = new Set(savedProjects.map(launchProjectIdentity));
+      const required = structuredClone(feishuCoffeeBarLaunchProjects)
+        .map(migrateLaunchProject)
+        .filter(project => !savedIds.has(project.id) && !savedKeys.has(launchProjectIdentity(project)));
+      return [...savedProjects, ...required];
+    }
+
+    function bakeRecordIdentity(record) {
+      return `${record.product || ""}__${record.date || ""}__${record.oven || ""}`;
+    }
+
+    function withRequiredBakeRecords(records) {
+      const savedRecords = (records || []).map(migrateBakeRecord);
+      const savedIds = new Set(savedRecords.map(record => record.id));
+      const savedKeys = new Set(savedRecords.map(bakeRecordIdentity));
+      const required = structuredClone(feishuBakeRecords)
+        .map(migrateBakeRecord)
+        .filter(record => !savedIds.has(record.id) && !savedKeys.has(bakeRecordIdentity(record)));
+      return [...savedRecords, ...required];
+    }
+
     function migrateDevRecord(record) {
       return {
         ...record,
         project: record.project || record.product || "",
         campaign: record.campaign || "",
+        spec: record.spec || "",
+        overallEvaluation: record.overallEvaluation || "",
         materials: record.materials || record.title || "",
         yield: record.yield || {}
       };
@@ -3361,6 +4040,102 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         time: record.time || record.timing || "",
         temp: record.temp || ""
       };
+    }
+
+    function splitCategoryText(value = "") {
+      return String(value || "")
+        .split(/[\/、,，;；\s]+/)
+        .map(item => item.trim())
+        .filter(Boolean);
+    }
+
+    function uniqueTextValues(values = []) {
+      return [...new Set((values || []).map(item => String(item || "").trim()).filter(Boolean))];
+    }
+
+    function normalizeCompetitorCategories(album = {}) {
+      if (Array.isArray(album.categories)) return uniqueTextValues(album.categories);
+      return uniqueTextValues(splitCategoryText(album.category || ""));
+    }
+
+    function migrateCompetitorAlbum(album) {
+      const productImages = (Array.isArray(album.productImages) ? album.productImages : []).filter(validStoredImage);
+      if (!productImages.length && validStoredImage(album.coverImage)) productImages.push(album.coverImage);
+      const categories = normalizeCompetitorCategories(album);
+      return {
+        ...album,
+        id: album.id || crypto.randomUUID(),
+        type: album.type || "单品",
+        date: album.date || "",
+        store: album.store || album.brand || "",
+        category: categories.join(" / "),
+        categories,
+        coverImage: productImages[0] || "",
+        productImages,
+        items: (album.items || []).map((item, index) => {
+          const itemImages = (Array.isArray(item.images) ? item.images : []).filter(validStoredImage);
+          if (!itemImages.length && validStoredImage(item.image)) itemImages.push(item.image);
+          return { spec: "", appearance: "", flavor: "", aroma: "", texture: "", ...item, images: itemImages, id: item.id || `item-${index}-${crypto.randomUUID()}` };
+        })
+      };
+    }
+
+    function migrateBakeRecord(record) {
+      const oven = record.oven || "极效";
+      return {
+        ...record,
+        id: record.id || crypto.randomUUID(),
+        product: record.product || record.name || "",
+        category: record.category || "三明治",
+        brand: record.brand || "Peets",
+        oven,
+        mechanism: record.mechanism || ovenProfiles[oven]?.mechanism || "其他",
+        date: record.date || "",
+        result: record.result || record.status || "待验证"
+      };
+    }
+
+    function migrateLaunchProject(project) {
+      const checkedFlow = project.checkedFlow || {};
+      return {
+        ...project,
+        id: project.id || crypto.randomUUID(),
+        name: project.name || "",
+        launchDate: project.launchDate || "",
+        category: project.category || "烘焙",
+        owner: project.owner || "",
+        actualDates: project.actualDates || {},
+        checkedFlow: Object.fromEntries(coffeeBarFlowItems.map(item => [item, Boolean(checkedFlow[item])]))
+      };
+    }
+
+    function parseDateInput(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return null;
+      const normalized = raw.includes("-") ? raw : raw.replace(/^(\d{4})(\d{2})(\d{2})$/, "$1-$2-$3");
+      const date = new Date(`${normalized}T00:00:00`);
+      return Number.isFinite(date.getTime()) ? date : null;
+    }
+
+    function formatDateInput(date) {
+      if (!date || !Number.isFinite(date.getTime())) return "";
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${date.getFullYear()}-${month}-${day}`;
+    }
+
+    function addDays(value, days) {
+      const date = parseDateInput(value);
+      if (!date) return "";
+      date.setDate(date.getDate() + days);
+      return formatDateInput(date);
+    }
+
+    function dayDiff(a, b) {
+      const left = parseDateInput(a);
+      const right = parseDateInput(b);
+      if (!left || !right) return "";
+      return Math.round((left.getTime() - right.getTime()) / 86400000);
     }
 
     function persist() {
@@ -3610,10 +4385,28 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       localStorage.setItem(VALIDATION_SALES_STORAGE_KEY, JSON.stringify(validationSalesRows));
     }
 
+    function normalizeWorkspaceLists(saved = {}) {
+      const source = saved && typeof saved === "object" ? saved : {};
+      const lists = structuredClone(defaultWorkspaceLists);
+      Object.keys(lists).forEach(key => {
+        if (Array.isArray(source[key])) lists[key] = source[key];
+      });
+      Object.entries(source).forEach(([key, value]) => {
+        if (!lists[key] && Array.isArray(value)) lists[key] = value;
+      });
+      return lists;
+    }
+
+    function ensureWorkspaceList(key) {
+      if (!key) return null;
+      if (!Array.isArray(workspaceLists[key])) workspaceLists[key] = [];
+      return workspaceLists[key];
+    }
+
     function loadWorkspaceLists() {
       try {
         const saved = JSON.parse(localStorage.getItem(WORKSPACE_LIST_STORAGE_KEY));
-        const lists = { ...structuredClone(defaultWorkspaceLists), ...(saved || {}) };
+        const lists = normalizeWorkspaceLists(saved || {});
         if (localStorage.getItem(WORKSPACE_LIST_CLEANUP_KEY) !== WORKSPACE_LIST_CLEANUP_VERSION) {
           lists.opportunityIdeas = [];
           localStorage.setItem(WORKSPACE_LIST_CLEANUP_KEY, WORKSPACE_LIST_CLEANUP_VERSION);
@@ -3628,6 +4421,442 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function persistWorkspaceLists() {
       localStorage.setItem(WORKSPACE_LIST_STORAGE_KEY, JSON.stringify(workspaceLists));
+    }
+
+    function loadCategoryLabAccounts() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(ACCOUNT_STORAGE_KEY));
+        if (Array.isArray(saved) && saved.length) {
+          const defaults = new Map(categoryLabAccounts.map(account => [account.id, account]));
+          return saved.map(account => {
+            const base = defaults.get(account.id) || {};
+            return {
+              ...base,
+              ...account,
+              permissions: Array.isArray(account.permissions) ? account.permissions : (base.permissions || [])
+            };
+          });
+        }
+      } catch (error) {}
+      return structuredClone(categoryLabAccounts);
+    }
+
+    function persistCategoryLabAccounts() {
+      localStorage.setItem(ACCOUNT_STORAGE_KEY, JSON.stringify(categoryLabAccountProfiles));
+    }
+
+    function activeAccount() {
+      return categoryLabAccountProfiles.find(account => account.id === activeAccountId) || categoryLabAccountProfiles[0] || categoryLabAccounts[0];
+    }
+
+    function renderAccountSwitch() {
+      const select = document.querySelector("#accountSwitch");
+      if (!select) return;
+      select.innerHTML = categoryLabAccountProfiles
+        .map(account => `<option value="${escapeAttr(account.id)}">${escapeHtml(account.name)} · ${escapeHtml(account.role || "")}</option>`)
+        .join("");
+      select.value = activeAccount().id;
+    }
+
+    function applyAccountPermissions() {
+      const account = activeAccount();
+      const allowed = new Set(account.permissions || []);
+      const currentView = document.querySelector(".view.active")?.id || "home";
+      document.querySelectorAll(".nav button[data-view]").forEach(button => {
+        const view = button.dataset.view;
+        const visible = allowed.has(view);
+        button.classList.toggle("permission-hidden", !visible);
+      });
+      document.querySelectorAll(".view").forEach(panel => {
+        if (categoryLabViews.some(view => view.id === panel.id)) {
+          panel.classList.toggle("permission-hidden", !allowed.has(panel.id));
+        }
+      });
+      if (!allowed.has(currentView)) activateView(allowed.values().next().value || "home");
+    }
+
+    function renderAccountPermissionList() {
+      const host = document.querySelector("#accountPermissionList");
+      if (!host) return;
+      host.innerHTML = categoryLabAccountProfiles.map(account => `
+        <div class="mini-card" data-account-permission="${escapeAttr(account.id)}">
+          <div class="mini-card-head">
+            <div>
+              <div class="mini-card-title">${escapeHtml(account.name)}</div>
+              <p class="small">${escapeHtml(account.role || "")}</p>
+            </div>
+            <span class="pill">${escapeHtml((account.permissions || []).length)} 个板块</span>
+          </div>
+          <div class="checkbox-grid">
+            ${categoryLabViews.map(view => `
+              <label><input type="checkbox" data-account-view="${escapeAttr(view.id)}" ${account.permissions?.includes(view.id) ? "checked" : ""}>${escapeHtml(view.label)}</label>
+            `).join("")}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function saveAccountPermissions() {
+      document.querySelectorAll("[data-account-permission]").forEach(card => {
+        const account = categoryLabAccountProfiles.find(item => item.id === card.dataset.accountPermission);
+        if (!account) return;
+        account.permissions = Array.from(card.querySelectorAll("[data-account-view]:checked")).map(input => input.dataset.accountView);
+        if (!account.permissions.includes("home")) account.permissions.unshift("home");
+      });
+      persistCategoryLabAccounts();
+      renderAccountSwitch();
+      applyAccountPermissions();
+      closeModal("accountPermissionModal");
+    }
+
+    function bakeTotalHeatTimeText(record) {
+      return record.time || "-";
+    }
+
+    function bakeDisplayText(value = "") {
+      return String(value || "")
+        .replaceAll("待补参数", "待补时间")
+        .replaceAll("烤程参数", "烤程验证")
+        .replaceAll("具体温度、风量、时间待从烤程验证记录补齐。", "总加热时间待补齐。");
+    }
+
+    function renderBakeRecords() {
+      const tbody = document.querySelector("#bakeChecksTbody");
+      const countEl = document.querySelector("#bakeChecksCount");
+      if (!tbody) return;
+      const query = (document.querySelector("#bakeSearch")?.value || "").trim().toLowerCase();
+      const category = document.querySelector("#bakeCategoryFilter")?.value || "";
+      const brand = document.querySelector("#bakeBrandFilter")?.value || "";
+      const oven = document.querySelector("#bakeOvenFilter")?.value || "";
+      const rows = (state.bakeRecords || []).filter(record => {
+        const text = [record.product, record.category, record.brand, record.oven, record.date, record.time, record.result, record.note].join(" ").toLowerCase();
+        return (!query || text.includes(query))
+          && (!category || record.category === category)
+          && (!brand || record.brand === brand)
+          && (!oven || record.oven === oven);
+      }).sort((a, b) => recordDateKey(b.date).localeCompare(recordDateKey(a.date)) || String(a.product || "").localeCompare(String(b.product || ""), "zh-CN"));
+      if (countEl) countEl.textContent = `${rows.length} 条`;
+      tbody.innerHTML = rows.map(record => `
+        <tr>
+          <td><b>${escapeHtml(record.product || "")}</b></td>
+          <td>${escapeHtml(record.category || "")}</td>
+          <td>${escapeHtml(record.brand || "")}</td>
+          <td>${escapeHtml(record.oven || "")}</td>
+          <td>${escapeHtml(record.date || "")}</td>
+          <td>${escapeHtml(bakeTotalHeatTimeText(record))}</td>
+          <td>${escapeHtml([record.displayDuration, record.displayState].filter(Boolean).join(" / "))}</td>
+          <td>${escapeHtml(record.measuredTemp || "")}</td>
+          <td>${escapeHtml(record.appearanceScore || "")}</td>
+          <td>${escapeHtml(record.tasteScore || "")}</td>
+          <td>${escapeHtml(bakeDisplayText(record.result))}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn compact" data-detail-bake-record="${escapeAttr(record.id)}" type="button">详情</button>
+              <button class="btn compact" data-edit-bake-record="${escapeAttr(record.id)}" type="button">编辑</button>
+              <button class="btn danger compact" data-delete-bake-record="${escapeAttr(record.id)}" type="button">删除</button>
+            </div>
+          </td>
+        </tr>
+      `).join("") || `<tr><td class="empty" colspan="12">暂无烤程验证记录，先点击新增烤程录入总加热时间和结论</td></tr>`;
+    }
+
+    function syncBakeOvenProfile() {
+      return;
+    }
+
+    function clearBakeForm() {
+      editingBakeRecordId = null;
+      const title = document.querySelector("#bakeRecordModalTitle");
+      if (title) title.textContent = "新增烤程";
+      document.querySelector("#bakeRecordForm")?.reset();
+      document.querySelector("#bakeBrand").value = "Peets";
+      document.querySelector("#bakeCategory").value = "三明治";
+      document.querySelector("#bakeOven").value = "极效";
+      syncBakeOvenProfile();
+    }
+
+    function fillBakeForm(id) {
+      const record = (state.bakeRecords || []).find(item => item.id === id);
+      if (!record) return;
+      editingBakeRecordId = record.id;
+      document.querySelector("#bakeProduct").value = record.product || "";
+      document.querySelector("#bakeCategory").value = record.category || "三明治";
+      document.querySelector("#bakeBrand").value = record.brand || "Peets";
+      document.querySelector("#bakeOven").value = record.oven || "极效";
+      document.querySelector("#bakeDate").value = record.date || "";
+      document.querySelector("#bakeTime").value = record.time || "";
+      document.querySelector("#bakeDisplayDuration").value = record.displayDuration || "";
+      document.querySelector("#bakeDisplayState").value = record.displayState || "";
+      document.querySelector("#bakeMeasuredTemp").value = record.measuredTemp || "";
+      document.querySelector("#bakeAppearanceScore").value = record.appearanceScore || "";
+      document.querySelector("#bakeTasteScore").value = record.tasteScore || "";
+      document.querySelector("#bakeResult").value = record.result || "";
+      document.querySelector("#bakeNote").value = record.note || "";
+      const title = document.querySelector("#bakeRecordModalTitle");
+      if (title) title.textContent = "编辑烤程";
+    }
+
+    function openBakeRecordModal(id = "") {
+      clearBakeForm();
+      if (id) fillBakeForm(id);
+      openModal("bakeRecordModal");
+    }
+
+    function openBakeRecordDetail(id) {
+      const record = (state.bakeRecords || []).find(item => item.id === id);
+      if (!record) return;
+      const rows = [
+        ["产品", record.product],
+        ["品类", record.category],
+        ["品牌/来源", record.brand],
+        ["烤箱", record.oven],
+        ["测试日期", record.date],
+        ["总加热时间", bakeTotalHeatTimeText(record)],
+        ["陈列条件", [record.displayDuration, record.displayState].filter(Boolean).join(" / ")],
+        ["实测℃", record.measuredTemp],
+        ["外观评分", record.appearanceScore],
+        ["口感评分", record.tasteScore],
+        ["结论", bakeDisplayText(record.result)]
+      ].filter(([, value]) => value);
+      document.querySelector("#recordDetailBody").innerHTML = `
+        <div class="detail-grid">
+          ${rows.map(([label, value]) => `<div class="detail-item"><span>${escapeHtml(label)}</span>${escapeHtml(value)}</div>`).join("")}
+        </div>
+        ${record.note ? `<h3>备注</h3><p>${formatMultiline(bakeDisplayText(record.note))}</p>` : ""}
+      `;
+      openModal("recordDetailModal");
+    }
+
+    function saveBakeRecord(event) {
+      event.preventDefault();
+      const existing = (state.bakeRecords || []).find(item => item.id === editingBakeRecordId) || {};
+      const record = migrateBakeRecord({
+        id: editingBakeRecordId || crypto.randomUUID(),
+        product: document.querySelector("#bakeProduct").value.trim(),
+        category: document.querySelector("#bakeCategory").value,
+        brand: document.querySelector("#bakeBrand").value,
+        oven: document.querySelector("#bakeOven").value,
+        mechanism: existing.mechanism,
+        topAir: existing.topAir || "",
+        bottomAir: existing.bottomAir || "",
+        date: document.querySelector("#bakeDate").value,
+        time: document.querySelector("#bakeTime").value.trim(),
+        displayDuration: document.querySelector("#bakeDisplayDuration").value.trim(),
+        displayState: document.querySelector("#bakeDisplayState").value.trim(),
+        measuredTemp: document.querySelector("#bakeMeasuredTemp").value,
+        appearanceScore: document.querySelector("#bakeAppearanceScore").value,
+        tasteScore: document.querySelector("#bakeTasteScore").value,
+        result: document.querySelector("#bakeResult").value.trim() || "待验证",
+        note: document.querySelector("#bakeNote").value.trim()
+      });
+      if (!record.product && !record.note) return;
+      const index = (state.bakeRecords || []).findIndex(item => item.id === record.id);
+      if (index >= 0) state.bakeRecords[index] = record;
+      else state.bakeRecords.unshift(record);
+      persist();
+      clearBakeForm();
+      closeModal("bakeRecordModal");
+      renderBakeRecords();
+    }
+
+    function calculateLaunchMilestones(project) {
+      return launchMilestoneTemplates.map(template => {
+        const plannedDate = addDays(project.launchDate, template.offsetDays);
+        const actualDate = project.actualDates?.[template.key] || "";
+        const expectedDays = Math.abs(template.offsetDays);
+        const daysFromToday = plannedDate ? dayDiff(plannedDate, formatDateInput(new Date())) : "";
+        const done = Boolean(actualDate);
+        const status = done ? "已完成" : (Number.isFinite(daysFromToday) && daysFromToday < 0 ? "逾期" : (Number.isFinite(daysFromToday) && daysFromToday <= 7 ? "临近" : "待完成"));
+        return { ...template, plannedDate, actualDate, expectedDays, status };
+      });
+    }
+
+    function launchStatusClass(status) {
+      if (status === "逾期") return "bad";
+      if (status === "临近") return "warn";
+      return "";
+    }
+
+    function launchCompletion(project) {
+      const milestones = calculateLaunchMilestones(project);
+      const done = milestones.filter(item => item.actualDate).length;
+      const flowDone = Object.values(project.checkedFlow || {}).filter(Boolean).length;
+      return { milestones, done, total: milestones.length, flowDone, flowTotal: coffeeBarFlowItems.length };
+    }
+
+    function launchProjectStatus(project) {
+      const progress = launchCompletion(project);
+      return progress.total > 0 && progress.done >= progress.total && progress.flowDone >= progress.flowTotal ? "已完结" : "进行中";
+    }
+
+    function renderLaunchDashboard() {
+      const host = document.querySelector("#launchDashboard");
+      if (!host) return;
+      const projects = state.launchProjects || [];
+      const allMilestones = projects.flatMap(project => calculateLaunchMilestones(project).map(item => ({ ...item, project })));
+      const overdue = allMilestones.filter(item => item.status === "逾期").length;
+      const upcoming = allMilestones.filter(item => item.status === "临近").length;
+      const completedProjects = projects.filter(project => launchProjectStatus(project) === "已完结").length;
+      const activeProjects = projects.length - completedProjects;
+      host.innerHTML = [
+        { label: "档期项目数总体", value: projects.length },
+        { label: "已完结", value: completedProjects, tone: completedProjects ? "done" : "" },
+        { label: "进行中", value: activeProjects, tone: activeProjects ? "warn" : "" },
+        { label: "逾期节点", value: overdue, tone: overdue ? "bad" : "" },
+        { label: "7天内节点", value: upcoming, tone: upcoming ? "warn" : "" }
+      ].map(item => `<div class="launch-metric ${item.tone || ""}"><span>${escapeHtml(item.label)}</span><b>${item.value}</b></div>`).join("");
+      const reminders = document.querySelector("#launchReminders");
+      if (reminders) {
+        reminders.innerHTML = allMilestones
+          .filter(item => item.status === "逾期" || item.status === "临近")
+          .slice(0, 6)
+          .map(item => `<div class="reminder-row ${launchStatusClass(item.status)}"><span>${escapeHtml(item.project.name || "未命名档期")} · ${escapeHtml(item.label)}</span><b>${escapeHtml(item.plannedDate || "-")} · ${escapeHtml(item.status)}</b></div>`)
+          .join("") || `<div class="reminder-row"><span>暂无临近或逾期节点</span><b>OK</b></div>`;
+      }
+    }
+
+    function ensureActiveLaunchProject() {
+      const projects = state.launchProjects || [];
+      if (!projects.length) {
+        activeLaunchProjectId = null;
+        return null;
+      }
+      if (!projects.some(project => project.id === activeLaunchProjectId)) {
+        activeLaunchProjectId = projects[0].id;
+      }
+      return projects.find(project => project.id === activeLaunchProjectId) || projects[0];
+    }
+
+    function renderLaunchProjectSelector(projects = state.launchProjects || []) {
+      const host = document.querySelector("#launchProjectSelector");
+      if (!host) return;
+      const active = ensureActiveLaunchProject();
+      host.innerHTML = (projects || []).map(project => {
+        const progress = launchCompletion(project);
+        const status = launchProjectStatus(project);
+        const checkedText = `${progress.flowDone}/${progress.flowTotal} 项`;
+        return `
+          <button class="launch-project-chip ${project.id === active?.id ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}" type="button">
+            <span>${escapeHtml(project.name || "未命名档期")}</span>
+            <small>${escapeHtml(project.category || "未分类")} · ${escapeHtml(project.launchDate || "未定上市日")} · ${escapeHtml(status)} · ${checkedText}</small>
+          </button>
+        `;
+      }).join("");
+    }
+
+    function selectLaunchProject(id) {
+      if (!(state.launchProjects || []).some(project => project.id === id)) return;
+      activeLaunchProjectId = id;
+      renderLaunchProjects();
+    }
+
+    function renderCoffeeBarChecklist(project = activeLaunchProject()) {
+      const host = document.querySelector("#coffeeBarChecklist");
+      const label = document.querySelector("#launchActiveProjectLabel");
+      if (!host) return;
+      if (!project) {
+        if (label) label.textContent = "";
+        host.innerHTML = `<div class="empty">先新增或选择一个档期项目，再勾选 Coffee Bar 全流程。</div>`;
+        return;
+      }
+      if (label) label.textContent = `当前编辑：${project.name || "未命名档期"} · ${project.category || "未分类"} · ${project.launchDate || "未定上市日"}`;
+      host.innerHTML = coffeeBarFlowItems.map(item => `
+        <label class="flow-check"><input type="checkbox" data-flow-check="${escapeAttr(item)}" ${project.checkedFlow?.[item] ? "checked" : ""}>${escapeHtml(item)}</label>
+      `).join("");
+    }
+
+    function activeLaunchProject() {
+      return ensureActiveLaunchProject();
+    }
+
+    function renderLaunchProjects() {
+      const tbody = document.querySelector("#launchMilestonesTbody");
+      const countEl = document.querySelector("#launchProjectsCount");
+      if (!tbody) return;
+      const query = (document.querySelector("#launchSearch")?.value || "").trim().toLowerCase();
+      const statusFilter = document.querySelector("#launchStatusFilter")?.value || "";
+      const projects = state.launchProjects || [];
+      const activeProject = ensureActiveLaunchProject();
+      renderLaunchProjectSelector(projects);
+      const rows = (activeProject ? [activeProject] : []).flatMap(project => calculateLaunchMilestones(project).map(milestone => ({ project, milestone })))
+        .filter(({ project, milestone }) => {
+          const text = [project.name, project.category, project.owner, project.source, project.note, milestone.label, milestone.status].join(" ").toLowerCase();
+          const statusKey = milestone.status === "逾期" ? "overdue" : milestone.status === "临近" ? "upcoming" : milestone.status === "已完成" ? "done" : "";
+          return (!query || text.includes(query)) && (!statusFilter || statusKey === statusFilter);
+        });
+      if (countEl) countEl.textContent = `${projects.length} 个档期`;
+      tbody.innerHTML = rows.map(({ project, milestone }) => `
+        <tr class="${launchStatusClass(milestone.status)}">
+          <td><b>${escapeHtml(project.name || "未命名档期")}</b>${project.source ? `<div class="gs-sub">${escapeHtml(project.source)}</div>` : ""}</td>
+          <td>${escapeHtml(project.launchDate || "")}</td>
+          <td>${escapeHtml(project.category || "")}</td>
+          <td>${escapeHtml(milestone.label)}</td>
+          <td>${escapeHtml(milestone.plannedDate || "")}</td>
+          <td><input class="small-input" type="date" value="${escapeAttr(milestone.actualDate || "")}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}"></td>
+          <td>${milestone.offsetDays === 0 ? "上市日" : `T${milestone.offsetDays}`}</td>
+          <td><span class="status-dot ${launchStatusClass(milestone.status)}">${escapeHtml(milestone.status)}</span></td>
+          <td><button class="btn compact" data-edit-launch="${escapeAttr(project.id)}" type="button">编辑</button></td>
+        </tr>
+      `).join("") || `<tr><td class="empty" colspan="9">${projects.length ? "当前筛选下没有匹配节点，请切换状态或选择其他档期" : "暂无档期项目，输入上市日期后会自动倒排关键节点"}</td></tr>`;
+      renderLaunchDashboard();
+      renderCoffeeBarChecklist();
+    }
+
+    function clearLaunchForm() {
+      editingLaunchProjectId = null;
+      document.querySelector("#launchProjectForm")?.reset();
+      document.querySelector("#launchCategory").value = "烘焙";
+      const title = document.querySelector("#launchProjectModalTitle");
+      if (title) title.textContent = "新增档期";
+    }
+
+    function saveLaunchProject(event) {
+      event.preventDefault();
+      const existing = (state.launchProjects || []).find(project => project.id === editingLaunchProjectId);
+      const project = migrateLaunchProject({
+        ...(existing || {}),
+        id: editingLaunchProjectId || crypto.randomUUID(),
+        name: document.querySelector("#launchName").value.trim(),
+        launchDate: document.querySelector("#launchDateInput").value,
+        category: document.querySelector("#launchCategory").value,
+        owner: document.querySelector("#launchOwner").value.trim(),
+        note: document.querySelector("#launchNote").value.trim()
+      });
+      if (!project.name && !project.launchDate) return;
+      const index = (state.launchProjects || []).findIndex(item => item.id === project.id);
+      if (index >= 0) state.launchProjects[index] = project;
+      else state.launchProjects.unshift(project);
+      activeLaunchProjectId = project.id;
+      editingLaunchProjectId = null;
+      persist();
+      renderLaunchProjects();
+      closeModal("launchProjectModal");
+    }
+
+    function fillLaunchForm(id) {
+      const project = (state.launchProjects || []).find(item => item.id === id);
+      if (!project) return;
+      editingLaunchProjectId = id;
+      activeLaunchProjectId = id;
+      document.querySelector("#launchName").value = project.name || "";
+      document.querySelector("#launchDateInput").value = project.launchDate || "";
+      document.querySelector("#launchCategory").value = project.category || "烘焙";
+      document.querySelector("#launchOwner").value = project.owner || "";
+      document.querySelector("#launchNote").value = project.note || "";
+      const title = document.querySelector("#launchProjectModalTitle");
+      if (title) title.textContent = "编辑档期";
+      renderLaunchProjectSelector();
+      renderCoffeeBarChecklist(project);
+    }
+
+    function openLaunchProjectModal(id = "") {
+      if (id) {
+        fillLaunchForm(id);
+      } else {
+        clearLaunchForm();
+        renderCoffeeBarChecklist(activeLaunchProject());
+      }
+      openModal("launchProjectModal");
     }
 
     function applySidebarState() {
@@ -3655,6 +4884,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         exportedAt: new Date().toISOString(),
         state,
         workspaceLists,
+        categoryLabAccountProfiles,
         validationTests,
         validationSalesRows
       };
@@ -3797,8 +5027,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function renderWorkspaceLists() {
       renderOpportunityTables();
+      renderPlaybookList();
       Object.entries(workspaceLists).forEach(([key, rows]) => {
-        if (key === "opportunityIdeas" || key === "competitorTests") return;
+        if (key === "opportunityIdeas" || key === "competitorTests" || key === "bakeChecks" || key === "playbook") return;
         const tbody = document.querySelector(`#${key}Tbody`);
         const countEl = document.querySelector(`#${key}Count`);
         if (countEl) countEl.textContent = `${rows.length} 条`;
@@ -3813,6 +5044,63 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           </tr>
         `).join("") || `<tr><td class="empty" colspan="5">暂无记录</td></tr>`;
       });
+    }
+
+    function playbookCategory(record = {}) {
+      return record.category || record.productCategory || record.productType || "";
+    }
+
+    function playbookActionsHtml(id) {
+      return `
+        <div class="row-actions">
+          <button class="btn compact" data-detail-playbook="${escapeAttr(id)}" type="button">详情</button>
+          <button class="btn compact" data-edit-playbook="${escapeAttr(id)}" type="button">编辑</button>
+          <button class="btn danger compact" data-delete-playbook="${escapeAttr(id)}" type="button">删除</button>
+        </div>
+      `;
+    }
+
+    function updatePlaybookCategoryFilter(rows = []) {
+      const select = document.querySelector("#playbookCategoryFilter");
+      if (!select) return;
+      const current = select.value;
+      const base = ["烘焙", "三明治", "蛋糕", "其他"];
+      const values = uniqueTextValues([...base, ...rows.map(playbookCategory)]);
+      select.innerHTML = `<option value="">全部产品类别</option>` + values.map(value => `<option value="${escapeAttr(value)}">${escapeHtml(value)}</option>`).join("");
+      select.value = values.includes(current) ? current : "";
+    }
+
+    function renderPlaybookList() {
+      const rows = ensureWorkspaceList("playbook") || [];
+      const tbody = document.querySelector("#playbookTbody");
+      const countEl = document.querySelector("#playbookCount");
+      if (!tbody) return;
+      updatePlaybookCategoryFilter(rows);
+      const query = (document.querySelector("#playbookSearch")?.value || "").trim().toLowerCase();
+      const category = document.querySelector("#playbookCategoryFilter")?.value || "";
+      const filteredRows = rows.filter(row => {
+        const rowCategory = playbookCategory(row);
+        const text = [row.name, rowCategory, row.type, row.note].join(" ").toLowerCase();
+        return (!query || text.includes(query)) && (!category || rowCategory === category);
+      });
+      if (countEl) countEl.textContent = `${filteredRows.length} 条`;
+      const key = "playbook";
+      const pageSize = opportunityPageSizes[key] || 5;
+      const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+      opportunityPages[key] = Math.min(opportunityPages[key] || 0, pageCount - 1);
+      const page = opportunityPages[key] || 0;
+      const pageRows = filteredRows.slice(page * pageSize, page * pageSize + pageSize);
+      tbody.innerHTML = pageRows.map(row => `
+        <tr>
+          <td><b>${escapeHtml(row.name)}</b></td>
+          <td>${escapeHtml(playbookCategory(row) || "-")}</td>
+          <td>${escapeHtml(row.type || "")}</td>
+          <td>${escapeHtml(row.note || "")}</td>
+          <td>${playbookActionsHtml(row.id)}</td>
+        </tr>
+      `).join("") || `<tr><td class="empty" colspan="5">暂无经验法则，点击右上角「新增经验法则」开始记录</td></tr>`;
+      tbody.closest(".panel-body")?.querySelector(".dev-board-footer")?.remove();
+      tbody.closest(".table-wrap")?.insertAdjacentHTML("afterend", renderOpportunityFooter(key, filteredRows.length));
     }
 
     function opportunityRecordTypes(type) {
@@ -3838,7 +5126,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const select = document.querySelector(`#${selectId}`);
       if (!select) return;
       const current = select.value;
-      const unique = [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), "zh-CN"));
+      const unique = [];
+      values.filter(Boolean).forEach(value => {
+        if (!unique.includes(value)) unique.push(value);
+      });
       select.innerHTML = `<option value="">${escapeHtml(allLabel)}</option>` + unique.map(value => `<option value="${escapeAttr(value)}">${escapeHtml(value)}</option>`).join("");
       select.value = unique.includes(current) ? current : "";
     }
@@ -3849,9 +5140,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return rows.filter(item => {
         const record = item.record || item;
         const text = [
-          record.name, record.type, record.status, record.note,
+          record.name, record.type, record.status, record.note, record.xhsUrl, record.imageUrl,
           record.project, record.brand, record.category, record.supplier,
-          record.price, record.weight, record.length, record.width, record.height
+          record.spec, record.price, record.weight, record.length, record.width, record.height
         ].join(" ").toLowerCase();
         const rowCategory = key === "opportunityIdeas" ? record.type : record.category;
         return (!query || text.includes(query)) && (!category || rowCategory === category);
@@ -3861,6 +5152,96 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function competitorSizeText(record) {
       const parts = [record.length, record.width, record.height].map(value => value || "");
       return parts.some(Boolean) ? `${parts[0] || "-"} x ${parts[1] || "-"} x ${parts[2] || "-"} mm` : "-";
+    }
+
+    function openXhsUrl(rawUrl) {
+      const raw = String(rawUrl || "").trim();
+      if (!raw) return;
+      const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+      window.open(url, "_blank", "noopener");
+    }
+
+    function normalizeExternalUrl(rawUrl) {
+      const raw = String(rawUrl || "").trim();
+      if (!raw) return "";
+      if (/^(https?:\/\/|data:image\/)/i.test(raw)) return raw;
+      return `https://${raw}`;
+    }
+
+    function looksLikeDirectImageUrl(url) {
+      return /^data:image\//i.test(url)
+        || /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(url)
+        || /^https?:\/\/[^/]*(xhscdn\.com|sns-img)/i.test(url);
+    }
+
+    function isRednotePostUrl(url) {
+      return /(^https?:\/\/)?([^/]+\.)?(xiaohongshu\.com|xhslink\.com)\//i.test(url) && !looksLikeDirectImageUrl(url);
+    }
+
+    function setOpportunityImagePreview(src) {
+      const preview = document.querySelector("#opportunityListImagePreview");
+      if (!preview) return;
+      if (src) {
+        preview.src = src;
+        preview.classList.add("show");
+        setImagePreviewTarget(preview, src, document.querySelector("#opportunityListName")?.value.trim() || "产品灵感图片");
+      } else {
+        preview.removeAttribute("src");
+        preview.classList.remove("show");
+        setImagePreviewTarget(preview, "", "产品灵感图片");
+      }
+    }
+
+    async function fetchRednoteMeta(url) {
+      const response = await fetch("/api/rednote/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+      if (!response.ok) throw new Error("小红书笔记页需要后端抓取/登录态，当前后端接口不可用。");
+      return response.json();
+    }
+
+    function applyOpportunityExtractedMeta(data = {}) {
+      const imageUrl = data.imageUrl || data.coverImage || data.images?.[0] || "";
+      if (data.title) document.querySelector("#opportunityListName").value = data.title;
+      if (data.description) document.querySelector("#opportunityListNote").value = data.description;
+      if (imageUrl) {
+        document.querySelector("#opportunityListImageUrl").value = imageUrl;
+        setOpportunityImagePreview(imageUrl);
+      }
+    }
+
+    async function loadOpportunityImageFromUrl() {
+      const status = document.querySelector("#opportunityListImageStatus");
+      const imageInput = document.querySelector("#opportunityListImageUrl");
+      const url = normalizeExternalUrl(document.querySelector("#opportunityListXhsUrl")?.value || imageInput?.value);
+      if (!url) {
+        if (status) status.textContent = "先粘贴小红书 URL 或直接图片链接。";
+        return;
+      }
+      if (looksLikeDirectImageUrl(url)) {
+        if (imageInput) imageInput.value = url;
+        setOpportunityImagePreview(url);
+        if (status) status.textContent = "图片已加载，点击预览可看原图。";
+        return;
+      }
+      if (!isRednotePostUrl(url)) {
+        if (status) status.textContent = "没有识别到直接图片链接；小红书笔记页需要后端抓取/登录态。";
+        return;
+      }
+      if (location.protocol === "file:") {
+        if (status) status.textContent = "小红书笔记页需要后端抓取/登录态；本地 HTML 预览无法直接抓取。";
+        return;
+      }
+      try {
+        if (status) status.textContent = "正在从后端自动加载标题、描述、图片...";
+        const data = await fetchRednoteMeta(url);
+        applyOpportunityExtractedMeta(data);
+        if (status) status.textContent = "已自动加载标题、描述、图片。";
+      } catch (error) {
+        if (status) status.textContent = error.message || "小红书笔记页需要后端抓取/登录态。";
+      }
     }
 
     function opportunityActionsHtml(kind, id, key = "") {
@@ -3896,7 +5277,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const ideaRows = workspaceLists.opportunityIdeas || [];
       const ideaTbody = document.querySelector("#opportunityIdeasTbody");
       const ideaCount = document.querySelector("#opportunityIdeasCount");
-      updateOpportunityFilterOptions("opportunityIdeasCategory", ideaRows.map(row => row.type), "全部类型");
+      updateOpportunityFilterOptions("opportunityIdeasCategory", opportunityTypeOptions, "全部类型");
       const filteredIdeaRows = opportunityFilterRows(ideaRows, "opportunityIdeas");
       if (ideaCount) ideaCount.textContent = `${filteredIdeaRows.length} 条`;
       if (ideaTbody) {
@@ -3907,13 +5288,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         const pageRows = filteredIdeaRows.slice(opportunityPages[key] * pageSize, opportunityPages[key] * pageSize + pageSize);
         ideaTbody.innerHTML = pageRows.map(row => `
           <tr>
+            <td>${row.imageUrl ? `<img class="thumb" src="${escapeAttr(row.imageUrl)}" alt="${escapeAttr(row.name || "产品灵感图片")}" ${previewImageAttrs(row.imageUrl, row.name || "产品灵感图片")}>` : ""}</td>
             <td><b>${escapeHtml(row.name)}</b></td>
             <td>${escapeHtml(row.type)}</td>
             <td>${escapeHtml(row.status || "待处理")}</td>
+            <td>${row.xhsUrl ? `<button class="btn compact" data-open-xhs-url="${escapeAttr(row.xhsUrl)}" type="button">小红书</button>` : ""}</td>
             <td>${escapeHtml(row.note || "")}</td>
             <td>${opportunityActionsHtml("opportunity-list", row.id, key)}</td>
           </tr>
-        `).join("") || `<tr><td class="empty" colspan="5">暂无产品灵感，点击右上角「新增灵感」开始记录</td></tr>`;
+        `).join("") || `<tr><td class="empty" colspan="7">暂无产品灵感，点击右上角「新增灵感」开始记录</td></tr>`;
         ideaTbody.closest(".panel-body")?.querySelector(".dev-board-footer")?.remove();
         ideaTbody.closest(".table-wrap")?.insertAdjacentHTML("afterend", renderOpportunityFooter(key, filteredIdeaRows.length));
       }
@@ -3922,8 +5305,113 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       renderOpportunitySensoryTable("oemRecords", document.querySelector("#oemRecordsTbody"), document.querySelector("#oemRecordsCount"));
     }
 
+    function competitorAlbumAverage(album) {
+      const scores = (album.items || []).flatMap(item => [item.appearanceScore, item.flavorScore, item.aromaScore, item.textureScore])
+        .map(value => Number(value))
+        .filter(value => Number.isFinite(value) && value > 0);
+      return scores.length ? (scores.reduce((sum, value) => sum + value, 0) / scores.length).toFixed(1) : "-";
+    }
+
+    function competitorAlbumImages(album) {
+      const albumImages = (album.productImages || (album.coverImage ? [album.coverImage] : [])).filter(validStoredImage);
+      const itemImages = (album.items || []).flatMap(item => item.images || (item.image ? [item.image] : [])).filter(validStoredImage);
+      return [...albumImages, ...itemImages];
+    }
+
+    function competitorAlbumProductSummary(album) {
+      const items = album.items || [];
+      if (!items.length) return "-";
+      return items.slice(0, 3).map(item => `${item.name || "未命名单品"}${item.spec ? ` (${item.spec})` : ""}`).join(" / ") + (items.length > 3 ? ` +${items.length - 3}` : "");
+    }
+
+    function competitorAlbumRows() {
+      const albums = (state.competitorAlbums || []).map(album => ({ source: "album", record: migrateCompetitorAlbum(album) }));
+      const devRows = opportunityDevRecords("competitorTests").map(record => ({ source: "dev", record }));
+      const legacyRows = (workspaceLists.competitorTests || []).map(record => ({ source: "list", record }));
+      return [...albums, ...devRows, ...legacyRows];
+    }
+
+    function renderCompetitorAlbumTable(tbody, countEl) {
+      if (!tbody) return;
+      const rows = competitorAlbumRows();
+      updateOpportunityFilterOptions("competitorTestsCategory", rows.flatMap(item => {
+        const record = item.record;
+        if (item.source === "album") return normalizeCompetitorCategories(record);
+        return [record.category || record.type];
+      }), "全部品类");
+      const query = (document.querySelector("#competitorTestsSearch")?.value || "").trim().toLowerCase();
+      const category = document.querySelector("#competitorTestsCategory")?.value || "";
+      const filteredRows = rows.filter(item => {
+        const record = item.record;
+        const items = item.source === "album" ? (record.items || []) : [];
+        const text = [
+          record.name, record.type, record.date, record.store, record.location, record.category, record.note,
+          record.project, record.brand, record.spec, record.price, record.weight, record.length, record.width, record.height,
+          ...items.flatMap(product => [product.name, product.category, product.spec, product.appearance, product.flavor, product.aroma, product.texture, product.note, product.price, product.weight])
+        ].join(" ").toLowerCase();
+        const rowCategories = item.source === "album" ? normalizeCompetitorCategories(record) : [record.category || record.type];
+        return (!query || text.includes(query)) && (!category || rowCategories.includes(category));
+      });
+      if (countEl) countEl.textContent = `${filteredRows.length} 条`;
+      const key = "competitorTests";
+      const pageSize = opportunityPageSizes[key] || 5;
+      const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+      opportunityPages[key] = Math.min(opportunityPages[key] || 0, pageCount - 1);
+      const pageRows = filteredRows.slice(opportunityPages[key] * pageSize, opportunityPages[key] * pageSize + pageSize);
+      tbody.innerHTML = pageRows.map(item => {
+        const record = item.record;
+        if (item.source === "album") {
+          const images = competitorAlbumImages(record);
+          return `
+            <tr>
+              <td>${images.length ? `<img class="record-image" src="${images[0]}" alt="${escapeAttr(record.store || record.name || "竞品图片")}" ${previewImageAttrs(images[0], record.store || record.name || "竞品图片")}>${images.length > 1 ? `<span class="img-count">${images.length}</span>` : ""}` : ""}</td>
+              <td>${escapeHtml(record.date || "")}</td>
+              <td><b>${escapeHtml(record.name || record.store || "竞品册")}</b></td>
+              <td>${escapeHtml(record.type || "单品")}</td>
+              <td>${escapeHtml(record.store || "")}</td>
+              <td>${escapeHtml(record.category || "")}</td>
+              <td>${(record.items || []).length}</td>
+              <td>${escapeHtml(competitorAlbumProductSummary(record))}</td>
+              <td>${escapeHtml(competitorAlbumAverage(record))}</td>
+              <td>${escapeHtml(record.note || "")}</td>
+              <td>${opportunityActionsHtml("opportunity-album", record.id)}</td>
+            </tr>
+          `;
+        }
+        if (item.source === "dev") {
+          return `
+            <tr>
+              <td>${sensoryImageList(record).length ? `<img class="record-image" src="${sensoryImageList(record)[0]}" alt="${escapeAttr(record.project)}" ${previewImageAttrs(sensoryImageList(record)[0], record.project || "竞品测试图片")}>` : ""}</td>
+              <td>${escapeHtml(record.testDate || record.time || "")}</td>
+              <td><b>${escapeHtml(record.project || "")}</b></td>
+              <td>单品</td>
+              <td>${escapeHtml(record.brand || "")}</td>
+              <td>${escapeHtml(record.category || "")}</td>
+              <td>1</td>
+              <td>${[record.spec || "", record.price ? `${escapeHtml(record.price)} RMB` : "", record.weight ? `${escapeHtml(record.weight)} g` : ""].filter(Boolean).join(" / ") || "-"}</td>
+              <td>${escapeHtml(sensoryAverageScore(record))}</td>
+              <td>${escapeHtml(record.note || "")}</td>
+              <td>${opportunityActionsHtml("opportunity-dev", record.id)}</td>
+            </tr>
+          `;
+        }
+        return `
+          <tr>
+            <td></td><td></td><td><b>${escapeHtml(record.name)}</b></td><td>单品</td><td>${escapeHtml(record.brand || "")}</td><td>${escapeHtml(record.category || record.type || "")}</td><td>1</td><td>${escapeHtml(record.note || "")}</td><td>-</td><td>${escapeHtml(record.status || "")}</td>
+            <td>${opportunityActionsHtml("opportunity-list", record.id, "competitorTests")}</td>
+          </tr>
+        `;
+      }).join("") || `<tr><td class="empty" colspan="11">暂无竞品，点击右上角「新增竞品」开始记录</td></tr>`;
+      tbody.closest(".panel-body")?.querySelector(".dev-board-footer")?.remove();
+      tbody.closest(".table-wrap")?.insertAdjacentHTML("afterend", renderOpportunityFooter(key, filteredRows.length));
+    }
+
     function renderOpportunitySensoryTable(key, tbody, countEl) {
       if (!tbody) return;
+      if (key === "competitorTests") {
+        renderCompetitorAlbumTable(tbody, countEl);
+        return;
+      }
       const legacyRows = key === "competitorTests" ? (workspaceLists.competitorTests || []) : [];
       const devRows = opportunityDevRecords(key);
       const rows = [...devRows.map(record => ({ source: "dev", record })), ...legacyRows.map(record => ({ source: "list", record }))];
@@ -3947,7 +5435,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         if (key === "competitorTests") {
           return `
             <tr>
-              <td>${record.image ? `<img class="record-image" src="${record.image}" alt="${escapeAttr(record.project)}">` : ""}</td>
+              <td>${sensoryImageList(record).length ? `<img class="record-image" src="${sensoryImageList(record)[0]}" alt="${escapeAttr(record.project)}" ${previewImageAttrs(sensoryImageList(record)[0], record.project || "竞品测试图片")}>${sensoryImageList(record).length > 1 ? `<span class="img-count">${sensoryImageList(record).length}</span>` : ""}` : ""}</td>
               <td>${escapeHtml(record.testDate || record.time || "")}</td>
               <td>${escapeHtml(record.brand || "")}</td>
               <td>${escapeHtml(record.category || "")}</td>
@@ -3964,7 +5452,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         }
         return `
           <tr>
-            <td>${record.image ? `<img class="record-image" src="${record.image}" alt="${escapeAttr(record.project)}">` : ""}</td>
+            <td>${sensoryImageList(record).length ? `<img class="record-image" src="${sensoryImageList(record)[0]}" alt="${escapeAttr(record.project)}" ${previewImageAttrs(sensoryImageList(record)[0], record.project || "感官图片")}>${sensoryImageList(record).length > 1 ? `<span class="img-count">${sensoryImageList(record).length}</span>` : ""}` : ""}</td>
             <td>${escapeHtml(record.testDate || record.time || "")}</td>
             <td><b>${escapeHtml(record.project || "")}</b></td>
             <td>${escapeHtml(key === "oemRecords" ? (record.supplier || "") : (record.category || ""))}</td>
@@ -3985,17 +5473,120 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const key = form.dataset.listForm;
       const data = new FormData(form);
       const name = String(data.get("name") || "").trim();
-      if (!name || !workspaceLists[key]) return;
-      workspaceLists[key].unshift({
+      if (!name) {
+        form.reportValidity?.();
+        form.querySelector("[name='name']")?.focus();
+        return;
+      }
+      const rows = ensureWorkspaceList(key);
+      if (!rows) return;
+      const row = {
         id: crypto.randomUUID(),
         name,
         type: String(data.get("type") || "记录"),
-        status: "待处理",
         note: String(data.get("note") || "").trim()
-      });
+      };
+      if (key !== "playbook") row.status = "待处理";
+      rows.unshift(row);
       persistWorkspaceLists();
       form.reset();
       renderWorkspaceLists();
+    }
+
+    function resetPlaybookForm() {
+      document.querySelector("#playbookForm")?.reset();
+      document.querySelector("#playbookId").value = "";
+      document.querySelector("#playbookCategory").value = "烘焙";
+      const title = document.querySelector("#playbookModalTitle");
+      if (title) title.textContent = "新增经验法则";
+    }
+
+    function openPlaybookModal(id = "") {
+      resetPlaybookForm();
+      const row = id ? (workspaceLists.playbook || []).find(item => item.id === id) : null;
+      if (row) {
+        document.querySelector("#playbookId").value = row.id;
+        document.querySelector("#playbookName").value = row.name || "";
+        document.querySelector("#playbookCategory").value = playbookCategory(row) || "";
+        document.querySelector("#playbookType").value = row.type || "";
+        document.querySelector("#playbookNote").value = row.note || "";
+        const title = document.querySelector("#playbookModalTitle");
+        if (title) title.textContent = "编辑经验法则";
+      }
+      openModal("playbookModal");
+    }
+
+    function savePlaybookForm(event) {
+      event.preventDefault();
+      const id = document.querySelector("#playbookId").value;
+      const row = {
+        id: id || crypto.randomUUID(),
+        name: document.querySelector("#playbookName").value.trim(),
+        category: document.querySelector("#playbookCategory").value.trim(),
+        type: document.querySelector("#playbookType").value.trim(),
+        note: document.querySelector("#playbookNote").value.trim()
+      };
+      if (!row.name) {
+        event.currentTarget.reportValidity?.();
+        document.querySelector("#playbookName")?.focus();
+        return;
+      }
+      const rows = ensureWorkspaceList("playbook");
+      if (!rows) return;
+      if (id) workspaceLists.playbook = rows.map(item => item.id === id ? { ...item, ...row } : item);
+      else rows.unshift(row);
+      persistWorkspaceLists();
+      closeModal("playbookModal");
+      resetPlaybookForm();
+      renderWorkspaceLists();
+    }
+
+    function openPlaybookDetail(id) {
+      const row = (workspaceLists.playbook || []).find(item => item.id === id);
+      if (!row) return;
+      const detailRows = [
+        ["经验法则", row.name],
+        ["产品类别", playbookCategory(row)],
+        ["标签", row.type],
+        ["做法 / 经验", row.note]
+      ].filter(([, value]) => value);
+      document.querySelector("#recordDetailBody").innerHTML = `
+        <div class="detail-grid">
+          ${detailRows.map(([label, value]) => `<div class="detail-item ${label === "做法 / 经验" ? "wide" : ""}"><span>${escapeHtml(label)}</span>${formatMultiline(value)}</div>`).join("")}
+        </div>
+      `;
+      openModal("recordDetailModal");
+    }
+
+    function syncOpportunityTypeCustomVisibility() {
+      const select = document.querySelector("#opportunityListType");
+      const custom = document.querySelector("#opportunityListTypeCustom");
+      if (!select || !custom) return;
+      const isCustom = select.value === "自定义";
+      custom.classList.toggle("hidden-file", !isCustom);
+      if (!isCustom) custom.value = "";
+    }
+
+    function setOpportunityTypeValue(value = "", fallback = "烘焙") {
+      const select = document.querySelector("#opportunityListType");
+      const custom = document.querySelector("#opportunityListTypeCustom");
+      if (!select || !custom) return;
+      const type = value || fallback;
+      if (opportunityTypeOptions.includes(type)) {
+        select.value = type;
+        custom.value = "";
+      } else {
+        select.value = "自定义";
+        custom.value = type;
+      }
+      syncOpportunityTypeCustomVisibility();
+    }
+
+    function readOpportunityTypeValue() {
+      const select = document.querySelector("#opportunityListType");
+      const custom = document.querySelector("#opportunityListTypeCustom");
+      if (select?.value === "自定义") return custom?.value.trim() || "其他";
+      return select?.value || "烘焙";
     }
 
     function resetOpportunityListModal(key = "opportunityIdeas") {
@@ -4003,8 +5594,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#opportunityListKey").value = key;
       document.querySelector("#opportunityListId").value = "";
       document.querySelector("#opportunityListName").value = "";
-      document.querySelector("#opportunityListType").value = key === "competitorTests" ? "竞品测试" : "产品灵感";
+      setOpportunityTypeValue(key === "competitorTests" ? "其他" : "烘焙");
       document.querySelector("#opportunityListStatus").value = "待处理";
+      document.querySelector("#opportunityListXhsUrl").value = "";
+      document.querySelector("#opportunityListImageUrl").value = "";
+      setOpportunityImagePreview("");
+      document.querySelector("#opportunityListImageStatus").textContent = "自动加载标题、描述、图片；小红书笔记页需要后端抓取/登录态。";
+      document.querySelector("#opportunityListXhsUrlField")?.classList.toggle("hidden-file", key !== "opportunityIdeas");
       document.querySelector("#opportunityListNote").value = "";
       document.querySelector("#opportunityListModalTitle").textContent = key === "competitorTests" ? "新增竞品测试" : "新增产品灵感";
       document.querySelector("#opportunityListSubmitBtn").textContent = "保存";
@@ -4017,8 +5613,12 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         editingOpportunityListItem = { key, id };
         document.querySelector("#opportunityListId").value = id;
         document.querySelector("#opportunityListName").value = row.name || "";
-        document.querySelector("#opportunityListType").value = row.type || (key === "competitorTests" ? "竞品测试" : "产品灵感");
+        setOpportunityTypeValue(row.type, key === "competitorTests" ? "其他" : "烘焙");
+        ensureSelectOption(document.querySelector("#opportunityListStatus"), row.status);
         document.querySelector("#opportunityListStatus").value = row.status || "待处理";
+        document.querySelector("#opportunityListXhsUrl").value = row.xhsUrl || "";
+        document.querySelector("#opportunityListImageUrl").value = row.imageUrl || "";
+        setOpportunityImagePreview(row.imageUrl || "");
         document.querySelector("#opportunityListNote").value = row.note || "";
         document.querySelector("#opportunityListModalTitle").textContent = `编辑${key === "competitorTests" ? "竞品测试" : "产品灵感"}`;
       }
@@ -4032,13 +5632,21 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const row = {
         id: id || crypto.randomUUID(),
         name: document.querySelector("#opportunityListName").value.trim(),
-        type: document.querySelector("#opportunityListType").value,
+        type: readOpportunityTypeValue(),
         status: document.querySelector("#opportunityListStatus").value,
+        xhsUrl: document.querySelector("#opportunityListXhsUrl").value.trim(),
+        imageUrl: document.querySelector("#opportunityListImageUrl").value.trim(),
         note: document.querySelector("#opportunityListNote").value.trim()
       };
-      if (!row.name || !workspaceLists[key]) return;
-      if (id) workspaceLists[key] = workspaceLists[key].map(item => item.id === id ? { ...item, ...row } : item);
-      else workspaceLists[key].unshift(row);
+      if (!row.name) {
+        event.currentTarget.reportValidity?.();
+        document.querySelector("#opportunityListName")?.focus();
+        return;
+      }
+      const rows = ensureWorkspaceList(key);
+      if (!rows) return;
+      if (id) workspaceLists[key] = rows.map(item => item.id === id ? { ...item, ...row } : item);
+      else rows.unshift(row);
       persistWorkspaceLists();
       closeModal("opportunityListModal");
       resetOpportunityListModal(key);
@@ -4053,7 +5661,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           <div class="detail-item"><span>名称</span>${escapeHtml(row.name || "")}</div>
           <div class="detail-item"><span>类型</span>${escapeHtml(row.type || "")}</div>
           <div class="detail-item"><span>状态</span>${escapeHtml(row.status || "待处理")}</div>
+          ${row.xhsUrl ? `<div class="detail-item"><span>小红书</span><button class="btn compact" data-open-xhs-url="${escapeAttr(row.xhsUrl)}" type="button">打开小红书</button></div>` : ""}
         </div>
+        ${row.imageUrl ? `<div class="detail-gallery"><figure><img src="${escapeAttr(row.imageUrl)}" alt="${escapeAttr(row.name || "产品灵感图片")}" ${previewImageAttrs(row.imageUrl, row.name || "产品灵感图片")}><figcaption>产品灵感图片</figcaption></figure></div>` : ""}
         ${row.note ? `<h3>备注</h3><p>${escapeHtml(row.note).replaceAll("\n", "<br>")}</p>` : ""}
       `;
       openModal("recordDetailModal");
@@ -4062,7 +5672,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function exportOpportunityListItem(key, id) {
       const row = (workspaceLists[key] || []).find(item => item.id === id);
       if (!row) return;
-      exportCsv(`${row.name || "机会池记录"}.csv`, [["名称","类型","状态","备注"], [row.name || "", row.type || "", row.status || "", row.note || ""]]);
+      exportCsv(`${row.name || "机会池记录"}.csv`, [["名称","类型","状态","小红书URL","图片URL","备注"], [row.name || "", row.type || "", row.status || "", row.xhsUrl || "", row.imageUrl || "", row.note || ""]]);
     }
 
     function openSensoryOpportunityModal(type = "OEM 品类测试", id = "") {
@@ -4083,10 +5693,275 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#sensorySupplierField")?.classList.toggle("hidden-file", isCompetitor);
       document.querySelector("#competitorMetaFields")?.classList.toggle("hidden-file", !isCompetitor);
       document.querySelector("#competitorSizeFields")?.classList.toggle("hidden-file", !isCompetitor);
+      document.querySelector("#sensoryOverallEvaluationField")?.classList.toggle("hidden-file", isCompetitor);
       const categoryLabel = document.querySelector("#sensoryCategoryLabel");
       if (categoryLabel) categoryLabel.textContent = isCompetitor ? "品类" : "产品类别";
       const nameInput = document.querySelector("#sensoryName");
       if (nameInput) nameInput.placeholder = isCompetitor ? "竞品产品名称" : "产品名称";
+    }
+
+    function isOemRecordType(type = "") {
+      return type === "OEM 品类测试" || type === "OEM / 品类测试" || type === "感官记录";
+    }
+
+    function previousOemImprovementNote(project, supplier, version, type = "OEM 品类测试") {
+      const projectText = String(project || "").trim();
+      const supplierText = String(supplier || "").trim();
+      const currentVersion = version || "V1";
+      if (!projectText || !isOemRecordType(type)) return "";
+      const previous = (state.devRecords || [])
+        .filter(record => {
+          if (!isOemRecordType(record.type) || !String(record.note || "").trim()) return false;
+          if (String(record.project || "").trim() !== projectText) return false;
+          if (supplierText && String(record.supplier || "").trim() !== supplierText) return false;
+          return versionCompare(record.version || "V1", currentVersion) < 0;
+        })
+        .sort((a, b) => versionCompare(b.version || "V1", a.version || "V1"))[0];
+      return previous?.note || "";
+    }
+
+    function syncSensoryOverallFromPreviousVersion() {
+      if (editingDevRecordId) return;
+      const overallInput = document.querySelector("#sensoryOverallEvaluation");
+      if (!overallInput || overallInput.value.trim()) return;
+      const type = document.querySelector("#sensoryRecordType")?.value || "OEM 品类测试";
+      const note = previousOemImprovementNote(
+        document.querySelector("#sensoryName")?.value,
+        document.querySelector("#sensorySupplier")?.value,
+        document.querySelector("#sensoryVersion")?.value,
+        type
+      );
+      if (note) overallInput.value = note;
+    }
+
+    function blankCompetitorItem() {
+      return { id: crypto.randomUUID(), name: "", category: "", spec: "", images: [], price: "", weight: "", length: "", width: "", height: "", appearance: "", appearanceScore: "", flavor: "", flavorScore: "", aroma: "", aromaScore: "", texture: "", textureScore: "", note: "" };
+    }
+
+    function competitorProductLabel(index) {
+      return "产品" + (cnNumerals[index] || (index + 1));
+    }
+
+    function selectedCompetitorCategories() {
+      const value = document.querySelector("#competitorAlbumCategory")?.value || "";
+      return value ? [value] : [];
+    }
+
+    function setCompetitorCategories(categories = []) {
+      const select = document.querySelector("#competitorAlbumCategory");
+      if (!select) return;
+      const value = uniqueTextValues(categories)[0] || competitorAlbumCategoryOptions[0];
+      select.value = competitorAlbumCategoryOptions.includes(value) ? value : "其他";
+    }
+
+    function syncCompetitorAlbumCategoryVisibility() {
+      const isSeries = document.querySelector("#competitorAlbumType")?.value === "系列";
+      const field = document.querySelector("#competitorAlbumCategoryField");
+      if (field) field.classList.toggle("hidden-file", isSeries);
+      if (isSeries) setCompetitorCategories([]);
+    }
+
+    function renderCompetitorProductImages(images = competitorProductImagesData) {
+      const host = document.querySelector("#competitorProductImagesPreview");
+      if (!host) return;
+      host.innerHTML = (images || []).map((src, index) => `
+        <figure>
+          <img src="${src}" alt="${imageLabel(index)}" ${previewImageAttrs(src, imageLabel(index))}>
+          <figcaption>${imageLabel(index)}</figcaption>
+        </figure>
+      `).join("");
+    }
+
+    function renderCompetitorItemImages(images = []) {
+      return (images || []).filter(validStoredImage).map((src, imageIndex) => `
+        <figure>
+          <img src="${src}" alt="${imageLabel(imageIndex)}" ${previewImageAttrs(src, imageLabel(imageIndex))}>
+          <figcaption>${imageLabel(imageIndex)}</figcaption>
+        </figure>
+      `).join("");
+    }
+
+    function renderCompetitorAlbumCard(item, index) {
+      const scoreOptions = `<option value="">未评分</option>` + [1, 2, 3, 4, 5].map(score => `<option value="${score}">${score} 分</option>`).join("");
+      return `
+        <div class="competitor-item-card" data-competitor-item="${index}">
+          <div class="mini-card-head">
+            <div class="mini-card-title">${competitorProductLabel(index)}</div>
+            <button class="btn danger compact" data-remove-competitor-item="${index}" type="button">删除</button>
+          </div>
+          <div class="form three">
+            <div class="field"><label>产品名称</label><input data-comp-item-field="name" value="${escapeAttr(item.name || "")}" placeholder="单品名称"></div>
+            <div class="field"><label>品类</label><input data-comp-item-field="category" list="categoryCoreList" autocomplete="off" value="${escapeAttr(item.category || "")}" placeholder="烘焙 / 三明治 / 蛋糕 / 其他"></div>
+            <div class="field"><label>规格</label><input data-comp-item-field="spec" value="${escapeAttr(item.spec || "")}" placeholder="如：85g/个、2枚装"></div>
+          </div>
+          <div class="field">
+            <label>产品图片</label>
+            <input data-comp-item-images="${index}" type="file" accept="image/*" multiple>
+            <div class="detail-gallery compact-block competitor-item-gallery" data-comp-item-image-preview="${index}">${renderCompetitorItemImages(item.images || [])}</div>
+          </div>
+          <div class="form three">
+            <div class="field"><label>价格(RMB)</label><input data-comp-item-field="price" type="number" min="0" step="0.01" value="${escapeAttr(item.price || "")}"></div>
+            <div class="field"><label>重量(g)</label><input data-comp-item-field="weight" type="number" min="0" step="0.01" value="${escapeAttr(item.weight || "")}"></div>
+            <div class="field"><label>长度(mm)</label><input data-comp-item-field="length" type="number" min="0" step="0.01" value="${escapeAttr(item.length || "")}"></div>
+          </div>
+          <div class="form two">
+            <div class="field"><label>宽度(mm)</label><input data-comp-item-field="width" type="number" min="0" step="0.01" value="${escapeAttr(item.width || "")}"></div>
+            <div class="field"><label>高度(mm)</label><input data-comp-item-field="height" type="number" min="0" step="0.01" value="${escapeAttr(item.height || "")}"></div>
+          </div>
+          <div class="sensory-score-grid">
+            <div class="sensory-score-row">
+              <div class="field"><label>外观评分</label><select data-comp-item-field="appearanceScore">${scoreOptions}</select></div>
+              <div class="field"><label>外观描述</label><textarea data-comp-item-field="appearance" placeholder="外观、陈列、切面、尺寸观感">${escapeHtml(item.appearance || "")}</textarea></div>
+            </div>
+            <div class="sensory-score-row">
+              <div class="field"><label>风味评分</label><select data-comp-item-field="flavorScore">${scoreOptions}</select></div>
+              <div class="field"><label>风味描述</label><textarea data-comp-item-field="flavor" placeholder="甜感、咸感、风味辨识度">${escapeHtml(item.flavor || "")}</textarea></div>
+            </div>
+            <div class="sensory-score-row">
+              <div class="field"><label>香气评分</label><select data-comp-item-field="aromaScore">${scoreOptions}</select></div>
+              <div class="field"><label>香气描述</label><textarea data-comp-item-field="aroma" placeholder="香气强度、烘焙感、乳香或肉香">${escapeHtml(item.aroma || "")}</textarea></div>
+            </div>
+            <div class="sensory-score-row">
+              <div class="field"><label>组织质地评分</label><select data-comp-item-field="textureScore">${scoreOptions}</select></div>
+              <div class="field"><label>组织质地描述</label><textarea data-comp-item-field="texture" placeholder="湿润度、酥脆度、松软度、咀嚼感">${escapeHtml(item.texture || "")}</textarea></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>单品点评</label>
+            <textarea data-comp-item-field="note" placeholder="整体判断、价格匹配度、对 Peet's 的启发">${escapeHtml(item.note || "")}</textarea>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCompetitorAlbumItems() {
+      const host = document.querySelector("#competitorAlbumItems");
+      if (!host) return;
+      host.innerHTML = competitorAlbumItems.map(renderCompetitorAlbumCard).join("");
+      competitorAlbumItems.forEach((item, index) => {
+        host.querySelectorAll(`[data-competitor-item="${index}"] [data-comp-item-field]`).forEach(input => {
+          const field = input.dataset.compItemField;
+          input.value = item[field] || "";
+        });
+      });
+    }
+
+    function competitorAlbumItemHasContent(item = {}) {
+      return Boolean(item.name || item.note || item.category || item.spec || item.price || item.weight || item.appearance || item.flavor || item.aroma || item.texture || (item.images || []).length);
+    }
+
+    function readCompetitorAlbumItems({ keepBlank = false } = {}) {
+      const items = Array.from(document.querySelectorAll("[data-competitor-item]")).map(card => {
+        const existing = competitorAlbumItems[Number(card.dataset.competitorItem)] || {};
+        const item = { id: existing.id || crypto.randomUUID(), images: (existing.images || []).filter(validStoredImage) };
+        card.querySelectorAll("[data-comp-item-field]").forEach(input => { item[input.dataset.compItemField] = input.value; });
+        return item;
+      });
+      return keepBlank ? items : items.filter(competitorAlbumItemHasContent);
+    }
+
+    function resetCompetitorAlbumModal() {
+      editingCompetitorAlbumId = null;
+      competitorProductImagesData = [];
+      competitorAlbumItems = [blankCompetitorItem(), blankCompetitorItem()];
+      document.querySelector("#competitorAlbumForm")?.reset();
+      document.querySelector("#competitorAlbumModalTitle").textContent = "新增竞品";
+      setCompetitorCategories([]);
+      syncCompetitorAlbumCategoryVisibility();
+      renderCompetitorProductImages();
+      renderCompetitorAlbumItems();
+    }
+
+    function openCompetitorAlbumModal(id = "") {
+      setupSelectOptions();
+      resetCompetitorAlbumModal();
+      const album = id ? (state.competitorAlbums || []).find(item => item.id === id) : null;
+      if (album) {
+        const normalizedAlbum = migrateCompetitorAlbum(album);
+        editingCompetitorAlbumId = id;
+        competitorProductImagesData = structuredClone(normalizedAlbum.productImages || []);
+        competitorAlbumItems = (normalizedAlbum.items || []).length ? structuredClone(normalizedAlbum.items) : [blankCompetitorItem()];
+        document.querySelector("#competitorAlbumModalTitle").textContent = "编辑竞品";
+        document.querySelector("#competitorAlbumType").value = normalizedAlbum.type || "单品";
+        document.querySelector("#competitorAlbumDate").value = normalizedAlbum.date || "";
+        document.querySelector("#competitorAlbumStore").value = normalizedAlbum.store || "";
+        setCompetitorCategories(normalizedAlbum.categories || normalizeCompetitorCategories(normalizedAlbum));
+        syncCompetitorAlbumCategoryVisibility();
+        document.querySelector("#competitorAlbumLocation").value = normalizedAlbum.location || "";
+        document.querySelector("#competitorAlbumNote").value = normalizedAlbum.note || "";
+        renderCompetitorProductImages();
+        renderCompetitorAlbumItems();
+      }
+      syncCompetitorAlbumCategoryVisibility();
+      openModal("competitorAlbumModal");
+    }
+
+    function saveCompetitorAlbum(event) {
+      event.preventDefault();
+      const items = readCompetitorAlbumItems();
+      const albumType = document.querySelector("#competitorAlbumType").value;
+      const categories = albumType === "系列" ? [] : selectedCompetitorCategories();
+      const album = migrateCompetitorAlbum({
+        id: editingCompetitorAlbumId || crypto.randomUUID(),
+        type: albumType,
+        date: document.querySelector("#competitorAlbumDate").value,
+        store: document.querySelector("#competitorAlbumStore").value.trim(),
+        category: categories.join(" / "),
+        categories,
+        location: document.querySelector("#competitorAlbumLocation").value.trim(),
+        productImages: competitorProductImagesData,
+        note: document.querySelector("#competitorAlbumNote").value.trim(),
+        items: items.length ? items : [blankCompetitorItem()]
+      });
+      album.name = album.store || competitorAlbumProductSummary(album);
+      if (!album.store && !album.note && !album.items.some(item => item.name || item.note)) return;
+      const index = (state.competitorAlbums || []).findIndex(item => item.id === album.id);
+      if (index >= 0) state.competitorAlbums[index] = album;
+      else state.competitorAlbums.unshift(album);
+      persist();
+      closeModal("competitorAlbumModal");
+      renderWorkspaceLists();
+    }
+
+    function competitorDimensionText(item, textField, scoreField) {
+      const text = item[textField] || "";
+      const score = item[scoreField] || "";
+      return [text, score ? `${score}分` : ""].filter(Boolean).join(" / ");
+    }
+
+    function openCompetitorAlbumDetail(id) {
+      const album = (state.competitorAlbums || []).find(item => item.id === id);
+      if (!album) return;
+      const images = competitorAlbumImages(migrateCompetitorAlbum(album));
+      document.querySelector("#recordDetailBody").innerHTML = `
+        <div class="detail-grid">
+          <div class="detail-item"><span>竞品册</span>${escapeHtml(album.name || album.store || "")}</div>
+          <div class="detail-item"><span>类型</span>${escapeHtml(album.type || "")}</div>
+          <div class="detail-item"><span>测试日期</span>${escapeHtml(album.date || "")}</div>
+          <div class="detail-item"><span>门店/品牌</span>${escapeHtml(album.store || "")}</div>
+          <div class="detail-item"><span>品类</span>${escapeHtml(album.category || "")}</div>
+          <div class="detail-item"><span>产品数</span>${(album.items || []).length}</div>
+        </div>
+        ${images.length ? `<div class="detail-gallery">${images.map((src, index) => `<figure><img src="${src}" alt="${imageLabel(index)}" ${previewImageAttrs(src, imageLabel(index))}><figcaption>${imageLabel(index)}</figcaption></figure>`).join("")}</div>` : ""}
+        <h3>产品点评</h3>
+        <div class="table-wrap"><table class="compact-table"><thead><tr><th>产品</th><th>品类</th><th>规格</th><th>价格</th><th>重量</th><th>外观</th><th>风味</th><th>香气</th><th>组织质地</th><th>单品点评</th></tr></thead><tbody>
+          ${(album.items || []).map(item => `<tr><td>${escapeHtml(item.name || "")}</td><td>${escapeHtml(item.category || "")}</td><td>${escapeHtml(item.spec || "")}</td><td>${escapeHtml(item.price || "")}</td><td>${escapeHtml(item.weight || "")}</td><td>${escapeHtml(competitorDimensionText(item, "appearance", "appearanceScore"))}</td><td>${escapeHtml(competitorDimensionText(item, "flavor", "flavorScore"))}</td><td>${escapeHtml(competitorDimensionText(item, "aroma", "aromaScore"))}</td><td>${escapeHtml(competitorDimensionText(item, "texture", "textureScore"))}</td><td>${escapeHtml(item.note || "")}</td></tr>`).join("")}
+        </tbody></table></div>
+        ${album.note ? `<h3>总体观察</h3><p>${escapeHtml(album.note).replaceAll("\n", "<br>")}</p>` : ""}
+      `;
+      openModal("recordDetailModal");
+    }
+
+    function exportCompetitorAlbumCsv(id) {
+      const album = (state.competitorAlbums || []).find(item => item.id === id);
+      if (!album) return;
+      const rows = [["竞品册","类型","测试日期","门店/品牌","品类","产品图片数","城市/商圈","产品","品类","规格","价格(RMB)","重量(g)","尺寸(mm)","外观评分","外观描述","风味评分","风味描述","香气评分","香气描述","组织质地评分","组织质地描述","单品点评","总体观察"]];
+      (album.items || []).forEach(item => rows.push([
+        album.name || album.store || "", album.type || "", album.date || "", album.store || "", album.category || "", competitorAlbumImages(album).length, album.location || "",
+        item.name || "", item.category || "", item.spec || "", item.price || "", item.weight || "", competitorSizeText(item),
+        item.appearanceScore || "", item.appearance || "", item.flavorScore || "", item.flavor || "", item.aromaScore || "", item.aroma || "", item.textureScore || "", item.texture || "", item.note || "", album.note || ""
+      ]));
+      exportCsv(`${album.name || album.store || "竞品册"}.csv`, rows);
     }
 
     function classifyValidationPerson(person) {
@@ -4817,6 +6692,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       renderSopRecords();
       renderSopProcesses();
       renderSensoryRecords();
+      renderBakeRecords();
+      renderLaunchProjects();
+      renderAccountSwitch();
+      applyAccountPermissions();
     }
 
     function ensureCompoundMaterials() {
@@ -4888,24 +6767,20 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function setupSelectOptions() {
-      const categorySelect = document.querySelector("#matCategory");
-      const sourceSelect = document.querySelector("#matSource");
-      if (categorySelect && !categorySelect.options.length) {
-        categorySelect.innerHTML = materialCategories.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
-      }
-      if (sourceSelect && !sourceSelect.options.length) {
-        sourceSelect.innerHTML = sourceOptions.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
-      }
+      const categoryList = document.querySelector("#matCategoryList");
+      const sourceList = document.querySelector("#matSourceList");
+      if (categoryList) categoryList.innerHTML = materialCategories.map(item => `<option value="${escapeAttr(item)}"></option>`).join("");
+      if (sourceList) sourceList.innerHTML = sourceOptions.map(item => `<option value="${escapeAttr(item)}"></option>`).join("");
       document.querySelectorAll("#devVersion, #sopVersion, #recipeVersion, #modalRecipeVersion, #formulaVersion, #yieldVersion, #sensoryVersion, #sopProcessVersion").forEach(select => {
         if (!select.options.length) select.innerHTML = versionOptions.map(item => `<option value="${item}">${item}</option>`).join("");
       });
-      document.querySelectorAll("#sensoryAppearanceScore, #sensoryFlavorScore, #sensoryAromaScore, #sensoryTextureScore").forEach(select => {
+      document.querySelectorAll("#sensoryAppearanceScore, #sensoryFlavorScore, #sensoryAromaScore, #sensoryTextureScore, #bakeAppearanceScore, #bakeTasteScore").forEach(select => {
         if (!select.options.length) select.innerHTML = `<option value="">未评分</option>` + [1, 2, 3, 4, 5].map(score => `<option value="${score}">${score} 分</option>`).join("");
       });
-      const sensoryCategory = document.querySelector("#sensoryCategory");
-      if (sensoryCategory && !sensoryCategory.options.length) {
-        sensoryCategory.innerHTML = productCategories.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join("");
-      }
+      const sensoryCategoryList = document.querySelector("#sensoryCategoryList");
+      if (sensoryCategoryList) sensoryCategoryList.innerHTML = productCategories.map(item => `<option value="${escapeAttr(item)}"></option>`).join("");
+      const categoryCoreList = document.querySelector("#categoryCoreList");
+      if (categoryCoreList) categoryCoreList.innerHTML = coreCategoryOptions.map(item => `<option value="${escapeAttr(item)}"></option>`).join("");
       const sensoryCampaign = document.querySelector("#sensoryCampaign");
       if (sensoryCampaign) {
         const current = sensoryCampaign.value;
@@ -4914,17 +6789,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         if (campaignList) campaignList.innerHTML = names.map(name => `<option value="${escapeAttr(name)}"></option>`).join("");
         sensoryCampaign.value = current || "";
       }
-      const sensorySupplier = document.querySelector("#sensorySupplier");
-      if (sensorySupplier) {
-        const current = sensorySupplier.value;
+      const sensorySupplierList = document.querySelector("#sensorySupplierList");
+      if (sensorySupplierList) {
         const names = state.suppliers.map(row => row.name).filter(Boolean);
-        sensorySupplier.innerHTML = `<option value="">未选择</option>` + names.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
-        if (current && names.includes(current)) sensorySupplier.value = current;
+        sensorySupplierList.innerHTML = names.map(name => `<option value="${escapeAttr(name)}"></option>`).join("");
       }
     }
 
     function ensureSelectOption(select, value) {
-      if (!select || !value) return;
+      if (!select || !value || !select.options) return;
       if (![...select.options].some(option => option.value === value)) {
         select.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`);
       }
@@ -5050,7 +6923,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (!els.devBoards) return;
       const query = (els.devSearch?.value || "").trim().toLowerCase();
       const records = visibleDevRecords().filter(record => {
-        const text = `${record.project} ${record.category || ""} ${record.campaign || ""} ${record.version || ""} ${record.type} ${record.supplier || ""} ${record.materials || ""} ${record.note || ""}`.toLowerCase();
+        const text = `${record.project} ${record.category || ""} ${record.campaign || ""} ${record.version || ""} ${record.type} ${record.supplier || ""} ${record.materials || ""} ${record.overallEvaluation || ""} ${record.note || ""}`.toLowerCase();
         return !query || text.includes(query);
       });
       const groups = [
@@ -5167,7 +7040,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function sensorySummary(record) {
       if (record.type !== "OEM 品类测试" && record.type !== "OEM / 品类测试" && record.type !== "感官记录" && record.type !== "竞品测试") return "";
-      const img = record.image ? `<img class="record-image" src="${record.image}" alt="${escapeAttr(record.project)}">` : "";
+      const img = record.image ? `<img class="record-image" src="${record.image}" alt="${escapeAttr(record.project)}" ${previewImageAttrs(record.image, record.project || "感官图片")}>` : "";
       const sensory = record.sensory || {};
       const text = [
         sensory.appearance ? `外观：${escapeHtml(sensory.appearance)}` : "",
@@ -5511,6 +7384,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (els.recipeImagePreview) {
         if (recipe.image) els.recipeImagePreview.src = recipe.image;
         else els.recipeImagePreview.removeAttribute("src");
+        setImagePreviewTarget(els.recipeImagePreview, recipe.image, recipe.name || "产品图片");
         els.recipeImagePreview.classList.toggle("show", Boolean(recipe.image));
       }
       if (els.recipeImageField) els.recipeImageField.classList.toggle("hidden-file", Boolean(recipe.image));
@@ -5811,6 +7685,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       syncMaterialCodeForCategory(true);
       els.matImagePreview.removeAttribute("src");
       els.matImagePreview.dataset.image = "";
+      setImagePreviewTarget(els.matImagePreview, "", "来源图片");
       els.matImagePreview.classList.remove("show");
     }
 
@@ -5834,6 +7709,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (image) els.matImagePreview.src = image;
       else els.matImagePreview.removeAttribute("src");
       els.matImagePreview.dataset.image = image;
+      setImagePreviewTarget(els.matImagePreview, image, mat.name || "来源图片");
       els.matImagePreview.classList.toggle("show", Boolean(image));
       setupSelectOptions();
       openModal("materialModal");
@@ -5897,6 +7773,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (els.recipeImagePreview) {
         if (image) els.recipeImagePreview.src = image;
         else els.recipeImagePreview.removeAttribute("src");
+        setImagePreviewTarget(els.recipeImagePreview, image, recipe.name || "产品图片");
         els.recipeImagePreview.classList.toggle("show", Boolean(image));
       }
       if (els.recipeImageField) els.recipeImageField.classList.toggle("hidden-file", Boolean(image));
@@ -6259,7 +8136,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function exportDevCsv(records = visibleDevRecords(), filename = "研发过程记录.csv") {
-      const rows = [["时间","产品","品牌","品类","档期名称","版本","类型","供应商","价格(RMB)","重量(g)","长度(mm)","宽度(mm)","高度(mm)","物料/用量","原始重量(g)","去皮后(g)","切配后(g)","加热后(g)","冷却后(g)","最终可用量(g)","得率链路","外观","外观评分","风味","风味评分","香气","香气评分","组织质地","组织质地评分","下一步改进方向"]];
+      const rows = [["时间","产品","品牌","品类","档期名称","版本","类型","供应商","规格","价格(RMB)","重量(g)","长度(mm)","宽度(mm)","高度(mm)","物料/用量","原始重量(g)","去皮后(g)","切配后(g)","加热后(g)","冷却后(g)","最终可用量(g)","得率链路","外观","外观评分","风味","风味评分","香气","香气评分","组织质地","组织质地评分","总体评价","下一步改进方向"]];
       (records || []).forEach(record => rows.push([
         record.time,
         record.project,
@@ -6269,6 +8146,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         record.version || "",
         devTypeLabel(record),
         record.supplier || "",
+        record.spec || "",
         record.price || "",
         record.weight || "",
         record.length || "",
@@ -6290,6 +8168,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         record.sensory?.aromaScore || "",
         record.sensory?.texture || "",
         record.sensory?.textureScore || "",
+        record.overallEvaluation || "",
         record.note
       ]));
       exportCsv(filename, rows);
@@ -6416,6 +8295,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         ["类型", devTypeLabel(record)],
         ["供应商", record.supplier || ""],
         ["测试日期", record.testDate || ""],
+        ["规格", record.spec || ""],
         ["价格", record.price ? `${record.price} RMB` : ""],
         ["重量", record.weight ? `${record.weight} g` : ""],
         ["尺寸", (record.length || record.width || record.height) ? competitorSizeText(record) : ""]
@@ -6425,7 +8305,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         ? `<h3>得率测算</h3><div class="yield-stage-grid">${yieldStageSummaryHtml(record.yield || {})}</div>`
         : "";
       const sensoryHtml = (record.type === "OEM 品类测试" || record.type === "OEM / 品类测试" || record.type === "感官记录" || record.type === "竞品测试")
-        ? `<h3>感官记录</h3>${record.image ? `<img class="image-preview show" src="${record.image}" alt="${escapeAttr(record.project)}">` : ""}
+        ? `<h3>感官记录</h3>${sensoryImageList(record).length ? `<div class="detail-gallery">${sensoryImageList(record).map((src, i) => `<figure><img src="${src}" alt="${imageLabel(i)}" ${previewImageAttrs(src, imageLabel(i))}><figcaption>${imageLabel(i)}</figcaption></figure>`).join("")}</div>` : ""}
           <div class="detail-grid">
             <div class="detail-item"><span>外观</span>${escapeHtml(sensory.appearance || "")}${sensory.appearanceScore ? `（${escapeHtml(sensory.appearanceScore)}分）` : ""}</div>
             <div class="detail-item"><span>风味</span>${escapeHtml(sensory.flavor || "")}${sensory.flavorScore ? `（${escapeHtml(sensory.flavorScore)}分）` : ""}</div>
@@ -6440,7 +8320,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         ${materialHtml}
         ${yieldHtml}
         ${sensoryHtml}
-        ${record.note ? `<h3>记录内容</h3><p>${escapeHtml(record.note).replaceAll("\n", "<br>")}</p>` : ""}
+        ${record.overallEvaluation ? `<h3>总体评价</h3><p>${escapeHtml(record.overallEvaluation).replaceAll("\n", "<br>")}</p>` : ""}
+        ${record.note ? `<h3>下一步改进方向</h3><p>${escapeHtml(record.note).replaceAll("\n", "<br>")}</p>` : ""}
       `;
       openModal("recordDetailModal");
     }
@@ -6572,6 +8453,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#sensoryVersion").value = record.version || "V1";
       document.querySelector("#sensoryDate").value = record.testDate || "";
       document.querySelector("#sensoryBrand").value = record.brand || "";
+      document.querySelector("#sensorySpec").value = record.spec || "";
       document.querySelector("#sensoryPrice").value = record.price || "";
       document.querySelector("#sensoryWeight").value = record.weight || "";
       document.querySelector("#sensoryLength").value = record.length || "";
@@ -6585,13 +8467,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#sensoryFlavorScore").value = sensory.flavorScore || "";
       document.querySelector("#sensoryAromaScore").value = sensory.aromaScore || "";
       document.querySelector("#sensoryTextureScore").value = sensory.textureScore || "";
+      document.querySelector("#sensoryOverallEvaluation").value = record.overallEvaluation || "";
       document.querySelector("#sensoryNote").value = record.note || "";
-      const preview = document.querySelector("#sensoryPreview");
-      if (record.image) {
-        preview.src = record.image;
-        preview.dataset.image = record.image;
-        preview.classList.add("show");
-      }
+      sensoryImages = [...sensoryImageList(record)];
+      renderSensoryGallery();
     }
 
     function editDevRecord(id) {
@@ -6775,6 +8654,28 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       updateYieldAuto();
     }
 
+    function renderSensoryGallery() {
+      const host = document.querySelector("#sensoryGallery");
+      if (!host) return;
+      host.innerHTML = sensoryImages.map((src, i) => `
+        <figure class="sensory-figure">
+          <button type="button" class="img-remove" data-remove-image="${i}" aria-label="移除${imageLabel(i)}">×</button>
+          <img src="${src}" alt="${imageLabel(i)}" ${previewImageAttrs(src, imageLabel(i))}>
+          <figcaption>${imageLabel(i)}</figcaption>
+        </figure>`).join("");
+      host.querySelectorAll("[data-remove-image]").forEach(btn => {
+        btn.onclick = () => {
+          sensoryImages.splice(Number(btn.dataset.removeImage), 1);
+          renderSensoryGallery();
+        };
+      });
+    }
+
+    function sensoryImageList(record) {
+      if (record.images && record.images.length) return record.images;
+      return record.image ? [record.image] : [];
+    }
+
     function resetSensoryModal() {
       editingDevRecordId = null;
       document.querySelector("#sensoryForm").reset();
@@ -6782,9 +8683,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#sensoryModalTitle").textContent = "新增 OEM 记录";
       document.querySelector("#sensorySubmitBtn").textContent = "保存 OEM 记录";
       updateSensoryFormMode("OEM 品类测试");
-      document.querySelector("#sensoryPreview").removeAttribute("src");
-      document.querySelector("#sensoryPreview").classList.remove("show");
-      document.querySelector("#sensoryPreview").dataset.image = "";
+      sensoryImages = [];
+      renderSensoryGallery();
       setupSelectOptions();
     }
 
@@ -6860,9 +8760,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         home: ["Home 首页", "把灵感、测评、销售结果都沉淀在一处，越用越厚——这是我的品类第二大脑。"],
         opportunity: ["Opportunity Pool 机会池", "把测评记录沉淀成我自己的灵感库，以后随手能翻出来复用。"],
         development: ["Product Development 产品开发", "我的原料库和配方库"],
+        launch: ["Launch Calendar 档期产品开发", "输入上市日期后自动倒排众测、NPC、中试和大生产节点，并跟踪 Coffee Bar 全流程完成状态。"],
         validation: ["Product Validation 产品验证", "用我自己固定的口径（评分维度、适配权重）沉淀可比较、可回看的产品结论。"],
         execution: ["Product Execution 产品落地", "把陈列、烤程和门店反馈里观察到的经验沉下来，变成下次的检查清单。"],
-        knowledge: ["Knowledge Base 知识库", "我的方法论沉淀：评分口径、产品标准、SOP 模板和历史结论，随时能查能复用。"],
+        knowledge: ["Knowledge Base 知识库", "沉淀踩过的坑和有效做法，目前只保留经验法则。"],
         materials: ["Product Development 产品开发", "我的原料库和配方库——每条都带自己的备注与踩坑，越攒越厚。"],
         suppliers: ["Supplier Management 供应商管理", "我接触过的供应商与原料来源，连同我的评价和踩坑一起沉淀下来。"],
         recipes: ["Product Development 产品开发", "我的原料库和配方库——每条都带自己的备注与踩坑，越攒越厚。"],
@@ -6913,6 +8814,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       supplierRows().forEach(s => { if (match(s.name, s.category, s.source, s.note)) push("供应商", s.name, [s.category, s.source].filter(Boolean).join(" · "), "suppliers"); });
       (state.sensoryRecords || []).forEach(s => { if (match(s.project, s.name, s.note, s.brand, s.category)) push("感官", s.project || s.name || "感官记录", s.note || s.category || "", "recipes"); });
       (workspaceLists.opportunityIdeas || []).forEach(i => { if (match(i.name, i.type, i.status, i.note)) push("灵感", i.name, [i.type, i.status].filter(Boolean).join(" · "), "opportunity"); });
+      (workspaceLists.playbook || []).forEach(p => { if (match(p.name, playbookCategory(p), p.type, p.note)) push("经验", p.name, [playbookCategory(p), p.type].filter(Boolean).join(" · "), "knowledge"); });
       (state.sopRecords || []).forEach(p => { if (match(p.project, p.version, p.note)) push("SOP", p.project || "工艺", `版本 ${p.version || ""}`, "sop"); });
       validationTests.forEach(v => { if (match(v.name)) push("测评", v.name, "众测产品分数", "validation"); });
       box.hidden = false;
@@ -6992,22 +8894,61 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (wrap && box && !wrap.contains(event.target)) box.hidden = true;
     });
 
+    function aiAppend(role, html) {
+      const log = document.querySelector("#aiChatLog");
+      if (!log) return;
+      const msg = document.createElement("div");
+      msg.className = "ai-chat-msg " + role;
+      msg.innerHTML = html;
+      log.append(msg);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function computeDataGaps() {
+      const gaps = [];
+      const noSupplier = state.materials.filter(m => !String(m.supplier || "").trim()).length;
+      if (noSupplier) gaps.push(`${noSupplier} 个原料还没填供应商`);
+      const sensoryByRecipe = new Set((state.sensoryRecords || []).map(r => r.recipeId).filter(Boolean));
+      const recipesNoSensory = state.recipes.filter(r => !sensoryByRecipe.has(r.id)).length;
+      if (recipesNoSensory) gaps.push(`${recipesNoSensory} 个配方还没关联任何感官记录`);
+      if (validationTests.length && !validationSalesRows.length) gaps.push(`有 ${validationTests.length} 条产品测评，但还没录入任何销售数据（测评↔销售没串起来）`);
+      const ideasOpen = (workspaceLists.opportunityIdeas || []).filter(i => ["待处理", "观察中", "待评估", "待测试"].includes(i.status || "待处理")).length;
+      if (ideasOpen) gaps.push(`${ideasOpen} 条灵感还停在待跟进状态`);
+      if (!(workspaceLists.playbook || []).length) gaps.push(`经验法则还是空的——把踩过的坑沉一条进去`);
+      return gaps;
+    }
+
+    function runAiAction(action) {
+      if (action === "gaps") {
+        aiAppend("user", "找数据缺口");
+        const gaps = computeDataGaps();
+        if (!gaps.length) {
+          aiAppend("ai", `<span class="ai-gap-ok">没发现明显缺口，你的沉淀挺完整 👍</span>`);
+        } else {
+          aiAppend("ai", `根据你现在的数据，发现这些缺口：<ul>${gaps.map(g => `<li>${escapeHtml(g)}</li>`).join("")}</ul>`);
+        }
+        return;
+      }
+      const labels = { summarize: "总结沉淀", link: "串联关系" };
+      aiAppend("user", labels[action] || action);
+      const detail = action === "summarize"
+        ? "把你的感官记录、踩坑和测评提炼成「这个配方的结论」"
+        : "自动把「配方 ↔ 供应商 ↔ 测评 ↔ 销售」串起来";
+      aiAppend("ai", `这个动作要靠大模型推理（${detail}），接入 DeepSeek 后开启。届时我只会基于你沉淀的数据来做，不编造。`);
+    }
+
+    document.querySelectorAll("[data-ai-action]").forEach(btn => {
+      btn.addEventListener("click", () => runAiAction(btn.dataset.aiAction));
+    });
+
     document.querySelector("#aiChatForm")?.addEventListener("submit", event => {
       event.preventDefault();
       const input = document.querySelector("#aiChatText");
-      const log = document.querySelector("#aiChatLog");
       const text = (input?.value || "").trim();
-      if (!text || !log) return;
-      const userMsg = document.createElement("div");
-      userMsg.className = "ai-chat-msg user";
-      userMsg.textContent = text;
-      log.append(userMsg);
-      const aiMsg = document.createElement("div");
-      aiMsg.className = "ai-chat-msg ai";
-      aiMsg.textContent = "AI 助手还没接入 DeepSeek。接好后，我会基于你沉淀的配方、供应商和测评数据来回答这个问题。";
-      log.append(aiMsg);
+      if (!text) return;
+      aiAppend("user", escapeHtml(text));
+      aiAppend("ai", "我只基于你沉淀的数据回答，自由问答要接入 DeepSeek 后才开启。现在可以点上面的「找数据缺口」——那个本地就能用。");
       input.value = "";
-      log.scrollTop = log.scrollHeight;
     });
 
     document.querySelector("#validationTestForm")?.addEventListener("submit", saveValidationTestFromForm);
@@ -7033,7 +8974,86 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     document.querySelectorAll("[data-list-form]").forEach(form => {
       form.addEventListener("submit", saveWorkspaceListItem);
     });
+    document.querySelector("#openPlaybookModalBtn")?.addEventListener("click", () => openPlaybookModal());
+    document.querySelector("#playbookForm")?.addEventListener("submit", savePlaybookForm);
+    document.querySelector("#clearPlaybookFormBtn")?.addEventListener("click", resetPlaybookForm);
+    document.querySelector("#playbookSearch")?.addEventListener("input", () => {
+      opportunityPages.playbook = 0;
+      renderPlaybookList();
+    });
+    document.querySelector("#playbookCategoryFilter")?.addEventListener("change", () => {
+      opportunityPages.playbook = 0;
+      renderPlaybookList();
+    });
     document.querySelector("#opportunityListForm")?.addEventListener("submit", saveOpportunityListModal);
+    document.querySelector("#opportunityListType")?.addEventListener("change", syncOpportunityTypeCustomVisibility);
+    document.querySelector("#loadOpportunityImageFromUrlBtn")?.addEventListener("click", loadOpportunityImageFromUrl);
+    document.querySelector("#competitorAlbumForm")?.addEventListener("submit", saveCompetitorAlbum);
+    document.querySelector("#competitorAlbumType")?.addEventListener("change", syncCompetitorAlbumCategoryVisibility);
+    document.querySelector("#openCompetitorAlbumBtn")?.addEventListener("click", () => openCompetitorAlbumModal());
+    document.querySelector("#addCompetitorItemBtn")?.addEventListener("click", () => {
+      competitorAlbumItems = readCompetitorAlbumItems({ keepBlank: true });
+      competitorAlbumItems.push(blankCompetitorItem());
+      renderCompetitorAlbumItems();
+    });
+    document.querySelector("#competitorProductImages")?.addEventListener("change", event => {
+      const files = Array.from(event.target.files || []);
+      if (!files.length) return;
+      const readers = files.map(file => new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.readAsDataURL(file);
+      }));
+      Promise.all(readers).then(images => {
+        competitorProductImagesData = [...competitorProductImagesData, ...images.filter(validStoredImage)];
+        renderCompetitorProductImages();
+        event.target.value = "";
+      });
+    });
+    document.addEventListener("change", event => {
+      const productImageInput = event.target?.closest?.("[data-comp-item-images]");
+      if (!productImageInput) return;
+      const files = Array.from(productImageInput.files || []);
+      if (!files.length) return;
+      const itemIndex = Number(productImageInput.dataset.compItemImages);
+      competitorAlbumItems = readCompetitorAlbumItems({ keepBlank: true });
+      const readers = files.map(file => new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.readAsDataURL(file);
+      }));
+      Promise.all(readers).then(images => {
+        const item = competitorAlbumItems[itemIndex] || blankCompetitorItem();
+        item.images = [...(item.images || []).filter(validStoredImage), ...images.filter(validStoredImage)];
+        competitorAlbumItems[itemIndex] = item;
+        renderCompetitorAlbumItems();
+      });
+    });
+    document.querySelector("#accountSwitch")?.addEventListener("change", event => {
+      activeAccountId = event.target.value;
+      localStorage.setItem(ACTIVE_ACCOUNT_KEY, activeAccountId);
+      applyAccountPermissions();
+    });
+    document.querySelector("#accountPermissionBtn")?.addEventListener("click", () => {
+      renderAccountPermissionList();
+      openModal("accountPermissionModal");
+    });
+    document.querySelector("#saveAccountPermissionsBtn")?.addEventListener("click", saveAccountPermissions);
+    document.querySelector("#bakeRecordForm")?.addEventListener("submit", saveBakeRecord);
+    document.querySelector("#clearBakeFormBtn")?.addEventListener("click", clearBakeForm);
+    document.querySelector("#openBakeRecordModalBtn")?.addEventListener("click", () => openBakeRecordModal());
+    document.querySelector("#bakeOven")?.addEventListener("change", syncBakeOvenProfile);
+    ["bakeSearch", "bakeCategoryFilter", "bakeBrandFilter", "bakeOvenFilter"].forEach(id => {
+      document.querySelector(`#${id}`)?.addEventListener("input", renderBakeRecords);
+      document.querySelector(`#${id}`)?.addEventListener("change", renderBakeRecords);
+    });
+    document.querySelector("#launchProjectForm")?.addEventListener("submit", saveLaunchProject);
+    document.querySelector("#clearLaunchFormBtn")?.addEventListener("click", () => { clearLaunchForm(); renderCoffeeBarChecklist(); });
+    document.querySelector("#openLaunchProjectModalBtn")?.addEventListener("click", () => openLaunchProjectModal());
+    ["launchSearch", "launchStatusFilter"].forEach(id => {
+      document.querySelector(`#${id}`)?.addEventListener("input", renderLaunchProjects);
+      document.querySelector(`#${id}`)?.addEventListener("change", renderLaunchProjects);
+    });
     ["opportunityIdeas", "competitorTests", "oemRecords"].forEach(key => {
       document.querySelector(`#${key}Search`)?.addEventListener("input", () => {
         opportunityPages[key] = 0;
@@ -7046,6 +9066,72 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     });
 
     document.addEventListener("click", event => {
+      const removeCompetitorItem = event.target.closest("[data-remove-competitor-item]");
+      if (removeCompetitorItem) {
+        competitorAlbumItems = readCompetitorAlbumItems({ keepBlank: true });
+        competitorAlbumItems.splice(Number(removeCompetitorItem.dataset.removeCompetitorItem), 1);
+        if (!competitorAlbumItems.length) competitorAlbumItems.push(blankCompetitorItem());
+        renderCompetitorAlbumItems();
+        return;
+      }
+      const openXhs = event.target.closest("[data-open-xhs-url]");
+      if (openXhs) {
+        openXhsUrl(openXhs.dataset.openXhsUrl);
+        return;
+      }
+      const detailOpportunityAlbum = event.target.closest("[data-detail-opportunity-album]");
+      if (detailOpportunityAlbum) {
+        openCompetitorAlbumDetail(detailOpportunityAlbum.dataset.detailOpportunityAlbum);
+        return;
+      }
+      const editOpportunityAlbum = event.target.closest("[data-edit-opportunity-album]");
+      if (editOpportunityAlbum) {
+        openCompetitorAlbumModal(editOpportunityAlbum.dataset.editOpportunityAlbum);
+        return;
+      }
+      const exportOpportunityAlbum = event.target.closest("[data-export-opportunity-album]");
+      if (exportOpportunityAlbum) {
+        exportCompetitorAlbumCsv(exportOpportunityAlbum.dataset.exportOpportunityAlbum);
+        return;
+      }
+      const deleteOpportunityAlbum = event.target.closest("[data-delete-opportunity-album]");
+      if (deleteOpportunityAlbum) {
+        askDeleteConfirm("确认删除这个竞品册？", () => {
+          state.competitorAlbums = (state.competitorAlbums || []).filter(album => album.id !== deleteOpportunityAlbum.dataset.deleteOpportunityAlbum);
+          persist();
+          renderWorkspaceLists();
+        });
+        return;
+      }
+      const deleteBakeRecord = event.target.closest("[data-delete-bake-record]");
+      if (deleteBakeRecord) {
+        askDeleteConfirm("确认删除这条烤程验证记录？", () => {
+          state.bakeRecords = (state.bakeRecords || []).filter(record => record.id !== deleteBakeRecord.dataset.deleteBakeRecord);
+          persist();
+          renderBakeRecords();
+        });
+        return;
+      }
+      const detailBakeRecord = event.target.closest("[data-detail-bake-record]");
+      if (detailBakeRecord) {
+        openBakeRecordDetail(detailBakeRecord.dataset.detailBakeRecord);
+        return;
+      }
+      const editBakeRecord = event.target.closest("[data-edit-bake-record]");
+      if (editBakeRecord) {
+        openBakeRecordModal(editBakeRecord.dataset.editBakeRecord);
+        return;
+      }
+      const selectLaunch = event.target.closest("[data-select-launch]");
+      if (selectLaunch) {
+        selectLaunchProject(selectLaunch.dataset.selectLaunch);
+        return;
+      }
+      const editLaunch = event.target.closest("[data-edit-launch]");
+      if (editLaunch) {
+        openLaunchProjectModal(editLaunch.dataset.editLaunch);
+        return;
+      }
       const openOpportunityList = event.target.closest("[data-open-opportunity-list-modal]");
       if (openOpportunityList) {
         openOpportunityListModal(openOpportunityList.dataset.openOpportunityListModal);
@@ -7097,6 +9183,25 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         const key = deleteOpportunityList.dataset.key;
         askDeleteConfirm("确认删除这条机会池记录？", () => {
           workspaceLists[key] = (workspaceLists[key] || []).filter(row => row.id !== deleteOpportunityList.dataset.deleteOpportunityList);
+          persistWorkspaceLists();
+          renderWorkspaceLists();
+        });
+        return;
+      }
+      const detailPlaybook = event.target.closest("[data-detail-playbook]");
+      if (detailPlaybook) {
+        openPlaybookDetail(detailPlaybook.dataset.detailPlaybook);
+        return;
+      }
+      const editPlaybook = event.target.closest("[data-edit-playbook]");
+      if (editPlaybook) {
+        openPlaybookModal(editPlaybook.dataset.editPlaybook);
+        return;
+      }
+      const deletePlaybook = event.target.closest("[data-delete-playbook]");
+      if (deletePlaybook) {
+        askDeleteConfirm("确认删除这条经验法则？", () => {
+          workspaceLists.playbook = (workspaceLists.playbook || []).filter(row => row.id !== deletePlaybook.dataset.deletePlaybook);
           persistWorkspaceLists();
           renderWorkspaceLists();
         });
@@ -7190,6 +9295,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         const image = String(reader.result || "");
         els.matImagePreview.src = image;
         els.matImagePreview.dataset.image = image;
+        setImagePreviewTarget(els.matImagePreview, image, document.querySelector("#matName").value.trim() || "来源图片");
         els.matImagePreview.classList.toggle("show", Boolean(image));
       };
       reader.readAsDataURL(file);
@@ -7198,6 +9304,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#matImage").value = "";
       els.matImagePreview.removeAttribute("src");
       els.matImagePreview.dataset.image = "";
+      setImagePreviewTarget(els.matImagePreview, "", "来源图片");
       els.matImagePreview.classList.remove("show");
     });
     els.materialSearch.addEventListener("input", renderMaterials);
@@ -7249,7 +9356,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       reader.onload = () => updateActiveRecipeImage(String(reader.result || ""));
       reader.readAsDataURL(file);
     });
-    document.querySelector("#recipeImagePreview").addEventListener("click", () => {
+    document.querySelector("#recipeImagePreview").addEventListener("click", event => {
+      event.stopPropagation();
       const recipe = activeRecipe();
       if (!recipe?.image) return;
       document.querySelector("#imageModalTitle").textContent = recipe.name || "产品图片";
@@ -7364,18 +9472,24 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       renderDevRecords();
     });
     document.querySelector("#sensoryImage").addEventListener("change", event => {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const image = String(reader.result || "");
-        const preview = document.querySelector("#sensoryPreview");
-        preview.src = image;
-        preview.dataset.image = image;
-        preview.classList.add("show");
-      };
-      reader.readAsDataURL(file);
+      const files = [...event.target.files];
+      if (!files.length) return;
+      const base = sensoryImages.length;
+      let loaded = 0;
+      files.forEach((file, idx) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          sensoryImages[base + idx] = String(reader.result || "");
+          loaded += 1;
+          if (loaded === files.length) renderSensoryGallery();
+        };
+        reader.readAsDataURL(file);
+      });
+      event.target.value = "";
     });
+    document.querySelector("#sensoryVersion")?.addEventListener("change", syncSensoryOverallFromPreviousVersion);
+    document.querySelector("#sensoryName")?.addEventListener("input", syncSensoryOverallFromPreviousVersion);
+    document.querySelector("#sensorySupplier")?.addEventListener("input", syncSensoryOverallFromPreviousVersion);
     document.querySelector("#sensoryForm").addEventListener("submit", event => {
       event.preventDefault();
       const existing = (state.devRecords || []).find(item => item.id === editingDevRecordId);
@@ -7389,6 +9503,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         project: document.querySelector("#sensoryName").value.trim(),
         supplier: isCompetitor ? "" : document.querySelector("#sensorySupplier").value.trim(),
         brand: isCompetitor ? document.querySelector("#sensoryBrand").value.trim() : "",
+        spec: isCompetitor ? document.querySelector("#sensorySpec").value.trim() : "",
         price: isCompetitor ? document.querySelector("#sensoryPrice").value : "",
         weight: isCompetitor ? document.querySelector("#sensoryWeight").value : "",
         length: isCompetitor ? document.querySelector("#sensoryLength").value : "",
@@ -7397,7 +9512,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         version: document.querySelector("#sensoryVersion").value,
         testDate: document.querySelector("#sensoryDate").value,
         type: recordType,
-        image: document.querySelector("#sensoryPreview").dataset.image || "",
+        images: [...sensoryImages],
+        image: sensoryImages[0] || "",
+        overallEvaluation: document.querySelector("#sensoryOverallEvaluation").value.trim(),
         sensory: {
           appearance: document.querySelector("#sensoryAppearance").value.trim(),
           appearanceScore: document.querySelector("#sensoryAppearanceScore").value,
@@ -7412,7 +9529,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         yield: {},
         note: document.querySelector("#sensoryNote").value.trim()
       };
-      if (!record.project && !record.supplier && !record.brand && !record.note && !Object.values(record.sensory).some(Boolean)) return;
+      if (!record.project && !record.supplier && !record.brand && !record.overallEvaluation && !record.note && !Object.values(record.sensory).some(Boolean)) return;
       upsertDevRecord(record);
       event.target.reset();
       closeModal("sensoryModal");
@@ -7711,6 +9828,27 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     });
 
     document.body.addEventListener("change", event => {
+      if (event.target.matches("[data-launch-actual]")) {
+        const project = (state.launchProjects || []).find(item => item.id === event.target.dataset.launchActual);
+        if (project) {
+          project.actualDates = project.actualDates || {};
+          project.actualDates[event.target.dataset.milestoneKey] = event.target.value;
+          persist();
+          renderLaunchProjects();
+        }
+        return;
+      }
+      if (event.target.matches("[data-flow-check]")) {
+        const project = activeLaunchProject();
+        if (project) {
+          project.checkedFlow = project.checkedFlow || {};
+          project.checkedFlow[event.target.dataset.flowCheck] = event.target.checked;
+          persist();
+          renderLaunchProjectSelector();
+          renderLaunchDashboard();
+        }
+        return;
+      }
       if (event.target.matches("[data-opportunity-page-size]")) {
         const key = event.target.dataset.opportunityPageSize;
         opportunityPageSizes[key] = n(event.target.value) || 5;
@@ -7801,10 +9939,17 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       data.sopRecords = (data.sopRecords || []).map(migrateSopRecord);
       if (!data.sopProcesses) data.sopProcesses = [];
       if (!data.sensoryRecords) data.sensoryRecords = [];
+      data.competitorAlbums = (data.competitorAlbums || []).map(migrateCompetitorAlbum);
+      data.bakeRecords = withRequiredBakeRecords(data.bakeRecords || []);
+      data.launchProjects = withRequiredLaunchProjects(data.launchProjects || []);
       state = data;
       if (imported.workspaceLists) {
-        workspaceLists = { ...structuredClone(defaultWorkspaceLists), ...imported.workspaceLists };
+        workspaceLists = normalizeWorkspaceLists(imported.workspaceLists);
         persistWorkspaceLists();
+      }
+      if (imported.categoryLabAccountProfiles) {
+        categoryLabAccountProfiles = imported.categoryLabAccountProfiles;
+        persistCategoryLabAccounts();
       }
       if (imported.validationTests) {
         validationTests = imported.validationTests;
