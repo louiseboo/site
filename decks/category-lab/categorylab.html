@@ -2767,7 +2767,7 @@
           <input id="opportunityListId" type="hidden">
           <div class="form three">
             <div class="field"><label>名称</label><input id="opportunityListName" required placeholder="轻负担早餐杯"></div>
-            <div class="field"><label>类型</label><select id="opportunityListType"><option value="烘焙">烘焙</option><option value="蛋糕">蛋糕</option><option value="三明治">三明治</option><option value="其他">其他</option><option value="自定义">自定义</option></select><input class="category-custom-input hidden-file" id="opportunityListTypeCustom" list="categoryCoreList" autocomplete="off" placeholder="自定义类型"></div>
+            <div class="field"><label>类型</label><select id="opportunityListType"><option value="烘焙">烘焙</option><option value="蛋糕">蛋糕</option><option value="三明治">三明治</option><option value="其他">其他</option></select></div>
             <div class="field"><label>状态</label><select id="opportunityListStatus"><option value="待处理">待处理</option><option value="观察中">观察中</option><option value="待评估">待评估</option><option value="待测试">待测试</option><option value="已转开发">已转开发</option><option value="已归档">已归档</option></select></div>
           </div>
           <div class="field" id="opportunityListXhsUrlField">
@@ -5558,34 +5558,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       openModal("recordDetailModal");
     }
 
-    function syncOpportunityTypeCustomVisibility() {
-      const select = document.querySelector("#opportunityListType");
-      const custom = document.querySelector("#opportunityListTypeCustom");
-      if (!select || !custom) return;
-      const isCustom = select.value === "自定义";
-      custom.classList.toggle("hidden-file", !isCustom);
-      if (!isCustom) custom.value = "";
-    }
-
     function setOpportunityTypeValue(value = "", fallback = "烘焙") {
       const select = document.querySelector("#opportunityListType");
-      const custom = document.querySelector("#opportunityListTypeCustom");
-      if (!select || !custom) return;
+      if (!select) return;
       const type = value || fallback;
-      if (opportunityTypeOptions.includes(type)) {
-        select.value = type;
-        custom.value = "";
-      } else {
-        select.value = "自定义";
-        custom.value = type;
-      }
-      syncOpportunityTypeCustomVisibility();
+      select.value = opportunityTypeOptions.includes(type) ? type : "其他";
     }
 
     function readOpportunityTypeValue() {
       const select = document.querySelector("#opportunityListType");
-      const custom = document.querySelector("#opportunityListTypeCustom");
-      if (select?.value === "自定义") return custom?.value.trim() || "其他";
       return select?.value || "烘焙";
     }
 
@@ -8986,7 +8967,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       renderPlaybookList();
     });
     document.querySelector("#opportunityListForm")?.addEventListener("submit", saveOpportunityListModal);
-    document.querySelector("#opportunityListType")?.addEventListener("change", syncOpportunityTypeCustomVisibility);
     document.querySelector("#loadOpportunityImageFromUrlBtn")?.addEventListener("click", loadOpportunityImageFromUrl);
     document.querySelector("#competitorAlbumForm")?.addEventListener("submit", saveCompetitorAlbum);
     document.querySelector("#competitorAlbumType")?.addEventListener("change", syncCompetitorAlbumCategoryVisibility);
