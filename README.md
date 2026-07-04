@@ -3,7 +3,7 @@
 Personal food-product workspace for category systems, consumer-testing readouts,
 and browser-ready product notes.
 
-[Open the site](https://louiseboo-site.vercel.app) · [Open Category Lab](https://louiseboo-site.vercel.app/decks/category-lab/category-lab)
+[Open the site](https://louiseboo-site.vercel.app) · [Open Category Lab](https://louiseboo-site.vercel.app/decks/category-lab/categorylab)
 
 ---
 

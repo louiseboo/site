@@ -1,4 +1,16 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/decks/category-lab/category-lab",
+      "destination": "/decks/category-lab/categorylab",
+      "permanent": true
+    },
+    {
+      "source": "/decks/category-lab/category-lab.html",
+      "destination": "/decks/category-lab/categorylab",
+      "permanent": true
+    }
+  ]
 }
