@@ -304,6 +304,38 @@
       background: #f6fffb;
       color: var(--accent);
     }
+    .confirm-dialog {
+      width: min(460px, calc(100vw - 36px));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      padding: 0;
+      box-shadow: var(--shadow);
+    }
+    .confirm-dialog::backdrop {
+      background: rgba(29, 26, 22, 0.32);
+    }
+    .confirm-body {
+      padding: 20px 20px 16px;
+    }
+    .confirm-title {
+      margin: 0 0 8px;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .confirm-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .confirm-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 20px 18px;
+      border-top: 1px solid #eadfce;
+    }
     @media (max-width: 760px) {
       main {
         width: min(100vw - 22px, 1040px);
@@ -327,6 +359,7 @@
       .weight-summary { width: 100%; margin-left: 0; }
       .structure-table { min-width: 560px; }
       .structure-builder { overflow-x: auto; }
+      .confirm-actions { display: grid; }
     }
   </style>
 </head>
@@ -337,7 +370,6 @@
         <p class="eyebrow">Category Lab Supplier Form</p>
         <h1>供应商产品信息提交</h1>
       </div>
-      <div class="status-pill">公开提交</div>
     </header>
 
     <section class="panel">
@@ -424,6 +456,16 @@
         </div>
       </form>
       <div class="message" id="message"></div>
+      <dialog class="confirm-dialog" id="confirmDialog" aria-labelledby="confirmTitle">
+        <div class="confirm-body">
+          <p class="confirm-title" id="confirmTitle">确认提交</p>
+          <p class="confirm-copy" id="confirmCopy">请确认本次填写的信息真实、完整，并已完成提交前检查。提交后，Peet's 将在后台接收记录，用于后续产品评审与跟进。</p>
+        </div>
+        <div class="confirm-actions">
+          <button id="confirmCancelBtn" type="button">返回修改</button>
+          <button class="primary" id="confirmSubmitBtn" type="button">确认提交</button>
+        </div>
+      </dialog>
     </section>
   </main>
 
@@ -435,6 +477,10 @@
     const form = document.querySelector("#submissionForm");
     const message = document.querySelector("#message");
     const submitBtn = document.querySelector("#submitBtn");
+    const confirmDialog = document.querySelector("#confirmDialog");
+    const confirmCopy = document.querySelector("#confirmCopy");
+    const confirmCancelBtn = document.querySelector("#confirmCancelBtn");
+    const confirmSubmitBtn = document.querySelector("#confirmSubmitBtn");
     const productsContainer = document.querySelector("#productsContainer");
     const addProductBtn = document.querySelector("#addProductBtn");
     const modeButtons = [...document.querySelectorAll("[data-mode]")];
@@ -622,6 +668,19 @@
       focusAndExplain(input, `请填写产品 ${index + 1} 的${label}。`);
     }
 
+    function requiredProductStructure(card, index) {
+      const inputs = [...card.querySelectorAll('[data-structure-field="name"]')];
+      const hasStructure = inputs.some(input => String(input.value || "").trim());
+      if (hasStructure) return;
+      focusAndExplain(inputs[0], `请填写产品 ${index + 1} 的产品结构。`);
+    }
+
+    function requiredProductImages(product, card, index) {
+      if ((product.files || []).length > 0) return;
+      const input = card.querySelector("[data-product-images]");
+      focusAndExplain(input, `请上传产品 ${index + 1} 的产品照。`);
+    }
+
     function validateProducts() {
       for (const [index, product] of products.entries()) {
         const card = productCard(product.id);
@@ -632,6 +691,8 @@
         requiredProductValue(card, "finishedSpec", "成品规格", index);
         requiredProductValue(card, "versionChange", "本版调整点", index);
         requiredProductValue(card, "coreIngredientsSellingPoints", "核心原料及卖点", index);
+        requiredProductStructure(card, index);
+        requiredProductImages(product, card, index);
       }
     }
 
@@ -647,6 +708,37 @@
         const input = field(name);
         if (!String(input?.value || "").trim()) focusAndExplain(input, `请填写${label}。`);
       }
+    }
+
+    function confirmSubmission() {
+      const copy = currentMode === "followup"
+        ? "请确认本次补充的现场反馈、结论及下一步改进方向准确无误。提交后，系统将把反馈合并至对应产品记录，用于后续产品评审与跟进。"
+        : "请确认本次填写的产品资料真实、完整，并已完成提交前检查。提交后，Peet's 将在后台接收记录，用于后续产品评审与跟进。";
+      if (confirmCopy) confirmCopy.textContent = copy;
+      if (!confirmDialog?.showModal) {
+        return Promise.resolve(window.confirm(`确认提交\n\n${copy}`));
+      }
+      return new Promise(resolve => {
+        const cleanup = () => {
+          confirmCancelBtn.removeEventListener("click", onCancel);
+          confirmSubmitBtn.removeEventListener("click", onSubmit);
+          confirmDialog.removeEventListener("cancel", onCancel);
+        };
+        const close = value => {
+          cleanup();
+          if (confirmDialog.open) confirmDialog.close();
+          resolve(value);
+        };
+        const onCancel = event => {
+          event.preventDefault();
+          close(false);
+        };
+        const onSubmit = () => close(true);
+        confirmCancelBtn.addEventListener("click", onCancel);
+        confirmSubmitBtn.addEventListener("click", onSubmit);
+        confirmDialog.addEventListener("cancel", onCancel);
+        confirmDialog.showModal();
+      });
     }
 
     function productStructureRows(product) {
@@ -677,7 +769,6 @@
             <div>
               <label>版本 *</label>
               <input data-product-field="versionLabel" data-product-required required value="${escapeAttr(productValue(product, "versionLabel"))}" placeholder="V1 / V2 / V3">
-              <p class="field-note">按打样顺序编号，每次调整顺延。</p>
             </div>
             <div>
               <label>报价（元，含税含运） *</label>
@@ -699,16 +790,16 @@
             </div>
             </div>
             <div class="span-3">
-              <label>产品结构</label>
+              <label>产品结构 *</label>
               <div class="structure-builder">
                 <div class="structure-tools">
-                  <button class="ghost-button" data-add-structure="${escapeAttr(product.id)}" type="button">新增产品结构 / 配料</button>
+                  <button class="ghost-button" data-add-structure="${escapeAttr(product.id)}" type="button">新增产品结构</button>
                   <span class="weight-summary" data-total-weight>自动计算克重：0g</span>
                 </div>
                 <table class="structure-table" aria-label="产品结构明细">
                   <thead>
                     <tr>
-                      <th>名称</th>
+                      <th>描述</th>
                       <th class="weight-cell">重量(g)</th>
                       <th class="action-cell">操作</th>
                     </tr>
@@ -740,7 +831,7 @@
             </div>
             </div>
             <div class="span-3">
-              <label>产品照</label>
+              <label>产品照 *</label>
               <input data-product-images type="file" accept="image/jpeg,image/png,image/webp" multiple>
               <p class="field-note">每个产品最多 6 张，系统会压缩后上传。</p>
               <div class="preview-grid" data-image-preview></div>
@@ -1050,9 +1141,17 @@
         return;
       }
       if (!form.reportValidity()) return;
-      submitBtn.disabled = true;
-      submitBtn.textContent = "提交中...";
       try {
+        if (currentMode === "followup") {
+          validateFollowup();
+        } else {
+          syncAllProducts();
+          validateProducts();
+        }
+        const confirmed = await confirmSubmission();
+        if (!confirmed) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = "提交中...";
         if (currentMode === "followup") {
           const record = await submitFollowup();
           await resetFormAfterSubmit();
