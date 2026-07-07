@@ -31,7 +31,7 @@ create table if not exists public.supplier_feedback_records (
   next_step_direction text,
   key_blocker text,
   status text not null default '待处理'
-    check (status in ('待处理', '已导入', '已归档')),
+    check (status in ('待处理', '已确认')),
   created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -39,6 +39,17 @@ create table if not exists public.supplier_feedback_records (
 
 alter table public.supplier_feedback_records
   add column if not exists followup_code text;
+
+alter table public.supplier_feedback_records
+  drop constraint if exists supplier_feedback_records_status_check;
+
+update public.supplier_feedback_records
+set status = '已确认'
+where status in ('已导入', '已归档');
+
+alter table public.supplier_feedback_records
+  add constraint supplier_feedback_records_status_check
+  check (status in ('待处理', '已确认'));
 
 create index if not exists supplier_feedback_records_created_at_idx
   on public.supplier_feedback_records (created_at desc);

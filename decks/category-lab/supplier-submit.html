@@ -139,6 +139,35 @@
       color: var(--muted);
       font-size: 12px;
     }
+    .product-list {
+      display: grid;
+      gap: 14px;
+    }
+    .product-card {
+      border: 1px solid #eadfce;
+      border-radius: 8px;
+      background: #fffaf1;
+      padding: 14px;
+    }
+    .product-card + .product-card {
+      margin-top: 4px;
+    }
+    .product-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .product-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 900;
+    }
+    .product-card .section-title {
+      margin-top: 14px;
+      font-size: 14px;
+    }
     .structure-tools {
       display: flex;
       flex-wrap: wrap;
@@ -174,6 +203,9 @@
     .ghost-button {
       min-height: 36px;
       padding: 7px 10px;
+    }
+    .ghost-button.danger {
+      color: var(--danger);
     }
     .spec-compare {
       margin: 8px 0 0;
@@ -317,71 +349,27 @@
 
         <div class="section" data-mode-section="create">
           <p class="section-title">第一段：测试前资料</p>
-          <div class="grid">
-            <div>
-              <label for="productName">品名 *</label>
-              <input id="productName" name="productName" required autocomplete="off" placeholder="如：香蕉布朗尼千层蛋糕">
-            </div>
+          <div class="grid two">
             <div>
               <label for="supplierName">供应商 *</label>
               <input id="supplierName" name="supplierName" required autocomplete="organization" placeholder="供应商公司简称">
             </div>
             <div>
-              <label for="versionLabel">版本 *</label>
-              <input id="versionLabel" name="versionLabel" required placeholder="V1 / V2 / V3">
-              <p class="field-note">按打样顺序编号，每次调整顺延。</p>
-            </div>
-            <div>
               <label for="sampleDate">送样时间 *</label>
               <input id="sampleDate" name="sampleDate" type="date" required>
-            </div>
-            <div>
-              <label for="quoteRmb">报价（元）</label>
-              <input id="quoteRmb" name="quoteRmb" inputmode="decimal" placeholder="确认配方后填写含税出厂价">
-            </div>
-            <div>
-              <label for="finishedSpec">成品规格</label>
-              <input id="finishedSpec" name="finishedSpec" placeholder="如：165g/袋、180g/份">
             </div>
           </div>
         </div>
 
         <div class="section" data-mode-section="create">
-          <p class="section-title">产品结构 / 产品说明</p>
-          <div class="grid two">
-            <div>
-              <label for="versionChange">本版调整点</label>
-              <textarea id="versionChange" name="versionChange" placeholder="本版相较上一版改了什么；首版请写本次验证重点。"></textarea>
-            </div>
-            <div>
-              <label for="coreIngredientsSellingPoints">核心原料及卖点</label>
-              <textarea id="coreIngredientsSellingPoints" name="coreIngredientsSellingPoints" placeholder="已确定时填写；未确定可暂空。"></textarea>
-            </div>
-            <div class="span-2">
-              <label for="ingredientsStructure">产品结构</label>
-              <div class="structure-builder">
-                <div class="structure-tools">
-                  <button class="ghost-button" id="addStructureBtn" type="button">新增产品结构 / 配料</button>
-                  <span class="weight-summary" id="totalWeightText">自动计算克重：0g</span>
-                </div>
-                <table class="structure-table" aria-label="产品结构明细">
-                  <thead>
-                    <tr>
-                      <th>名称</th>
-                      <th class="weight-cell">重量(g)</th>
-                      <th class="action-cell">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody id="structureRows"></tbody>
-                </table>
-              </div>
-              <textarea id="ingredientsStructure" name="ingredientsStructure" hidden></textarea>
-              <p class="spec-compare" id="specCompareText">可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。</p>
-            </div>
+          <p class="section-title">产品清单</p>
+          <div class="product-list" id="productsContainer"></div>
+          <div class="structure-tools" style="margin-top:12px;">
+            <button class="ghost-button" id="addProductBtn" type="button">新增产品</button>
           </div>
         </div>
 
-        <div class="section" data-mode-section="feedback">
+        <div class="section" data-mode-section="followup">
           <p class="section-title">第二段：现场反馈（测试后如有）</p>
           <div class="grid two">
             <div>
@@ -415,13 +403,6 @@
           </div>
         </div>
 
-        <div class="section" data-mode-section="create">
-          <p class="section-title">产品照</p>
-          <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple>
-          <p class="field-note">最多 6 张，系统会压缩后上传。</p>
-          <div class="preview-grid" id="imagePreview"></div>
-        </div>
-
         <div class="actions">
           <button class="primary" id="submitBtn" type="submit">提交</button>
         </div>
@@ -438,19 +419,27 @@
     const form = document.querySelector("#submissionForm");
     const message = document.querySelector("#message");
     const submitBtn = document.querySelector("#submitBtn");
-    const imageInput = document.querySelector("#images");
-    const imagePreview = document.querySelector("#imagePreview");
+    const productsContainer = document.querySelector("#productsContainer");
+    const addProductBtn = document.querySelector("#addProductBtn");
     const modeButtons = [...document.querySelectorAll("[data-mode]")];
     const modeSections = [...document.querySelectorAll("[data-mode-section]")];
     const followupCodeSection = document.querySelector("[data-followup-code-section]");
     const followupSummary = document.querySelector("#followupSummary");
-    const structureRowsEl = document.querySelector("#structureRows");
-    const addStructureBtn = document.querySelector("#addStructureBtn");
-    const totalWeightText = document.querySelector("#totalWeightText");
-    const specCompareText = document.querySelector("#specCompareText");
     const supabaseReady = Boolean(config.url && config.anonKey && window.supabase);
     const client = supabaseReady ? window.supabase.createClient(config.url, config.anonKey) : null;
-    let structureRows = [];
+    const PRODUCT_FIELD_NAMES = [
+      "productName",
+      "versionLabel",
+      "quoteRmb",
+      "finishedSpec",
+      "versionChange",
+      "coreIngredientsSellingPoints",
+      "tastingScene",
+      "tastingFeedback",
+      "roundConclusion",
+      "nextStepDirection"
+    ];
+    let products = [];
     let currentMode = "create";
     let followupRecord = null;
 
@@ -476,10 +465,6 @@
 
     function field(name) {
       return form.elements[name];
-    }
-
-    function setField(name, value) {
-      if (field(name)) field(name).value = value || "";
     }
 
     function setRequired(name, required) {
@@ -510,13 +495,11 @@
         button.setAttribute("aria-pressed", button.dataset.mode === currentMode ? "true" : "false");
       });
       modeSections.forEach(section => {
-        const show = currentMode === "create" || section.dataset.modeSection === "feedback";
+        const show = section.dataset.modeSection === currentMode;
         section.classList.toggle("hidden", !show);
       });
       followupCodeSection.classList.toggle("hidden", currentMode !== "followup");
-      setRequired("productName", currentMode === "create");
       setRequired("supplierName", currentMode === "create");
-      setRequired("versionLabel", currentMode === "create");
       setRequired("sampleDate", currentMode === "create");
       setRequired("followupCode", currentMode === "followup");
       followupRecord = null;
@@ -530,17 +513,38 @@
       return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
     }
 
-    function specWeight() {
-      const match = String(field("finishedSpec").value || "").match(/(\d+(?:\.\d+)?)\s*g/i);
+    function newProduct() {
+      return {
+        id: rowId(),
+        fields: {},
+        structures: [{ id: rowId(), name: "", weight: "" }],
+        files: []
+      };
+    }
+
+    function productById(productId) {
+      return products.find(product => product.id === productId);
+    }
+
+    function productCard(productId) {
+      return productsContainer.querySelector(`[data-product-id="${CSS.escape(productId)}"]`);
+    }
+
+    function productValue(product, name) {
+      return product.fields?.[name] || "";
+    }
+
+    function specWeight(product) {
+      const match = String(productValue(product, "finishedSpec") || "").match(/(\d+(?:\.\d+)?)\s*g/i);
       return match ? Number(match[1]) : 0;
     }
 
-    function structureTotal() {
-      return structureRows.reduce((sum, row) => sum + numeric(row.weight), 0);
+    function structureTotal(product) {
+      return (product.structures || []).reduce((sum, row) => sum + numeric(row.weight), 0);
     }
 
-    function structureText() {
-      const filledRows = structureRows
+    function structureText(product) {
+      const filledRows = (product.structures || [])
         .map(row => ({
           name: String(row.name || "").trim(),
           weight: numeric(row.weight)
@@ -556,62 +560,183 @@
       return lines.join("\n");
     }
 
-    function updateStructureSummary() {
-      const total = structureTotal();
-      field("ingredientsStructure").value = structureText();
-      totalWeightText.textContent = `自动计算克重：${formatWeight(total)}g`;
-      const spec = specWeight();
+    function selectHtml(name, options, selected) {
+      const opts = options.map(option => `<option value="${escapeAttr(option)}" ${option === selected ? "selected" : ""}>${escapeAttr(option || "请选择")}</option>`).join("");
+      return `<select data-product-field="${escapeAttr(name)}">${opts}</select>`;
+    }
+
+    function productStructureRows(product) {
+      return (product.structures || []).map(row => `
+        <tr data-structure-id="${escapeAttr(row.id)}">
+          <td><input data-structure-field="name" value="${escapeAttr(row.name || "")}" placeholder="如：胚体、奶油、鸡肉、酱料"></td>
+          <td><input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" placeholder="可不填"></td>
+          <td><button class="ghost-button danger" data-delete-structure="${escapeAttr(row.id)}" type="button">删除</button></td>
+        </tr>
+      `).join("");
+    }
+
+    function productHtml(product, index) {
+      const canDelete = products.length > 1;
+      return `
+        <article class="product-card" data-product-id="${escapeAttr(product.id)}">
+          <div class="product-card-header">
+            <p class="product-title">产品 ${index + 1}</p>
+            <button class="ghost-button danger" data-delete-product="${escapeAttr(product.id)}" type="button" ${canDelete ? "" : "disabled"}>删除产品</button>
+          </div>
+
+          <div class="grid">
+            <div>
+              <label>品名 *</label>
+              <input data-product-field="productName" autocomplete="off" value="${escapeAttr(productValue(product, "productName"))}" placeholder="如：香蕉布朗尼千层蛋糕">
+            </div>
+            <div>
+              <label>版本 *</label>
+              <input data-product-field="versionLabel" value="${escapeAttr(productValue(product, "versionLabel"))}" placeholder="V1 / V2 / V3">
+              <p class="field-note">按打样顺序编号，每次调整顺延。</p>
+            </div>
+            <div>
+              <label>报价（元，含税含运）</label>
+              <input data-product-field="quoteRmb" inputmode="decimal" value="${escapeAttr(productValue(product, "quoteRmb"))}" placeholder="确认配方后填写">
+            </div>
+            <div>
+              <label>成品规格（克）</label>
+              <input data-product-field="finishedSpec" value="${escapeAttr(productValue(product, "finishedSpec"))}" placeholder="如：165g/份">
+            </div>
+            <div>
+              <label>本版调整点</label>
+              <textarea data-product-field="versionChange" placeholder="本版相较上一版改了什么；首版请写本次验证重点。">${escapeAttr(productValue(product, "versionChange"))}</textarea>
+            </div>
+            <div>
+              <label>核心原料及卖点</label>
+              <textarea data-product-field="coreIngredientsSellingPoints" placeholder="已确定时填写；未确定可暂空。">${escapeAttr(productValue(product, "coreIngredientsSellingPoints"))}</textarea>
+            </div>
+            <div class="span-3">
+              <label>产品结构</label>
+              <div class="structure-builder">
+                <div class="structure-tools">
+                  <button class="ghost-button" data-add-structure="${escapeAttr(product.id)}" type="button">新增产品结构 / 配料</button>
+                  <span class="weight-summary" data-total-weight>自动计算克重：0g</span>
+                </div>
+                <table class="structure-table" aria-label="产品结构明细">
+                  <thead>
+                    <tr>
+                      <th>名称</th>
+                      <th class="weight-cell">重量(g)</th>
+                      <th class="action-cell">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>${productStructureRows(product)}</tbody>
+                </table>
+              </div>
+              <textarea data-product-field="ingredientsStructure" hidden></textarea>
+              <p class="spec-compare" data-spec-compare>可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。</p>
+            </div>
+            <div>
+              <label>测试场景 / 反馈来源</label>
+              ${selectHtml("tastingScene", ["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], productValue(product, "tastingScene"))}
+            </div>
+            <div>
+              <label>本轮结论</label>
+              ${selectHtml("roundConclusion", ["", "继续调整", "暂停", "通过且储备", "通过且进入众测"], productValue(product, "roundConclusion"))}
+            </div>
+            <div>
+              <label>测试反馈</label>
+              <textarea data-product-field="tastingFeedback" placeholder="如现场已有 Peet's 反馈，可记录口头反馈；测试前可暂空。">${escapeAttr(productValue(product, "tastingFeedback"))}</textarea>
+            </div>
+            <div>
+              <label>下一步改进方向</label>
+              <textarea data-product-field="nextStepDirection" placeholder="只写需要供应商调整的方向，例如颜色、甜度、结构、克重、包装等。">${escapeAttr(productValue(product, "nextStepDirection"))}</textarea>
+            </div>
+            <div class="span-3">
+              <label>产品照</label>
+              <input data-product-images type="file" accept="image/jpeg,image/png,image/webp" multiple>
+              <p class="field-note">每个产品最多 6 张，系统会压缩后上传。</p>
+              <div class="preview-grid" data-image-preview></div>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function syncProductFromCard(productId) {
+      const product = productById(productId);
+      const card = productCard(productId);
+      if (!product || !card) return;
+      PRODUCT_FIELD_NAMES.forEach(name => {
+        const input = card.querySelector(`[data-product-field="${name}"]`);
+        if (input) product.fields[name] = input.value;
+      });
+      product.structures = [...card.querySelectorAll("[data-structure-id]")].map(row => ({
+        id: row.dataset.structureId,
+        name: row.querySelector('[data-structure-field="name"]')?.value || "",
+        weight: row.querySelector('[data-structure-field="weight"]')?.value || ""
+      }));
+      if (!product.structures.length) product.structures = [{ id: rowId(), name: "", weight: "" }];
+    }
+
+    function syncAllProducts() {
+      products.forEach(product => syncProductFromCard(product.id));
+    }
+
+    function updateProductSummary(productId) {
+      const product = productById(productId);
+      const card = productCard(productId);
+      if (!product || !card) return;
+      const total = structureTotal(product);
+      const structureField = card.querySelector('[data-product-field="ingredientsStructure"]');
+      const totalWeightText = card.querySelector("[data-total-weight]");
+      const specCompareText = card.querySelector("[data-spec-compare]");
+      if (structureField) structureField.value = structureText(product);
+      if (totalWeightText) totalWeightText.textContent = `自动计算克重：${formatWeight(total)}g`;
+      const spec = specWeight(product);
       if (!spec || !total) {
-        specCompareText.textContent = "可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。";
+        if (specCompareText) specCompareText.textContent = "可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。";
         return;
       }
       const diff = total - spec;
       const sign = diff > 0 ? "+" : "";
-      specCompareText.textContent = `成品规格 ${formatWeight(spec)}g；当前明细合计 ${formatWeight(total)}g；差异 ${sign}${formatWeight(diff)}g。`;
+      if (specCompareText) specCompareText.textContent = `成品规格 ${formatWeight(spec)}g；当前明细合计 ${formatWeight(total)}g；差异 ${sign}${formatWeight(diff)}g。`;
     }
 
-    function renderStructureRows() {
-      structureRowsEl.innerHTML = structureRows.map(row => `
-        <tr data-structure-id="${escapeAttr(row.id)}">
-          <td><input data-structure-field="name" value="${escapeAttr(row.name || "")}" placeholder="如：胚体、奶油、鸡肉、酱料"></td>
-          <td><input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" placeholder="可不填"></td>
-          <td><button class="ghost-button" data-delete-structure="${escapeAttr(row.id)}" type="button">删除</button></td>
-        </tr>
+    function renderProductPreview(productId) {
+      const product = productById(productId);
+      const card = productCard(productId);
+      const preview = card?.querySelector("[data-image-preview]");
+      if (!product || !preview) return;
+      preview.innerHTML = (product.files || []).slice(0, 6).map((file, index) => `
+        <figure>
+          <img src="${URL.createObjectURL(file)}" alt="待上传产品照 ${index + 1}">
+          <figcaption>${escapeAttr(file.name)}</figcaption>
+        </figure>
       `).join("");
-      updateStructureSummary();
     }
 
-    function addStructureRow() {
-      structureRows.push({ id: rowId(), name: "", weight: "" });
-      renderStructureRows();
+    function renderProducts() {
+      productsContainer.innerHTML = products.map(productHtml).join("");
+      products.forEach(product => {
+        updateProductSummary(product.id);
+        renderProductPreview(product.id);
+      });
     }
 
-    function syncStructureRow(target) {
-      const tr = target.closest("[data-structure-id]");
-      if (!tr) return;
-      const row = structureRows.find(item => item.id === tr.dataset.structureId);
-      if (!row) return;
-      row[target.dataset.structureField] = target.value;
-      updateStructureSummary();
-    }
-
-    function formPayload(imagePaths = []) {
-      updateStructureSummary();
+    function productPayload(product, imagePaths = []) {
+      const sharedSupplier = field("supplierName").value.trim();
+      const sharedDate = field("sampleDate").value;
       return {
-        product_name: field("productName").value.trim(),
-        supplier_name: field("supplierName").value.trim(),
-        version_label: field("versionLabel").value.trim(),
-        sample_date: field("sampleDate").value,
-        version_change: field("versionChange").value.trim(),
-        finished_spec: field("finishedSpec").value.trim(),
-        ingredients_structure: field("ingredientsStructure").value.trim(),
+        product_name: productValue(product, "productName").trim(),
+        supplier_name: sharedSupplier,
+        version_label: productValue(product, "versionLabel").trim(),
+        sample_date: sharedDate,
+        version_change: productValue(product, "versionChange").trim(),
+        finished_spec: productValue(product, "finishedSpec").trim(),
+        ingredients_structure: structureText(product).trim(),
         image_paths: imagePaths,
-        quote_rmb: field("quoteRmb").value.trim(),
-        core_ingredients_selling_points: field("coreIngredientsSellingPoints").value.trim(),
-        tasting_scene: field("tastingScene").value,
-        tasting_feedback: field("tastingFeedback").value.trim(),
-        round_conclusion: field("roundConclusion").value,
-        next_step_direction: field("nextStepDirection").value.trim()
+        quote_rmb: productValue(product, "quoteRmb").trim(),
+        core_ingredients_selling_points: productValue(product, "coreIngredientsSellingPoints").trim(),
+        tasting_scene: productValue(product, "tastingScene"),
+        tasting_feedback: productValue(product, "tastingFeedback").trim(),
+        round_conclusion: productValue(product, "roundConclusion"),
+        next_step_direction: productValue(product, "nextStepDirection").trim()
       };
     }
 
@@ -622,17 +747,6 @@
         round_conclusion: field("roundConclusion").value,
         next_step_direction: field("nextStepDirection").value.trim()
       };
-    }
-
-    function renderSelectedFiles() {
-      const files = [...imageInput.files].slice(0, 6);
-      imagePreview.innerHTML = files.map((file, index) => `
-        <figure>
-          <img src="${URL.createObjectURL(file)}" alt="待上传产品照 ${index + 1}">
-          <figcaption>${escapeAttr(file.name)}</figcaption>
-        </figure>
-      `).join("");
-      if (imageInput.files.length > 6) showMessage("最多上传 6 张图片，本次只会提交前 6 张。");
     }
 
     function fileToImage(file) {
@@ -664,8 +778,8 @@
       return blob || file;
     }
 
-    async function uploadImages(recordId, existingImages = []) {
-      const files = [...imageInput.files].slice(0, 6);
+    async function uploadImages(recordId, files, existingImages = []) {
+      files = [...(files || [])].slice(0, 6);
       if (!files.length) return existingImages;
       const uploaded = [];
       for (const [index, file] of files.entries()) {
@@ -721,33 +835,46 @@
     }
 
     async function submitCreate() {
-      const { data, error } = await client.rpc("submit_supplier_feedback", {
-        p_payload: formPayload([])
-      });
-      if (error) throw error;
-      let imageWarning = "";
-      try {
-        const images = await uploadImages(data.id, []);
-        if (images.length) {
-          const { error: updateError } = await client.rpc("update_supplier_feedback", {
-            p_id: data.id,
-            p_edit_token: data.edit_token,
-            p_payload: formPayload(images)
-          });
-          if (updateError) throw updateError;
+      syncAllProducts();
+      const payloads = products.map((product, index) => ({ product, index, payload: productPayload(product, []) }));
+      const missing = payloads.find(item => !item.payload.product_name || !item.payload.version_label);
+      if (missing) throw new Error(`请填写产品 ${missing.index + 1} 的品名和版本。`);
+      if (!payloads.length) throw new Error("请至少填写一个产品。");
+
+      const results = [];
+      for (const item of payloads) {
+        const { data, error } = await client.rpc("submit_supplier_feedback", {
+          p_payload: item.payload
+        });
+        if (error) throw error;
+        let imageWarning = "";
+        try {
+          const images = await uploadImages(data.id, item.product.files, []);
+          if (images.length) {
+            const { error: updateError } = await client.rpc("update_supplier_feedback", {
+              p_id: data.id,
+              p_edit_token: data.edit_token,
+              p_payload: productPayload(item.product, images)
+            });
+            if (updateError) throw updateError;
+          }
+        } catch (error) {
+          imageWarning = `图片没有上传成功：${friendlyError(error)}。基础信息已收到，图片可后续补充给 Peet's。`;
         }
-      } catch (error) {
-        imageWarning = `\n\n图片没有上传成功：${friendlyError(error)}\n基础信息已收到，可以先提交；图片可后续补充给 Peet's。`;
+        results.push({
+          id: data.id,
+          productName: item.payload.product_name,
+          followupCode: data.record?.followup_code || "",
+          imageWarning
+        });
       }
-      return { id: data.id, followupCode: data.record?.followup_code || "", imageWarning };
+      return results;
     }
 
     async function resetFormAfterSubmit() {
       form.reset();
-      imageInput.value = "";
-      imagePreview.innerHTML = "";
-      structureRows = [];
-      addStructureRow();
+      products = [newProduct()];
+      renderProducts();
       followupSummary.style.display = "none";
       followupSummary.textContent = "";
       followupRecord = null;
@@ -756,8 +883,60 @@
     modeButtons.forEach(button => {
       button.addEventListener("click", () => setMode(button.dataset.mode));
     });
-    imageInput.addEventListener("change", renderSelectedFiles);
-    field("finishedSpec").addEventListener("input", updateStructureSummary);
+    addProductBtn.addEventListener("click", () => {
+      syncAllProducts();
+      const product = newProduct();
+      products.push(product);
+      renderProducts();
+      productCard(product.id)?.querySelector('[data-product-field="productName"]')?.focus();
+    });
+    productsContainer.addEventListener("input", event => {
+      const card = event.target.closest("[data-product-id]");
+      if (!card) return;
+      syncProductFromCard(card.dataset.productId);
+      updateProductSummary(card.dataset.productId);
+    });
+    productsContainer.addEventListener("change", event => {
+      const card = event.target.closest("[data-product-id]");
+      if (!card) return;
+      const product = productById(card.dataset.productId);
+      if (event.target.matches("[data-product-images]") && product) {
+        product.files = [...event.target.files].slice(0, 6);
+        renderProductPreview(product.id);
+        if (event.target.files.length > 6) showMessage("每个产品最多上传 6 张图片，本次只会提交前 6 张。");
+        return;
+      }
+      syncProductFromCard(card.dataset.productId);
+      updateProductSummary(card.dataset.productId);
+    });
+    productsContainer.addEventListener("click", event => {
+      const addStructure = event.target.closest("[data-add-structure]");
+      const deleteStructure = event.target.closest("[data-delete-structure]");
+      const deleteProduct = event.target.closest("[data-delete-product]");
+      if (addStructure) {
+        syncAllProducts();
+        const product = productById(addStructure.dataset.addStructure);
+        if (product) product.structures.push({ id: rowId(), name: "", weight: "" });
+        renderProducts();
+        return;
+      }
+      if (deleteStructure) {
+        const card = deleteStructure.closest("[data-product-id]");
+        syncAllProducts();
+        const product = productById(card?.dataset.productId);
+        if (product) {
+          product.structures = product.structures.filter(row => row.id !== deleteStructure.dataset.deleteStructure);
+          if (!product.structures.length) product.structures.push({ id: rowId(), name: "", weight: "" });
+        }
+        renderProducts();
+        return;
+      }
+      if (deleteProduct && products.length > 1) {
+        syncAllProducts();
+        products = products.filter(product => product.id !== deleteProduct.dataset.deleteProduct);
+        renderProducts();
+      }
+    });
     field("followupCode").addEventListener("blur", async () => {
       if (currentMode !== "followup" || !field("followupCode").value.trim() || !supabaseReady) return;
       try {
@@ -767,20 +946,6 @@
         followupSummary.textContent = "";
         showMessage(friendlyError(error), "error");
       }
-    });
-    addStructureBtn.addEventListener("click", () => addStructureRow());
-    structureRowsEl.addEventListener("input", event => {
-      if (event.target.matches("[data-structure-field]")) syncStructureRow(event.target);
-    });
-    structureRowsEl.addEventListener("change", event => {
-      if (event.target.matches("[data-structure-field]")) syncStructureRow(event.target);
-    });
-    structureRowsEl.addEventListener("click", event => {
-      const button = event.target.closest("[data-delete-structure]");
-      if (!button) return;
-      structureRows = structureRows.filter(row => row.id !== button.dataset.deleteStructure);
-      if (!structureRows.length) structureRows.push({ id: rowId(), name: "", weight: "" });
-      renderStructureRows();
     });
 
     form.addEventListener("submit", async event => {
@@ -799,10 +964,12 @@
           setMode("followup");
           showMessage(`现场反馈已补充，系统已合并到原记录。\n${compactRecordSummary(record)}`, "success");
         } else {
-          const result = await submitCreate();
+          const results = await submitCreate();
           await resetFormAfterSubmit();
-          const codeText = result.followupCode ? `\n提交编号：${result.followupCode}\n测试后补充现场反馈时，只需要填写这个编号。` : "";
-          showMessage(`已提交，Peet's 会在后台确认。${codeText}${result.imageWarning || ""}`, result.imageWarning ? "error" : "success");
+          const codeText = results.map((result, index) => `产品 ${index + 1}：${result.productName}${result.followupCode ? `｜提交编号：${result.followupCode}` : ""}`).join("\n");
+          const warnings = results.map(result => result.imageWarning).filter(Boolean);
+          const warningText = warnings.length ? `\n\n${warnings.join("\n")}` : "";
+          showMessage(`已提交 ${results.length} 个产品，Peet's 会在后台确认。\n${codeText}\n测试后补充现场反馈时，请使用对应产品的提交编号。${warningText}`, warnings.length ? "error" : "success");
         }
       } catch (error) {
         showMessage(friendlyError(error), "error");
@@ -812,7 +979,8 @@
       }
     });
 
-    addStructureRow();
+    products = [newProduct()];
+    renderProducts();
     setMode("create");
     if (!supabaseReady) {
       showMessage("Supabase 尚未配置。请先填写 supabase-config.js。", "error");

@@ -189,6 +189,22 @@
       min-width: 190px;
     }
     .stack.compact { min-width: 130px; }
+    .field-block {
+      display: grid;
+      gap: 4px;
+    }
+    .field-block span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .import-state {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .import-state.ok { color: var(--accent); }
+    .import-state.warn { color: var(--danger); }
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -259,8 +275,7 @@
         <select id="statusFilter">
           <option value="">全部状态</option>
           <option value="待处理">待处理</option>
-          <option value="已导入">已导入</option>
-          <option value="已归档">已归档</option>
+          <option value="已确认">已确认</option>
         </select>
         <button class="primary" id="loadBtn" type="button">刷新</button>
         <button id="exportBtn" type="button">导出 CSV</button>
@@ -274,7 +289,7 @@
           <thead>
             <tr>
               <th>产品照</th>
-              <th>供应商提交</th>
+              <th>供应商提交 / 调整点</th>
               <th>规格 / 结构 / 卖点</th>
               <th>现场反馈</th>
               <th>下一步</th>
@@ -366,6 +381,26 @@
       return `<textarea data-field="${escapeHtml(field)}" ${disabled} placeholder="${escapeHtml(placeholder)}">${escapeHtml(value || "")}</textarea>`;
     }
 
+    function fieldBlock(label, html) {
+      return `<label class="field-block"><span>${escapeHtml(label)}</span>${html}</label>`;
+    }
+
+    function categoryLabData() {
+      const raw = localStorage.getItem(CATEGORYLAB_STORAGE_KEY);
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function isImportedToCategoryLab(row) {
+      const data = categoryLabData();
+      const devRecords = Array.isArray(data?.devRecords) ? data.devRecords : [];
+      return devRecords.some(item => item.supplierSubmissionId === row.id || item.id === `supplier-${row.id}`);
+    }
+
     function visibleRecords() {
       const status = statusFilter.value;
       const q = searchInput.value.trim().toLowerCase();
@@ -390,13 +425,15 @@
     function renderProfile() {
       const total = records.length;
       const pending = records.filter(row => row.status === "待处理").length;
-      const imported = records.filter(row => row.status === "已导入").length;
+      const confirmed = records.filter(row => row.status === "已确认").length;
+      const missingImport = records.filter(row => row.status === "已确认" && !isImportedToCategoryLab(row)).length;
       profileBar.innerHTML = `
         <span class="pill">${escapeHtml(profile?.display_name || profile?.email || "")}</span>
         <span class="pill">权限：${escapeHtml(profile?.role || "viewer")}</span>
         <span class="pill">总计 ${total}</span>
         <span class="pill">待处理 ${pending}</span>
-        <span class="pill">已导入 ${imported}</span>
+        <span class="pill">已确认 ${confirmed}</span>
+        <span class="pill">已确认未导入 ${missingImport}</span>
       `;
     }
 
@@ -406,6 +443,9 @@
       const disabled = roleCanEdit() ? "" : "disabled";
       rowsEl.innerHTML = rows.map(row => {
         const imgs = imageUrls(row);
+        const imported = isImportedToCategoryLab(row);
+        const importText = imported ? "已导入 Category Lab" : "未导入 Category Lab";
+        const importClass = imported ? "import-state ok" : row.status === "已确认" ? "import-state warn" : "import-state";
         return `
           <tr data-row="${escapeHtml(row.id)}">
             <td>
@@ -415,11 +455,11 @@
             </td>
             <td>
               <div class="stack">
-                ${inputHtml("product_name", row.product_name, "品名", disabled)}
-                ${inputHtml("supplier_name", row.supplier_name, "供应商", disabled)}
-                ${inputHtml("version_label", row.version_label, "版本", disabled)}
-                ${inputHtml("sample_date", row.sample_date, "", disabled, "date")}
-                ${textareaHtml("version_change", row.version_change, "本版调整点", disabled)}
+                ${fieldBlock("品名", inputHtml("product_name", row.product_name, "品名", disabled))}
+                ${fieldBlock("供应商", inputHtml("supplier_name", row.supplier_name, "供应商", disabled))}
+                ${fieldBlock("版本", inputHtml("version_label", row.version_label, "版本", disabled))}
+                ${fieldBlock("送样时间", inputHtml("sample_date", row.sample_date, "", disabled, "date"))}
+                ${fieldBlock("本版调整点", textareaHtml("version_change", row.version_change, "本版调整点", disabled))}
               </div>
               <div class="muted">提交编号：${escapeHtml(row.followup_code || "-")}</div>
               <div class="muted">送样：${escapeHtml(row.sample_date || "")}</div>
@@ -427,34 +467,37 @@
             </td>
             <td>
               <div class="stack">
-                ${inputHtml("finished_spec", row.finished_spec, "成品规格", disabled)}
-                ${inputHtml("quote_rmb", row.quote_rmb, "报价（元）", disabled)}
-                ${textareaHtml("ingredients_structure", row.ingredients_structure, "产品结构", disabled)}
-                ${textareaHtml("core_ingredients_selling_points", row.core_ingredients_selling_points, "核心原料及卖点", disabled)}
+                ${fieldBlock("成品规格（克）", inputHtml("finished_spec", row.finished_spec, "成品规格（克）", disabled))}
+                ${fieldBlock("报价（元，含税含运）", inputHtml("quote_rmb", row.quote_rmb, "报价（元，含税含运）", disabled))}
+                ${fieldBlock("产品结构", textareaHtml("ingredients_structure", row.ingredients_structure, "产品结构", disabled))}
+                ${fieldBlock("核心原料及卖点", textareaHtml("core_ingredients_selling_points", row.core_ingredients_selling_points, "核心原料及卖点", disabled))}
               </div>
             </td>
             <td>
               <div class="stack">
-                <select data-field="tasting_scene" ${disabled}>
+                ${fieldBlock("测试场景 / 反馈来源", `<select data-field="tasting_scene" ${disabled}>
                   ${optionHtml(["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], row.tasting_scene || "")}
-                </select>
-                <textarea data-field="tasting_feedback" ${disabled} placeholder="测试反馈">${escapeHtml(row.tasting_feedback || "")}</textarea>
-                <select data-field="round_conclusion" ${disabled}>
+                </select>`)}
+                ${fieldBlock("测试反馈", `<textarea data-field="tasting_feedback" ${disabled} placeholder="测试反馈">${escapeHtml(row.tasting_feedback || "")}</textarea>`)}
+                ${fieldBlock("本轮结论", `<select data-field="round_conclusion" ${disabled}>
                   ${optionHtml(["", "继续调整", "暂停", "通过且储备", "通过且进入众测"], row.round_conclusion || "")}
-                </select>
+                </select>`)}
               </div>
             </td>
-            <td><textarea data-field="next_step_direction" ${disabled} placeholder="下一步改进方向">${escapeHtml(row.next_step_direction || "")}</textarea></td>
-            <td><textarea data-field="key_blocker" ${disabled} placeholder="关键卡点 / 备注">${escapeHtml(row.key_blocker || "")}</textarea></td>
+            <td>${fieldBlock("下一步改进方向", `<textarea data-field="next_step_direction" ${disabled} placeholder="下一步改进方向">${escapeHtml(row.next_step_direction || "")}</textarea>`)}</td>
+            <td>${fieldBlock("关键卡点 / 备注", `<textarea data-field="key_blocker" ${disabled} placeholder="关键卡点 / 备注">${escapeHtml(row.key_blocker || "")}</textarea>`)}</td>
             <td>
-              <select data-field="status" ${disabled}>
-                ${optionHtml(["待处理", "已导入", "已归档"], row.status || "待处理")}
-              </select>
+              <div class="stack compact">
+                ${fieldBlock("处理状态", `<select data-field="status" ${disabled}>
+                  ${optionHtml(["待处理", "已确认"], row.status || "待处理")}
+                </select>`)}
+                <div class="${importClass}">${importText}</div>
+              </div>
             </td>
             <td>
               <div class="actions">
                 <button data-save="${escapeHtml(row.id)}" ${disabled} type="button">保存</button>
-                <button data-import="${escapeHtml(row.id)}" ${disabled} type="button">导入</button>
+                <button data-import="${escapeHtml(row.id)}" ${disabled} type="button">${imported ? "更新导入" : "导入"}</button>
                 <button class="danger" data-delete="${escapeHtml(row.id)}" ${disabled} type="button">删除</button>
               </div>
             </td>
@@ -486,6 +529,10 @@
         if (error) throw error;
         records = data || [];
         renderRows();
+        const missingImport = records.filter(row => row.status === "已确认" && !isImportedToCategoryLab(row)).length;
+        if (missingImport > 0) {
+          showMessage(`有 ${missingImport} 条已确认记录还没有导入 Category Lab。`, "");
+        }
       } catch (error) {
         showMessage(error.message || "读取失败。", "error");
       } finally {
@@ -554,7 +601,11 @@
       const index = records.findIndex(row => row.id === id);
       if (index >= 0) records[index] = data;
       renderRows();
-      showMessage("已保存。", "success");
+      if (data.status === "已确认" && !isImportedToCategoryLab(data)) {
+        showMessage("已保存。这条记录已确认，但还没有导入 Category Lab。", "");
+      } else {
+        showMessage("已保存。", "success");
+      }
     }
 
     function categoryLabRecord(row) {
@@ -609,7 +660,7 @@
       if (!roleCanEdit()) return;
       const row = records.find(item => item.id === id);
       if (!row) return;
-      const payload = { ...rowPayload(id), status: "已导入" };
+      const payload = { ...rowPayload(id), status: "已确认" };
       const mergedRow = { ...row, ...payload };
       const raw = localStorage.getItem(CATEGORYLAB_STORAGE_KEY);
       if (!raw) {
@@ -671,16 +722,17 @@
         "提交编号",
         "送样时间",
         "本版调整点",
-        "成品规格",
+        "成品规格（克）",
         "产品结构",
         "产品照",
         "测试场景 / 反馈来源",
         "测试反馈",
         "本轮结论",
         "下一步改进方向",
-        "报价（元）",
+        "报价（元，含税含运）",
         "核心原料及卖点",
         "关键卡点 / 备注",
+        "Category Lab 导入",
         "状态"
       ];
       const rows = visibleRecords().map(row => [
@@ -700,6 +752,7 @@
         row.quote_rmb,
         row.core_ingredients_selling_points,
         row.key_blocker,
+        isImportedToCategoryLab(row) ? "已导入 Category Lab" : "未导入 Category Lab",
         row.status
       ]);
       const csv = [headers, ...rows].map(row => row.map(csvEscape).join(",")).join("\n");
