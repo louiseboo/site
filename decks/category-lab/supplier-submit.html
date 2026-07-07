@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>供应商送样信息提交</title>
+  <title>供应商产品信息提交</title>
   <style>
     :root {
       --paper: #f7f3ea;
@@ -78,6 +78,28 @@
       font-size: 16px;
       font-weight: 900;
     }
+    .mode-switch {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .mode-button[aria-pressed="true"] {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: #fff;
+    }
+    .followup-summary {
+      display: none;
+      margin-top: 10px;
+      border: 1px solid #eadfce;
+      border-radius: 6px;
+      background: #fff;
+      padding: 10px 11px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .hidden { display: none !important; }
     .grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -93,7 +115,7 @@
       font-size: 13px;
       font-weight: 900;
     }
-    input, textarea {
+    input, select, textarea {
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 6px;
@@ -103,16 +125,58 @@
       padding: 10px 11px;
       outline: none;
     }
-    input:focus, textarea:focus {
+    input:focus, select:focus, textarea:focus {
       border-color: #b18a47;
       box-shadow: 0 0 0 3px rgba(177, 138, 71, 0.16);
     }
+    select { min-height: 45px; }
     textarea {
       min-height: 98px;
       resize: vertical;
     }
     .field-note {
       margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .structure-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .weight-summary {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .structure-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .structure-table th,
+    .structure-table td {
+      border: 1px solid #eadfce;
+      padding: 8px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    .structure-table th {
+      background: #f2eadc;
+      color: #3e352b;
+      font-size: 12px;
+    }
+    .structure-table .weight-cell { width: 150px; }
+    .structure-table .action-cell { width: 82px; }
+    .ghost-button {
+      min-height: 36px;
+      padding: 7px 10px;
+    }
+    .spec-compare {
+      margin: 8px 0 0;
       color: var(--muted);
       font-size: 12px;
     }
@@ -212,6 +276,11 @@
       .span-2, .span-3 { grid-column: auto; }
       .actions { justify-content: stretch; }
       button, .link-button { width: 100%; }
+      .mode-switch { display: grid; }
+      .structure-tools { align-items: stretch; }
+      .weight-summary { width: 100%; margin-left: 0; }
+      .structure-table { min-width: 560px; }
+      .structure-builder { overflow-x: auto; }
     }
   </style>
 </head>
@@ -220,15 +289,34 @@
     <header>
       <div>
         <p class="eyebrow">Category Lab Supplier Form</p>
-        <h1>供应商送样信息提交</h1>
+        <h1>供应商产品信息提交</h1>
       </div>
-      <div class="status-pill" id="modePill">新增提交</div>
+      <div class="status-pill">公开提交</div>
     </header>
 
     <section class="panel">
       <form id="submissionForm">
         <div class="section">
-          <p class="section-title">送样基础信息</p>
+          <p class="section-title">提交类型</p>
+          <div class="mode-switch" role="group" aria-label="提交类型">
+            <button class="mode-button" data-mode="create" type="button" aria-pressed="true">提交测试前资料</button>
+            <button class="mode-button" data-mode="followup" type="button" aria-pressed="false">补充现场反馈</button>
+          </div>
+        </div>
+
+        <div class="section hidden" data-followup-code-section>
+          <p class="section-title">对应记录</p>
+          <div class="grid two">
+            <div>
+              <label for="followupCode">提交编号 *</label>
+              <input id="followupCode" name="followupCode" autocomplete="off" placeholder="第一段提交成功后显示的编号">
+            </div>
+          </div>
+          <div class="followup-summary" id="followupSummary"></div>
+        </div>
+
+        <div class="section" data-mode-section="create">
+          <p class="section-title">第一段：测试前资料</p>
           <div class="grid">
             <div>
               <label for="productName">品名 *</label>
@@ -236,10 +324,7 @@
             </div>
             <div>
               <label for="supplierName">供应商 *</label>
-              <input id="supplierName" name="supplierName" list="supplierList" required autocomplete="organization" placeholder="供应商公司简称">
-              <datalist id="supplierList">
-                <option value="怡安"></option>
-              </datalist>
+              <input id="supplierName" name="supplierName" required autocomplete="organization" placeholder="供应商公司简称">
             </div>
             <div>
               <label for="versionLabel">版本 *</label>
@@ -261,8 +346,8 @@
           </div>
         </div>
 
-        <div class="section">
-          <p class="section-title">产品说明</p>
+        <div class="section" data-mode-section="create">
+          <p class="section-title">产品结构 / 产品说明</p>
           <div class="grid two">
             <div>
               <label for="versionChange">本版调整点</label>
@@ -273,13 +358,64 @@
               <textarea id="coreIngredientsSellingPoints" name="coreIngredientsSellingPoints" placeholder="已确定时填写；未确定可暂空。"></textarea>
             </div>
             <div class="span-2">
-              <label for="ingredientsStructure">配料 / 结构</label>
-              <textarea id="ingredientsStructure" name="ingredientsStructure" placeholder="按从下到上、从外到内，写清坯体、夹心、酱料、装饰和克重。"></textarea>
+              <label for="ingredientsStructure">产品结构</label>
+              <div class="structure-builder">
+                <div class="structure-tools">
+                  <button class="ghost-button" id="addStructureBtn" type="button">新增产品结构 / 配料</button>
+                  <span class="weight-summary" id="totalWeightText">自动计算克重：0g</span>
+                </div>
+                <table class="structure-table" aria-label="产品结构明细">
+                  <thead>
+                    <tr>
+                      <th>名称</th>
+                      <th class="weight-cell">重量(g)</th>
+                      <th class="action-cell">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="structureRows"></tbody>
+                </table>
+              </div>
+              <textarea id="ingredientsStructure" name="ingredientsStructure" hidden></textarea>
+              <p class="spec-compare" id="specCompareText">可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。</p>
             </div>
           </div>
         </div>
 
-        <div class="section">
+        <div class="section" data-mode-section="feedback">
+          <p class="section-title">第二段：现场反馈（测试后如有）</p>
+          <div class="grid two">
+            <div>
+              <label for="tastingScene">测试场景 / 反馈来源</label>
+              <select id="tastingScene" name="tastingScene">
+                <option value="">请选择</option>
+                <option value="前期打磨测试">前期打磨测试</option>
+                <option value="众测后优化">众测后优化</option>
+                <option value="中试后优化">中试后优化</option>
+                <option value="上市后优化">上市后优化</option>
+              </select>
+            </div>
+            <div>
+              <label for="roundConclusion">本轮结论</label>
+              <select id="roundConclusion" name="roundConclusion">
+                <option value="">请选择</option>
+                <option value="继续调整">继续调整</option>
+                <option value="暂停">暂停</option>
+                <option value="通过且储备">通过且储备</option>
+                <option value="通过且进入众测">通过且进入众测</option>
+              </select>
+            </div>
+            <div>
+              <label for="tastingFeedback">测试反馈</label>
+              <textarea id="tastingFeedback" name="tastingFeedback" placeholder="如现场已有 Peet's 反馈，可记录口头反馈；测试前可暂空。"></textarea>
+            </div>
+            <div>
+              <label for="nextStepDirection">下一步改进方向</label>
+              <textarea id="nextStepDirection" name="nextStepDirection" placeholder="只写需要供应商调整的方向，例如颜色、甜度、结构、克重、包装等。"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" data-mode-section="create">
           <p class="section-title">产品照</p>
           <input id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple>
           <p class="field-note">最多 6 张，系统会压缩后上传。</p>
@@ -287,7 +423,6 @@
         </div>
 
         <div class="actions">
-          <a class="link-button" href="/decks/category-lab/categorylab">返回 Category Lab</a>
           <button class="primary" id="submitBtn" type="submit">提交</button>
         </div>
       </form>
@@ -303,19 +438,30 @@
     const form = document.querySelector("#submissionForm");
     const message = document.querySelector("#message");
     const submitBtn = document.querySelector("#submitBtn");
-    const modePill = document.querySelector("#modePill");
     const imageInput = document.querySelector("#images");
     const imagePreview = document.querySelector("#imagePreview");
-    const params = new URLSearchParams(window.location.search);
-    const editId = params.get("id") || params.get("edit") || "";
-    const editToken = params.get("token") || "";
+    const modeButtons = [...document.querySelectorAll("[data-mode]")];
+    const modeSections = [...document.querySelectorAll("[data-mode-section]")];
+    const followupCodeSection = document.querySelector("[data-followup-code-section]");
+    const followupSummary = document.querySelector("#followupSummary");
+    const structureRowsEl = document.querySelector("#structureRows");
+    const addStructureBtn = document.querySelector("#addStructureBtn");
+    const totalWeightText = document.querySelector("#totalWeightText");
+    const specCompareText = document.querySelector("#specCompareText");
     const supabaseReady = Boolean(config.url && config.anonKey && window.supabase);
     const client = supabaseReady ? window.supabase.createClient(config.url, config.anonKey) : null;
-    let currentImages = [];
+    let structureRows = [];
+    let currentMode = "create";
+    let followupRecord = null;
 
     function showMessage(text, type = "") {
       message.className = `message show ${type}`.trim();
       message.textContent = text;
+    }
+
+    function clearMessage() {
+      message.className = "message";
+      message.textContent = "";
     }
 
     function escapeAttr(value) {
@@ -336,7 +482,121 @@
       if (field(name)) field(name).value = value || "";
     }
 
-    function formPayload(imagePaths = currentImages) {
+    function setRequired(name, required) {
+      if (field(name)) field(name).required = required;
+    }
+
+    function numeric(value) {
+      const parsed = Number(String(value || "").replace(/[^0-9.]/g, ""));
+      return Number.isFinite(parsed) ? parsed : 0;
+    }
+
+    function formatWeight(value) {
+      return Number(value || 0).toFixed(2).replace(/\.?0+$/, "");
+    }
+
+    function compactRecordSummary(record) {
+      return [
+        record?.product_name ? `品名：${record.product_name}` : "",
+        record?.supplier_name ? `供应商：${record.supplier_name}` : "",
+        record?.version_label ? `版本：${record.version_label}` : "",
+        record?.sample_date ? `送样时间：${record.sample_date}` : ""
+      ].filter(Boolean).join(" ｜ ");
+    }
+
+    function setMode(mode) {
+      currentMode = mode === "followup" ? "followup" : "create";
+      modeButtons.forEach(button => {
+        button.setAttribute("aria-pressed", button.dataset.mode === currentMode ? "true" : "false");
+      });
+      modeSections.forEach(section => {
+        const show = currentMode === "create" || section.dataset.modeSection === "feedback";
+        section.classList.toggle("hidden", !show);
+      });
+      followupCodeSection.classList.toggle("hidden", currentMode !== "followup");
+      setRequired("productName", currentMode === "create");
+      setRequired("supplierName", currentMode === "create");
+      setRequired("versionLabel", currentMode === "create");
+      setRequired("sampleDate", currentMode === "create");
+      setRequired("followupCode", currentMode === "followup");
+      followupRecord = null;
+      followupSummary.style.display = "none";
+      followupSummary.textContent = "";
+      submitBtn.textContent = currentMode === "followup" ? "提交现场反馈" : "提交";
+      clearMessage();
+    }
+
+    function rowId() {
+      return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
+    }
+
+    function specWeight() {
+      const match = String(field("finishedSpec").value || "").match(/(\d+(?:\.\d+)?)\s*g/i);
+      return match ? Number(match[1]) : 0;
+    }
+
+    function structureTotal() {
+      return structureRows.reduce((sum, row) => sum + numeric(row.weight), 0);
+    }
+
+    function structureText() {
+      const filledRows = structureRows
+        .map(row => ({
+          name: String(row.name || "").trim(),
+          weight: numeric(row.weight)
+        }))
+        .filter(row => row.name || row.weight > 0);
+
+      const lines = filledRows.map(row => {
+        const weightText = row.weight > 0 ? ` ${formatWeight(row.weight)}g` : "";
+        return `${row.name}${weightText}`.trim();
+      });
+      const total = filledRows.reduce((sum, row) => sum + row.weight, 0);
+      if (total > 0) lines.push(`自动计算总克重：${formatWeight(total)}g`);
+      return lines.join("\n");
+    }
+
+    function updateStructureSummary() {
+      const total = structureTotal();
+      field("ingredientsStructure").value = structureText();
+      totalWeightText.textContent = `自动计算克重：${formatWeight(total)}g`;
+      const spec = specWeight();
+      if (!spec || !total) {
+        specCompareText.textContent = "可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。";
+        return;
+      }
+      const diff = total - spec;
+      const sign = diff > 0 ? "+" : "";
+      specCompareText.textContent = `成品规格 ${formatWeight(spec)}g；当前明细合计 ${formatWeight(total)}g；差异 ${sign}${formatWeight(diff)}g。`;
+    }
+
+    function renderStructureRows() {
+      structureRowsEl.innerHTML = structureRows.map(row => `
+        <tr data-structure-id="${escapeAttr(row.id)}">
+          <td><input data-structure-field="name" value="${escapeAttr(row.name || "")}" placeholder="如：胚体、奶油、鸡肉、酱料"></td>
+          <td><input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" placeholder="可不填"></td>
+          <td><button class="ghost-button" data-delete-structure="${escapeAttr(row.id)}" type="button">删除</button></td>
+        </tr>
+      `).join("");
+      updateStructureSummary();
+    }
+
+    function addStructureRow() {
+      structureRows.push({ id: rowId(), name: "", weight: "" });
+      renderStructureRows();
+    }
+
+    function syncStructureRow(target) {
+      const tr = target.closest("[data-structure-id]");
+      if (!tr) return;
+      const row = structureRows.find(item => item.id === tr.dataset.structureId);
+      if (!row) return;
+      row[target.dataset.structureField] = target.value;
+      updateStructureSummary();
+    }
+
+    function formPayload(imagePaths = []) {
+      updateStructureSummary();
       return {
         product_name: field("productName").value.trim(),
         supplier_name: field("supplierName").value.trim(),
@@ -347,31 +607,21 @@
         ingredients_structure: field("ingredientsStructure").value.trim(),
         image_paths: imagePaths,
         quote_rmb: field("quoteRmb").value.trim(),
-        core_ingredients_selling_points: field("coreIngredientsSellingPoints").value.trim()
+        core_ingredients_selling_points: field("coreIngredientsSellingPoints").value.trim(),
+        tasting_scene: field("tastingScene").value,
+        tasting_feedback: field("tastingFeedback").value.trim(),
+        round_conclusion: field("roundConclusion").value,
+        next_step_direction: field("nextStepDirection").value.trim()
       };
     }
 
-    function fillForm(row) {
-      setField("productName", row.product_name);
-      setField("supplierName", row.supplier_name);
-      setField("versionLabel", row.version_label);
-      setField("sampleDate", row.sample_date);
-      setField("versionChange", row.version_change);
-      setField("finishedSpec", row.finished_spec);
-      setField("ingredientsStructure", row.ingredients_structure);
-      setField("quoteRmb", row.quote_rmb);
-      setField("coreIngredientsSellingPoints", row.core_ingredients_selling_points);
-      currentImages = Array.isArray(row.image_paths) ? row.image_paths : [];
-      renderImages(currentImages);
-    }
-
-    function renderImages(images) {
-      imagePreview.innerHTML = (images || []).map((image, index) => `
-        <figure>
-          <img src="${escapeAttr(image.publicUrl || image.url || "")}" alt="产品照 ${index + 1}">
-          <figcaption>${escapeAttr(image.name || `产品照 ${index + 1}`)}</figcaption>
-        </figure>
-      `).join("");
+    function feedbackPayload() {
+      return {
+        tasting_scene: field("tastingScene").value,
+        tasting_feedback: field("tastingFeedback").value.trim(),
+        round_conclusion: field("roundConclusion").value,
+        next_step_direction: field("nextStepDirection").value.trim()
+      };
     }
 
     function renderSelectedFiles() {
@@ -399,7 +649,7 @@
       const img = new Image();
       await new Promise((resolve, reject) => {
         img.onload = resolve;
-        img.onerror = reject;
+        img.onerror = () => reject(new Error("图片无法读取，请使用 JPG、PNG 或 WebP 格式。"));
         img.src = rawDataUrl;
       });
 
@@ -437,20 +687,37 @@
       return [...existingImages, ...uploaded].slice(0, 6);
     }
 
-    async function loadEditRecord() {
-      if (!editId || !editToken) return;
-      modePill.textContent = "修改提交";
-      submitBtn.textContent = "保存修改";
-      const { data, error } = await client.rpc("get_supplier_feedback_for_edit", {
-        p_id: editId,
-        p_edit_token: editToken
-      });
-      if (error) throw error;
-      fillForm(data);
+    function friendlyError(error) {
+      const text = error?.message || String(error || "");
+      if (text.includes("Failed to fetch")) return "网络请求失败。请先确认网络可以访问 Supabase；如果刚才上传了图片，请先去掉图片再提交一次。";
+      if (text.includes("品名不能为空") || text.includes("供应商不能为空")) return text;
+      if (text.includes("提交编号不存在")) return "提交编号不存在，请检查第一段提交成功后显示的编号。";
+      return text || "提交失败。";
     }
 
-    function editUrl(id, token) {
-      return `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(id)}&token=${encodeURIComponent(token)}`;
+    async function loadFollowupRecord() {
+      const code = field("followupCode").value.trim().toUpperCase();
+      if (!code) return null;
+      const { data, error } = await client.rpc("get_supplier_feedback_by_followup_code", {
+        p_followup_code: code
+      });
+      if (error) throw error;
+      followupRecord = data || null;
+      followupSummary.style.display = followupRecord ? "block" : "none";
+      followupSummary.textContent = followupRecord ? compactRecordSummary(followupRecord) : "";
+      return followupRecord;
+    }
+
+    async function submitFollowup() {
+      const code = field("followupCode").value.trim().toUpperCase();
+      if (!code) throw new Error("请填写提交编号。");
+      const { data, error } = await client.rpc("complete_supplier_feedback", {
+        p_followup_code: code,
+        p_payload: feedbackPayload()
+      });
+      if (error) throw error;
+      followupRecord = data;
+      return data;
     }
 
     async function submitCreate() {
@@ -458,34 +725,63 @@
         p_payload: formPayload([])
       });
       if (error) throw error;
-      const images = await uploadImages(data.id, []);
-      if (images.length) {
-        const { data: updated, error: updateError } = await client.rpc("update_supplier_feedback", {
-          p_id: data.id,
-          p_edit_token: data.edit_token,
-          p_payload: formPayload(images)
-        });
-        if (updateError) throw updateError;
-        fillForm(updated);
-      } else {
-        fillForm(data.record);
+      let imageWarning = "";
+      try {
+        const images = await uploadImages(data.id, []);
+        if (images.length) {
+          const { error: updateError } = await client.rpc("update_supplier_feedback", {
+            p_id: data.id,
+            p_edit_token: data.edit_token,
+            p_payload: formPayload(images)
+          });
+          if (updateError) throw updateError;
+        }
+      } catch (error) {
+        imageWarning = `\n\n图片没有上传成功：${friendlyError(error)}\n基础信息已收到，可以先提交；图片可后续补充给 Peet's。`;
       }
-      return { id: data.id, token: data.edit_token };
+      return { id: data.id, followupCode: data.record?.followup_code || "", imageWarning };
     }
 
-    async function submitUpdate() {
-      const images = await uploadImages(editId, currentImages);
-      const { data, error } = await client.rpc("update_supplier_feedback", {
-        p_id: editId,
-        p_edit_token: editToken,
-        p_payload: formPayload(images)
-      });
-      if (error) throw error;
-      fillForm(data);
-      return { id: editId, token: editToken };
+    async function resetFormAfterSubmit() {
+      form.reset();
+      imageInput.value = "";
+      imagePreview.innerHTML = "";
+      structureRows = [];
+      addStructureRow();
+      followupSummary.style.display = "none";
+      followupSummary.textContent = "";
+      followupRecord = null;
     }
 
+    modeButtons.forEach(button => {
+      button.addEventListener("click", () => setMode(button.dataset.mode));
+    });
     imageInput.addEventListener("change", renderSelectedFiles);
+    field("finishedSpec").addEventListener("input", updateStructureSummary);
+    field("followupCode").addEventListener("blur", async () => {
+      if (currentMode !== "followup" || !field("followupCode").value.trim() || !supabaseReady) return;
+      try {
+        await loadFollowupRecord();
+      } catch (error) {
+        followupSummary.style.display = "none";
+        followupSummary.textContent = "";
+        showMessage(friendlyError(error), "error");
+      }
+    });
+    addStructureBtn.addEventListener("click", () => addStructureRow());
+    structureRowsEl.addEventListener("input", event => {
+      if (event.target.matches("[data-structure-field]")) syncStructureRow(event.target);
+    });
+    structureRowsEl.addEventListener("change", event => {
+      if (event.target.matches("[data-structure-field]")) syncStructureRow(event.target);
+    });
+    structureRowsEl.addEventListener("click", event => {
+      const button = event.target.closest("[data-delete-structure]");
+      if (!button) return;
+      structureRows = structureRows.filter(row => row.id !== button.dataset.deleteStructure);
+      if (!structureRows.length) structureRows.push({ id: rowId(), name: "", weight: "" });
+      renderStructureRows();
+    });
 
     form.addEventListener("submit", async event => {
       event.preventDefault();
@@ -495,25 +791,31 @@
       }
       if (!form.reportValidity()) return;
       submitBtn.disabled = true;
-      submitBtn.textContent = editId ? "保存中..." : "提交中...";
+      submitBtn.textContent = "提交中...";
       try {
-        const result = editId && editToken ? await submitUpdate() : await submitCreate();
-        const link = editUrl(result.id, result.token);
-        await navigator.clipboard?.writeText(link).catch(() => {});
-        imageInput.value = "";
-        showMessage(`已提交。\n\n修改链接：\n${link}`, "success");
+        if (currentMode === "followup") {
+          const record = await submitFollowup();
+          await resetFormAfterSubmit();
+          setMode("followup");
+          showMessage(`现场反馈已补充，系统已合并到原记录。\n${compactRecordSummary(record)}`, "success");
+        } else {
+          const result = await submitCreate();
+          await resetFormAfterSubmit();
+          const codeText = result.followupCode ? `\n提交编号：${result.followupCode}\n测试后补充现场反馈时，只需要填写这个编号。` : "";
+          showMessage(`已提交，Peet's 会在后台确认。${codeText}${result.imageWarning || ""}`, result.imageWarning ? "error" : "success");
+        }
       } catch (error) {
-        showMessage(error.message || "提交失败。", "error");
+        showMessage(friendlyError(error), "error");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = editId ? "保存修改" : "提交";
+        submitBtn.textContent = currentMode === "followup" ? "提交现场反馈" : "提交";
       }
     });
 
+    addStructureRow();
+    setMode("create");
     if (!supabaseReady) {
       showMessage("Supabase 尚未配置。请先填写 supabase-config.js。", "error");
-    } else {
-      loadEditRecord().catch(error => showMessage(error.message || "无法加载记录。", "error"));
     }
   </script>
 </body>

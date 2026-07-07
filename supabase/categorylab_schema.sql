@@ -14,6 +14,7 @@ create table if not exists public.categorylab_profiles (
 create table if not exists public.supplier_feedback_records (
   id uuid primary key default gen_random_uuid(),
   edit_token_hash text not null,
+  followup_code text,
   product_name text not null,
   supplier_name text not null,
   version_label text,
@@ -36,11 +37,18 @@ create table if not exists public.supplier_feedback_records (
   updated_at timestamptz not null default now()
 );
 
+alter table public.supplier_feedback_records
+  add column if not exists followup_code text;
+
 create index if not exists supplier_feedback_records_created_at_idx
   on public.supplier_feedback_records (created_at desc);
 
 create index if not exists supplier_feedback_records_supplier_idx
   on public.supplier_feedback_records (supplier_name);
+
+create unique index if not exists supplier_feedback_records_followup_code_idx
+  on public.supplier_feedback_records (followup_code)
+  where followup_code is not null;
 
 create or replace function public.categorylab_set_updated_at()
 returns trigger
@@ -129,6 +137,32 @@ begin
 end;
 $$;
 
+create or replace function public.categorylab_generate_followup_code()
+returns text
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  v_code text;
+begin
+  loop
+    v_code := upper(substr(encode(extensions.gen_random_bytes(5), 'hex'), 1, 8));
+    exit when not exists (
+      select 1
+      from public.supplier_feedback_records
+      where followup_code = v_code
+    );
+  end loop;
+  return v_code;
+end;
+$$;
+
+update public.supplier_feedback_records
+set followup_code = upper(substr(replace(id::text, '-', ''), 1, 8))
+where followup_code is null;
+
 create or replace function public.categorylab_public_record(record_row public.supplier_feedback_records)
 returns jsonb
 language sql
@@ -162,6 +196,7 @@ begin
   insert into public.supplier_feedback_records (
     id,
     edit_token_hash,
+    followup_code,
     product_name,
     supplier_name,
     version_label,
@@ -172,12 +207,18 @@ begin
     image_paths,
     quote_rmb,
     core_ingredients_selling_points,
+    tasting_scene,
+    tasting_feedback,
+    round_conclusion,
+    next_step_direction,
+    key_blocker,
     created_by,
     status
   )
   values (
     v_id,
     public.categorylab_hash_token(v_token),
+    public.categorylab_generate_followup_code(),
     v_product_name,
     v_supplier_name,
     nullif(btrim(p_payload ->> 'version_label'), ''),
@@ -188,6 +229,11 @@ begin
     coalesce(p_payload -> 'image_paths', '[]'::jsonb),
     public.categorylab_quote_to_numeric(p_payload ->> 'quote_rmb'),
     nullif(btrim(p_payload ->> 'core_ingredients_selling_points'), ''),
+    nullif(btrim(p_payload ->> 'tasting_scene'), ''),
+    nullif(btrim(p_payload ->> 'tasting_feedback'), ''),
+    nullif(btrim(p_payload ->> 'round_conclusion'), ''),
+    nullif(btrim(p_payload ->> 'next_step_direction'), ''),
+    nullif(btrim(p_payload ->> 'key_blocker'), ''),
     auth.uid(),
     '待处理'
   )
@@ -198,6 +244,54 @@ begin
     'edit_token', v_token,
     'record', public.categorylab_public_record(v_row)
   );
+end;
+$$;
+
+create or replace function public.get_supplier_feedback_by_followup_code(p_followup_code text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_row public.supplier_feedback_records;
+begin
+  select *
+  into v_row
+  from public.supplier_feedback_records
+  where followup_code = upper(btrim(coalesce(p_followup_code, '')));
+
+  if not found then
+    raise exception '提交编号不存在';
+  end if;
+
+  return public.categorylab_public_record(v_row);
+end;
+$$;
+
+create or replace function public.complete_supplier_feedback(p_followup_code text, p_payload jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_row public.supplier_feedback_records;
+begin
+  update public.supplier_feedback_records
+  set
+    tasting_scene = nullif(btrim(p_payload ->> 'tasting_scene'), ''),
+    tasting_feedback = nullif(btrim(p_payload ->> 'tasting_feedback'), ''),
+    round_conclusion = nullif(btrim(p_payload ->> 'round_conclusion'), ''),
+    next_step_direction = nullif(btrim(p_payload ->> 'next_step_direction'), '')
+  where followup_code = upper(btrim(coalesce(p_followup_code, '')))
+  returning * into v_row;
+
+  if not found then
+    raise exception '提交编号不存在';
+  end if;
+
+  return public.categorylab_public_record(v_row);
 end;
 $$;
 
@@ -254,7 +348,12 @@ begin
     ingredients_structure = nullif(btrim(p_payload ->> 'ingredients_structure'), ''),
     image_paths = coalesce(p_payload -> 'image_paths', image_paths),
     quote_rmb = public.categorylab_quote_to_numeric(p_payload ->> 'quote_rmb'),
-    core_ingredients_selling_points = nullif(btrim(p_payload ->> 'core_ingredients_selling_points'), '')
+    core_ingredients_selling_points = nullif(btrim(p_payload ->> 'core_ingredients_selling_points'), ''),
+    tasting_scene = nullif(btrim(p_payload ->> 'tasting_scene'), ''),
+    tasting_feedback = nullif(btrim(p_payload ->> 'tasting_feedback'), ''),
+    round_conclusion = nullif(btrim(p_payload ->> 'round_conclusion'), ''),
+    next_step_direction = nullif(btrim(p_payload ->> 'next_step_direction'), ''),
+    key_blocker = nullif(btrim(p_payload ->> 'key_blocker'), '')
   where id = p_id
     and edit_token_hash = public.categorylab_hash_token(p_edit_token)
   returning * into v_row;
@@ -307,12 +406,23 @@ to authenticated
 using (public.categorylab_has_role(array['owner', 'pm']))
 with check (public.categorylab_has_role(array['owner', 'pm']));
 
+drop policy if exists "supplier feedback internal delete" on public.supplier_feedback_records;
+create policy "supplier feedback internal delete"
+on public.supplier_feedback_records
+for delete
+to authenticated
+using (public.categorylab_has_role(array['owner', 'pm']));
+
 revoke all on function public.submit_supplier_feedback(jsonb) from public;
 revoke all on function public.get_supplier_feedback_for_edit(uuid, text) from public;
 revoke all on function public.update_supplier_feedback(uuid, text, jsonb) from public;
+revoke all on function public.get_supplier_feedback_by_followup_code(text) from public;
+revoke all on function public.complete_supplier_feedback(text, jsonb) from public;
 grant execute on function public.submit_supplier_feedback(jsonb) to anon, authenticated;
 grant execute on function public.get_supplier_feedback_for_edit(uuid, text) to anon, authenticated;
 grant execute on function public.update_supplier_feedback(uuid, text, jsonb) to anon, authenticated;
+grant execute on function public.get_supplier_feedback_by_followup_code(text) to anon, authenticated;
+grant execute on function public.complete_supplier_feedback(text, jsonb) to anon, authenticated;
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
