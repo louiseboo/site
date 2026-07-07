@@ -11,6 +11,16 @@
       "source": "/decks/category-lab/category-lab.html",
       "destination": "/decks/category-lab/categorylab",
       "permanent": true
+    },
+    {
+      "source": "/supplier-submit",
+      "destination": "/decks/category-lab/supplier-submit",
+      "permanent": true
+    },
+    {
+      "source": "/supplier-inbox",
+      "destination": "/decks/category-lab/supplier-submissions-admin",
+      "permanent": true
     }
   ]
 }
