@@ -21,23 +21,23 @@
       background: var(--paper);
       color: var(--ink);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      line-height: 1.55;
+      line-height: 1.45;
     }
     main {
-      width: min(1540px, calc(100vw - 32px));
+      width: min(1460px, calc(100vw - 28px));
       margin: 0 auto;
-      padding: 28px 0 48px;
+      padding: 22px 0 42px;
     }
     header {
       display: flex;
-      align-items: flex-end;
+      align-items: center;
       justify-content: space-between;
       gap: 20px;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
     h1 {
       margin: 0;
-      font-size: clamp(26px, 4vw, 40px);
+      font-size: clamp(22px, 2.4vw, 30px);
       line-height: 1.15;
       letter-spacing: 0;
     }
@@ -47,34 +47,56 @@
       font-size: 13px;
       font-weight: 900;
     }
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
     .panel {
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--panel);
-      box-shadow: var(--shadow);
+      box-shadow: 0 10px 30px rgba(34, 28, 18, 0.08);
     }
     .auth-panel {
-      max-width: 520px;
+      max-width: 620px;
+      padding: 0;
+      margin: 0 auto;
+    }
+    .auth-card {
       padding: 22px;
+    }
+    .auth-title {
+      margin: 0 0 6px;
+      font-size: 18px;
+      font-weight: 900;
+    }
+    .auth-copy {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
     }
     .toolbar {
       display: grid;
-      grid-template-columns: minmax(220px, 1fr) 150px auto auto auto;
+      grid-template-columns: minmax(260px, 1fr) 138px auto auto auto;
       gap: 10px;
       align-items: center;
-      padding: 16px;
+      padding: 12px;
       border-bottom: 1px solid #eadfce;
+      background: #fbf7ee;
     }
     .profile-bar {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      padding: 12px 16px;
+      padding: 10px 12px;
       border-bottom: 1px solid #eadfce;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 800;
     }
     input, select, textarea {
@@ -84,12 +106,12 @@
       background: #fff;
       color: var(--ink);
       font: inherit;
-      padding: 8px 10px;
+      padding: 7px 9px;
       outline: none;
     }
-    input, select { min-height: 40px; }
+    input, select { min-height: 36px; }
     textarea {
-      min-height: 78px;
+      min-height: 64px;
       resize: vertical;
     }
     input:focus, select:focus, textarea:focus {
@@ -100,12 +122,12 @@
       display: block;
       margin: 0 0 6px;
       color: #3e352b;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 900;
     }
     button, .link-button {
       appearance: none;
-      min-height: 40px;
+      min-height: 36px;
       border: 1px solid var(--line);
       border-radius: 6px;
       background: #fff;
@@ -113,7 +135,7 @@
       cursor: pointer;
       font: inherit;
       font-weight: 900;
-      padding: 8px 12px;
+      padding: 7px 11px;
       text-decoration: none;
       white-space: nowrap;
     }
@@ -130,25 +152,26 @@
     .pill {
       display: inline-flex;
       align-items: center;
-      min-height: 28px;
+      min-height: 26px;
       border: 1px solid var(--line);
       border-radius: 999px;
       background: #fff;
-      padding: 4px 9px;
+      padding: 4px 8px;
     }
     .table-wrap {
       overflow: auto;
-      max-height: 70vh;
+      max-height: calc(100vh - 230px);
     }
     table {
       width: 100%;
-      min-width: 1500px;
+      min-width: 1340px;
       border-collapse: collapse;
-      font-size: 13px;
+      table-layout: fixed;
+      font-size: 12px;
     }
     th, td {
       border-bottom: 1px solid #eadfce;
-      padding: 10px;
+      padding: 8px;
       text-align: left;
       vertical-align: top;
     }
@@ -158,8 +181,9 @@
       z-index: 2;
       background: #efe4d1;
       color: #3e352b;
-      font-size: 12px;
+      font-size: 11px;
     }
+    tbody tr:nth-child(even) td { background: rgba(255, 250, 241, 0.52); }
     td strong {
       display: block;
       margin-bottom: 3px;
@@ -172,12 +196,12 @@
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      min-width: 92px;
-      max-width: 160px;
+      min-width: 76px;
+      max-width: 116px;
     }
     .thumbs img {
-      width: 42px;
-      height: 42px;
+      width: 38px;
+      height: 38px;
       border: 1px solid var(--line);
       border-radius: 4px;
       background: #f1eadf;
@@ -185,17 +209,17 @@
     }
     .stack {
       display: grid;
-      gap: 8px;
-      min-width: 190px;
+      gap: 6px;
+      min-width: 0;
     }
-    .stack.compact { min-width: 130px; }
+    .stack.compact { min-width: 0; }
     .field-block {
       display: grid;
       gap: 4px;
     }
     .field-block span {
       color: var(--muted);
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 900;
     }
     .import-state {
@@ -206,10 +230,9 @@
     .import-state.ok { color: var(--accent); }
     .import-state.warn { color: var(--danger); }
     .actions {
-      display: flex;
-      flex-wrap: wrap;
+      display: grid;
       gap: 6px;
-      min-width: 160px;
+      min-width: 0;
     }
     .message {
       display: none;
@@ -240,6 +263,7 @@
         padding-top: 18px;
       }
       header { display: block; }
+      .header-actions { justify-content: stretch; margin-top: 12px; }
       .toolbar { grid-template-columns: 1fr; }
       button, .link-button { width: 100%; }
     }
@@ -252,11 +276,25 @@
         <p class="eyebrow">Category Lab Internal Inbox</p>
         <h1>供应商提交收件箱</h1>
       </div>
-      <a class="link-button" href="/decks/category-lab/categorylab">打开 Category Lab</a>
+      <div class="header-actions">
+        <button id="headerLoginBtn" type="button">登录</button>
+        <button class="danger hidden" id="headerLogoutBtn" type="button">退出登录</button>
+        <a class="link-button" href="/decks/category-lab/categorylab">打开 Category Lab</a>
+      </div>
     </header>
 
     <section class="panel auth-panel" id="loginPanel">
-      <form id="loginForm">
+      <div class="auth-card hidden" id="sessionGate">
+        <p class="auth-title">收件箱已锁定</p>
+        <p class="auth-copy" id="sessionGateText">当前浏览器已有登录态。进入前请确认周围环境。</p>
+        <div class="actions">
+          <button class="primary" id="unlockBtn" type="button">进入收件箱</button>
+          <button class="danger" id="sessionLogoutBtn" type="button">退出登录</button>
+        </div>
+      </div>
+      <form class="auth-card" id="loginForm">
+        <p class="auth-title">登录收件箱</p>
+        <p class="auth-copy">内部资料只在登录后显示。离开电脑前请退出登录。</p>
         <label for="email">账号</label>
         <input id="email" name="email" type="email" autocomplete="email" required>
         <label for="password" style="margin-top:12px;">密码</label>
@@ -286,6 +324,16 @@
       </div>
       <div class="table-wrap">
         <table>
+          <colgroup>
+            <col style="width: 86px;">
+            <col style="width: 236px;">
+            <col style="width: 300px;">
+            <col style="width: 246px;">
+            <col style="width: 174px;">
+            <col style="width: 164px;">
+            <col style="width: 132px;">
+            <col style="width: 92px;">
+          </colgroup>
           <thead>
             <tr>
               <th>产品照</th>
@@ -317,6 +365,12 @@
     const loginPanel = document.querySelector("#loginPanel");
     const appPanel = document.querySelector("#appPanel");
     const loginForm = document.querySelector("#loginForm");
+    const sessionGate = document.querySelector("#sessionGate");
+    const sessionGateText = document.querySelector("#sessionGateText");
+    const unlockBtn = document.querySelector("#unlockBtn");
+    const sessionLogoutBtn = document.querySelector("#sessionLogoutBtn");
+    const headerLoginBtn = document.querySelector("#headerLoginBtn");
+    const headerLogoutBtn = document.querySelector("#headerLogoutBtn");
     const searchInput = document.querySelector("#searchInput");
     const statusFilter = document.querySelector("#statusFilter");
     const loadBtn = document.querySelector("#loadBtn");
@@ -361,6 +415,52 @@
 
     function roleCanEdit() {
       return ["owner", "pm"].includes(profile?.role);
+    }
+
+    function resetInMemoryState() {
+      profile = null;
+      records = [];
+      rowsEl.innerHTML = `<tr><td colspan="8" class="muted">暂无数据。</td></tr>`;
+      profileBar.innerHTML = `<span class="pill">未登录</span>`;
+    }
+
+    function setHeaderAuthState({ hasSession = false, unlocked = false } = {}) {
+      headerLoginBtn.classList.toggle("hidden", unlocked);
+      headerLoginBtn.textContent = hasSession ? "进入收件箱" : "登录";
+      headerLogoutBtn.classList.toggle("hidden", !hasSession);
+    }
+
+    function showLoginForm() {
+      resetInMemoryState();
+      loginPanel.classList.remove("hidden");
+      loginForm.classList.remove("hidden");
+      sessionGate.classList.add("hidden");
+      appPanel.classList.add("hidden");
+      setHeaderAuthState({ hasSession: false, unlocked: false });
+    }
+
+    function showSessionGate(session) {
+      resetInMemoryState();
+      loginPanel.classList.remove("hidden");
+      loginForm.classList.add("hidden");
+      sessionGate.classList.remove("hidden");
+      appPanel.classList.add("hidden");
+      sessionGateText.textContent = `当前登录账号：${session?.user?.email || "内部账号"}。进入前请确认周围环境。`;
+      setHeaderAuthState({ hasSession: true, unlocked: false });
+    }
+
+    function showAppShell() {
+      loginPanel.classList.add("hidden");
+      appPanel.classList.remove("hidden");
+      setHeaderAuthState({ hasSession: true, unlocked: true });
+    }
+
+    async function logout() {
+      if (client) await client.auth.signOut();
+      clearMessage();
+      showLoginForm();
+      loginForm.elements.password.value = "";
+      loginForm.elements.email.focus();
     }
 
     function imageUrls(row) {
@@ -541,21 +641,23 @@
       }
     }
 
-    async function boot() {
+    async function boot({ unlock = false } = {}) {
       if (!supabaseReady) {
-        loginPanel.classList.remove("hidden");
+        showLoginForm();
         showMessage("Supabase 尚未配置。请先填写 supabase-config.js。", "error");
         return;
       }
       const { data } = await client.auth.getSession();
       if (!data.session) {
-        loginPanel.classList.remove("hidden");
-        appPanel.classList.add("hidden");
+        showLoginForm();
+        return;
+      }
+      if (!unlock) {
+        showSessionGate(data.session);
         return;
       }
       await loadProfile(data.session);
-      loginPanel.classList.add("hidden");
-      appPanel.classList.remove("hidden");
+      showAppShell();
       await loadRecords();
     }
 
@@ -779,15 +881,21 @@
         showMessage(text.includes("Invalid login credentials") ? "账号或密码不正确。请用 Supabase 里创建的内部账号登录。" : text, "error");
         return;
       }
-      await boot().catch(error => showMessage(error.message || "加载失败。", "error"));
+      await boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error"));
     });
 
-    logoutBtn.addEventListener("click", async () => {
-      await client.auth.signOut();
-      profile = null;
-      records = [];
-      loginPanel.classList.remove("hidden");
-      appPanel.classList.add("hidden");
+    logoutBtn.addEventListener("click", logout);
+    headerLogoutBtn.addEventListener("click", logout);
+    sessionLogoutBtn.addEventListener("click", logout);
+    unlockBtn.addEventListener("click", () => boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error")));
+    headerLoginBtn.addEventListener("click", async () => {
+      const { data } = supabaseReady ? await client.auth.getSession() : { data: { session: null } };
+      if (data.session) {
+        await boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error"));
+        return;
+      }
+      showLoginForm();
+      loginForm.elements.email.focus();
     });
 
     loadBtn.addEventListener("click", loadRecords);

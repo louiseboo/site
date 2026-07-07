@@ -168,6 +168,17 @@
       margin-top: 14px;
       font-size: 14px;
     }
+    .product-fields {
+      display: grid;
+      gap: 14px;
+    }
+    .grid.product-main {
+      grid-template-columns: minmax(240px, 1.65fr) minmax(118px, 0.7fr) minmax(150px, 0.82fr) minmax(170px, 1fr);
+    }
+    .grid.two.product-notes,
+    .grid.two.feedback-pair {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
     .structure-tools {
       display: flex;
       flex-wrap: wrap;
@@ -305,6 +316,9 @@
       }
       form { padding: 16px; }
       .grid, .grid.two { grid-template-columns: 1fr; }
+      .grid.product-main,
+      .grid.two.product-notes,
+      .grid.two.feedback-pair { grid-template-columns: 1fr; }
       .span-2, .span-3 { grid-column: auto; }
       .actions { justify-content: stretch; }
       button, .link-button { width: 100%; }
@@ -373,7 +387,7 @@
           <p class="section-title">第二段：现场反馈（测试后如有）</p>
           <div class="grid two">
             <div>
-              <label for="tastingScene">测试场景 / 反馈来源</label>
+              <label for="tastingScene">测试场景 / 反馈来源 *</label>
               <select id="tastingScene" name="tastingScene">
                 <option value="">请选择</option>
                 <option value="前期打磨测试">前期打磨测试</option>
@@ -383,7 +397,7 @@
               </select>
             </div>
             <div>
-              <label for="roundConclusion">本轮结论</label>
+              <label for="roundConclusion">本轮结论 *</label>
               <select id="roundConclusion" name="roundConclusion">
                 <option value="">请选择</option>
                 <option value="继续调整">继续调整</option>
@@ -392,13 +406,15 @@
                 <option value="通过且进入众测">通过且进入众测</option>
               </select>
             </div>
+            <div class="grid two feedback-pair span-2">
             <div>
-              <label for="tastingFeedback">测试反馈</label>
+              <label for="tastingFeedback">测试反馈 *</label>
               <textarea id="tastingFeedback" name="tastingFeedback" placeholder="如现场已有 Peet's 反馈，可记录口头反馈；测试前可暂空。"></textarea>
             </div>
             <div>
-              <label for="nextStepDirection">下一步改进方向</label>
+              <label for="nextStepDirection">下一步改进方向 *</label>
               <textarea id="nextStepDirection" name="nextStepDirection" placeholder="只写需要供应商调整的方向，例如颜色、甜度、结构、克重、包装等。"></textarea>
+            </div>
             </div>
           </div>
         </div>
@@ -502,6 +518,11 @@
       setRequired("supplierName", currentMode === "create");
       setRequired("sampleDate", currentMode === "create");
       setRequired("followupCode", currentMode === "followup");
+      setRequired("tastingScene", currentMode === "followup");
+      setRequired("roundConclusion", currentMode === "followup");
+      setRequired("tastingFeedback", currentMode === "followup");
+      setRequired("nextStepDirection", currentMode === "followup");
+      syncModeFieldState();
       followupRecord = null;
       followupSummary.style.display = "none";
       followupSummary.textContent = "";
@@ -565,6 +586,69 @@
       return `<select data-product-field="${escapeAttr(name)}">${opts}</select>`;
     }
 
+    function syncModeFieldState() {
+      const productDisabled = currentMode !== "create";
+      productsContainer.querySelectorAll("input, select, textarea, button").forEach(control => {
+        if (control.id === "addProductBtn") return;
+        if (control.matches("[data-delete-product]") && products.length <= 1) {
+          control.disabled = true;
+          return;
+        }
+        control.disabled = productDisabled || (control.matches("[data-delete-product]") && products.length <= 1);
+      });
+      productsContainer.querySelectorAll("[data-product-required]").forEach(control => {
+        control.required = currentMode === "create";
+      });
+      ["tastingScene", "roundConclusion", "tastingFeedback", "nextStepDirection"].forEach(name => {
+        if (field(name)) field(name).disabled = currentMode !== "followup";
+      });
+    }
+
+    function focusAndExplain(input, messageText) {
+      if (input) {
+        input.focus();
+        if (input.setCustomValidity) {
+          input.setCustomValidity(messageText);
+          input.reportValidity();
+          input.setCustomValidity("");
+        }
+      }
+      throw new Error(messageText);
+    }
+
+    function requiredProductValue(card, fieldName, label, index) {
+      const input = card.querySelector(`[data-product-field="${fieldName}"]`);
+      if (!input || String(input.value || "").trim()) return;
+      focusAndExplain(input, `请填写产品 ${index + 1} 的${label}。`);
+    }
+
+    function validateProducts() {
+      for (const [index, product] of products.entries()) {
+        const card = productCard(product.id);
+        if (!card) continue;
+        requiredProductValue(card, "productName", "品名", index);
+        requiredProductValue(card, "versionLabel", "版本", index);
+        requiredProductValue(card, "quoteRmb", "报价", index);
+        requiredProductValue(card, "finishedSpec", "成品规格", index);
+        requiredProductValue(card, "versionChange", "本版调整点", index);
+        requiredProductValue(card, "coreIngredientsSellingPoints", "核心原料及卖点", index);
+      }
+    }
+
+    function validateFollowup() {
+      const required = [
+        ["followupCode", "提交编号"],
+        ["tastingScene", "测试场景 / 反馈来源"],
+        ["roundConclusion", "本轮结论"],
+        ["tastingFeedback", "测试反馈"],
+        ["nextStepDirection", "下一步改进方向"]
+      ];
+      for (const [name, label] of required) {
+        const input = field(name);
+        if (!String(input?.value || "").trim()) focusAndExplain(input, `请填写${label}。`);
+      }
+    }
+
     function productStructureRows(product) {
       return (product.structures || []).map(row => `
         <tr data-structure-id="${escapeAttr(row.id)}">
@@ -584,31 +668,35 @@
             <button class="ghost-button danger" data-delete-product="${escapeAttr(product.id)}" type="button" ${canDelete ? "" : "disabled"}>删除产品</button>
           </div>
 
-          <div class="grid">
+          <div class="product-fields">
+            <div class="grid product-main">
             <div>
               <label>品名 *</label>
-              <input data-product-field="productName" autocomplete="off" value="${escapeAttr(productValue(product, "productName"))}" placeholder="如：香蕉布朗尼千层蛋糕">
+              <input data-product-field="productName" data-product-required autocomplete="off" required value="${escapeAttr(productValue(product, "productName"))}" placeholder="如：香蕉布朗尼千层蛋糕">
             </div>
             <div>
               <label>版本 *</label>
-              <input data-product-field="versionLabel" value="${escapeAttr(productValue(product, "versionLabel"))}" placeholder="V1 / V2 / V3">
+              <input data-product-field="versionLabel" data-product-required required value="${escapeAttr(productValue(product, "versionLabel"))}" placeholder="V1 / V2 / V3">
               <p class="field-note">按打样顺序编号，每次调整顺延。</p>
             </div>
             <div>
-              <label>报价（元，含税含运）</label>
-              <input data-product-field="quoteRmb" inputmode="decimal" value="${escapeAttr(productValue(product, "quoteRmb"))}" placeholder="确认配方后填写">
+              <label>报价（元，含税含运） *</label>
+              <input data-product-field="quoteRmb" data-product-required required inputmode="decimal" value="${escapeAttr(productValue(product, "quoteRmb"))}" placeholder="确认配方后填写">
             </div>
             <div>
-              <label>成品规格（克）</label>
-              <input data-product-field="finishedSpec" value="${escapeAttr(productValue(product, "finishedSpec"))}" placeholder="如：165g/份">
+              <label>成品规格（克） *</label>
+              <input data-product-field="finishedSpec" data-product-required required value="${escapeAttr(productValue(product, "finishedSpec"))}" placeholder="如：165g/份">
+            </div>
+            </div>
+            <div class="grid two product-notes">
+            <div>
+              <label>本版调整点 *</label>
+              <textarea data-product-field="versionChange" data-product-required required placeholder="本版相较上一版改了什么；首版请写本次验证重点。">${escapeAttr(productValue(product, "versionChange"))}</textarea>
             </div>
             <div>
-              <label>本版调整点</label>
-              <textarea data-product-field="versionChange" placeholder="本版相较上一版改了什么；首版请写本次验证重点。">${escapeAttr(productValue(product, "versionChange"))}</textarea>
+              <label>核心原料及卖点 *</label>
+              <textarea data-product-field="coreIngredientsSellingPoints" data-product-required required placeholder="核心原料、关键卖点或产品亮点。">${escapeAttr(productValue(product, "coreIngredientsSellingPoints"))}</textarea>
             </div>
-            <div>
-              <label>核心原料及卖点</label>
-              <textarea data-product-field="coreIngredientsSellingPoints" placeholder="已确定时填写；未确定可暂空。">${escapeAttr(productValue(product, "coreIngredientsSellingPoints"))}</textarea>
             </div>
             <div class="span-3">
               <label>产品结构</label>
@@ -631,6 +719,7 @@
               <textarea data-product-field="ingredientsStructure" hidden></textarea>
               <p class="spec-compare" data-spec-compare>可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。</p>
             </div>
+            <div class="grid two feedback-choice">
             <div>
               <label>测试场景 / 反馈来源</label>
               ${selectHtml("tastingScene", ["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], productValue(product, "tastingScene"))}
@@ -639,6 +728,8 @@
               <label>本轮结论</label>
               ${selectHtml("roundConclusion", ["", "继续调整", "暂停", "通过且储备", "通过且进入众测"], productValue(product, "roundConclusion"))}
             </div>
+            </div>
+            <div class="grid two feedback-pair span-3">
             <div>
               <label>测试反馈</label>
               <textarea data-product-field="tastingFeedback" placeholder="如现场已有 Peet's 反馈，可记录口头反馈；测试前可暂空。">${escapeAttr(productValue(product, "tastingFeedback"))}</textarea>
@@ -646,6 +737,7 @@
             <div>
               <label>下一步改进方向</label>
               <textarea data-product-field="nextStepDirection" placeholder="只写需要供应商调整的方向，例如颜色、甜度、结构、克重、包装等。">${escapeAttr(productValue(product, "nextStepDirection"))}</textarea>
+            </div>
             </div>
             <div class="span-3">
               <label>产品照</label>
@@ -717,6 +809,7 @@
         updateProductSummary(product.id);
         renderProductPreview(product.id);
       });
+      syncModeFieldState();
     }
 
     function productPayload(product, imagePaths = []) {
@@ -823,6 +916,7 @@
     }
 
     async function submitFollowup() {
+      validateFollowup();
       const code = field("followupCode").value.trim().toUpperCase();
       if (!code) throw new Error("请填写提交编号。");
       const { data, error } = await client.rpc("complete_supplier_feedback", {
@@ -836,6 +930,7 @@
 
     async function submitCreate() {
       syncAllProducts();
+      validateProducts();
       const payloads = products.map((product, index) => ({ product, index, payload: productPayload(product, []) }));
       const missing = payloads.find(item => !item.payload.product_name || !item.payload.version_label);
       if (missing) throw new Error(`请填写产品 ${missing.index + 1} 的品名和版本。`);
