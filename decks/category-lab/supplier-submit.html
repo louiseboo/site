@@ -10,7 +10,7 @@
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/assets/supplier-pwa-icon.svg">
   <link rel="icon" href="/assets/supplier-pwa-icon.svg" type="image/svg+xml">
-  <title>供应商产品信息提交</title>
+  <title>产品信息提交</title>
   <style>
     :root {
       --paper: #f7f3ea;
@@ -357,23 +357,6 @@
       font-weight: 900;
       overflow-wrap: anywhere;
     }
-    .submission-code {
-      display: block;
-      margin-top: 2px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 900;
-      overflow-wrap: anywhere;
-    }
-    .copy-code-button {
-      flex: 0 0 auto;
-      min-height: 34px;
-      border-color: var(--ink);
-      background: var(--ink);
-      color: #fff;
-      padding: 6px 10px;
-      font-size: 13px;
-    }
     .submission-result-note {
       margin: 0;
       color: inherit;
@@ -508,10 +491,6 @@
         grid-template-columns: minmax(0, 1fr);
         gap: 8px;
       }
-      .copy-code-button {
-        justify-self: stretch;
-        width: 100%;
-      }
       .confirm-dialog {
         width: calc(100vw - 24px);
       }
@@ -529,7 +508,7 @@
     <header>
       <div>
         <p class="eyebrow">Category Lab Supplier Form</p>
-        <h1>供应商产品信息提交</h1>
+        <h1>产品信息提交</h1>
       </div>
     </header>
 
@@ -564,7 +543,7 @@
         </div>
 
         <div class="section">
-          <p class="section-title">产品清单</p>
+          <p class="section-title">产品信息</p>
           <div class="product-list" id="productsContainer"></div>
           <div class="structure-tools" style="margin-top:12px;">
             <button class="ghost-button" id="addProductBtn" type="button">新增产品</button>
@@ -637,20 +616,6 @@
       return node;
     }
 
-    async function copyFollowupCode(button, code) {
-      if (!code) return;
-      const defaultText = button.textContent;
-      try {
-        await navigator.clipboard.writeText(code);
-        button.textContent = "已复制";
-        window.setTimeout(() => {
-          button.textContent = defaultText;
-        }, 1600);
-      } catch (error) {
-        showMessage(`复制失败，请手动复制提交编号：${code}`, "error");
-      }
-    }
-
     function showCreateResult(results, warnings = []) {
       message.className = `message show ${warnings.length ? "error" : "success"}`.trim();
       message.textContent = "";
@@ -668,22 +633,12 @@
         const info = document.createElement("div");
         info.className = "submission-result-info";
         appendText(info, "span", `产品 ${index + 1}：${result.productName}`, "submission-product-name");
-        appendText(info, "span", result.followupCode ? `提交编号：${result.followupCode}` : "提交编号：未生成", "submission-code");
         row.appendChild(info);
-
-        if (result.followupCode) {
-          const button = document.createElement("button");
-          button.className = "copy-code-button";
-          button.type = "button";
-          button.dataset.copyFollowupCode = result.followupCode;
-          button.textContent = "复制编号";
-          row.appendChild(button);
-        }
 
         list.appendChild(row);
       });
       wrapper.appendChild(list);
-      appendText(wrapper, "p", "提交编号仅供 Category Lab 内部检索，请自行留存以便沟通。", "submission-result-note");
+      appendText(wrapper, "p", "提交后由 Category Lab 产品负责人进行整理，如需补充信息请直接沟通。", "submission-result-note");
       warnings.forEach(warning => appendText(wrapper, "p", warning, "submission-result-note"));
       message.appendChild(wrapper);
     }
@@ -875,8 +830,8 @@
     function productStructureRows(product) {
       return (product.structures || []).map(row => `
         <tr data-structure-id="${escapeAttr(row.id)}">
-          <td><input data-structure-field="name" value="${escapeAttr(row.name || "")}" placeholder="如：胚体、奶油、鸡肉、酱料"></td>
-          <td><input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" placeholder="可不填"></td>
+          <td><input data-structure-field="name" value="${escapeAttr(row.name || "")}" placeholder="如：蛋糕分每层结构；三明治主要原料；烘焙主要原料"></td>
+          <td><input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" placeholder="蛋糕可不填"></td>
           <td><button class="ghost-button danger" data-delete-structure="${escapeAttr(row.id)}" type="button">删除</button></td>
         </tr>
       `).join("");
@@ -909,11 +864,11 @@
             <div class="grid two product-notes">
             <div>
               <label>本版调整点 *</label>
-              <textarea data-product-field="versionChange" data-product-required required placeholder="本版相较上一版改了什么；首版请写本次验证重点。">${escapeAttr(productValue(product, "versionChange"))}</textarea>
+              <textarea data-product-field="versionChange" data-product-required required placeholder="首版请写本次产品设计思路和逻辑；复样请写本版相较上一版改了什么。">${escapeAttr(productValue(product, "versionChange"))}</textarea>
             </div>
             <div>
               <label>核心原料及卖点 *</label>
-              <textarea data-product-field="coreIngredientsSellingPoints" data-product-required required placeholder="核心原料、关键卖点或产品亮点。">${escapeAttr(productValue(product, "coreIngredientsSellingPoints"))}</textarea>
+              <textarea data-product-field="coreIngredientsSellingPoints" data-product-required required placeholder="核心原料、关键卖点或产品亮点，如产地、品种、科学宣称等。">${escapeAttr(productValue(product, "coreIngredientsSellingPoints"))}</textarea>
             </div>
             </div>
             <div class="span-3">
@@ -926,7 +881,7 @@
                 <table class="structure-table" aria-label="产品结构明细">
                   <thead>
                     <tr>
-                      <th>描述</th>
+                      <th>描述（从下至上依次是）</th>
                       <th class="weight-cell">重量(g)</th>
                       <th class="action-cell">操作</th>
                     </tr>
@@ -935,7 +890,7 @@
                 </table>
               </div>
               <textarea data-product-field="ingredientsStructure" hidden></textarea>
-              <p class="spec-compare" data-spec-compare>可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。</p>
+              <p class="spec-compare" data-spec-compare>蛋糕可不标克重，但分层结构要写清楚；填写重量后系统会自动合计。</p>
             </div>
             <div class="span-3">
               <label>产品照 *</label>
@@ -980,7 +935,7 @@
       if (totalWeightText) totalWeightText.textContent = `自动计算克重：${formatWeight(total)}g`;
       const spec = specWeight(product);
       if (!spec || !total) {
-        if (specCompareText) specCompareText.textContent = "可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。";
+        if (specCompareText) specCompareText.textContent = "蛋糕可不标克重，但分层结构要写清楚；填写重量后系统会自动合计。";
         return;
       }
       const diff = total - spec;
@@ -1126,12 +1081,11 @@
             payload: item.payload,
             images: await cloudbaseImagePayloads(item.product.files)
           });
-          results.push({
-            id: response.id,
-            productName: item.payload.product_name,
-            followupCode: response.record?.followup_code || "",
-            imageWarning: ""
-          });
+        results.push({
+          id: response.id,
+          productName: item.payload.product_name,
+          imageWarning: ""
+        });
           continue;
         }
         const { data, error } = await client.rpc("submit_supplier_feedback", {
@@ -1155,7 +1109,6 @@
         results.push({
           id: data.id,
           productName: item.payload.product_name,
-          followupCode: data.record?.followup_code || "",
           imageWarning
         });
       }
@@ -1168,11 +1121,6 @@
       renderProducts();
     }
 
-    message.addEventListener("click", event => {
-      const button = event.target.closest("[data-copy-followup-code]");
-      if (!button) return;
-      copyFollowupCode(button, button.dataset.copyFollowupCode);
-    });
     addProductBtn.addEventListener("click", () => {
       syncAllProducts();
       const product = newProduct();

@@ -360,6 +360,10 @@
   <script>
     const TABLE = "supplier_feedback_records";
     const CATEGORYLAB_STORAGE_KEY = "burger-bom-tool-v1";
+    const CATEGORY_LAB_AUTH_KEY = "categorylab_access_granted_v1";
+    const CATEGORY_LAB_OWNER_ACCESS_DIGESTS = new Set([
+      "2287a4cfed43e12623e7483ffdd5b9d580af1471d36c3df3f1295c4869d7bd78"
+    ]);
     const config = window.CATEGORYLAB_SUPABASE || {};
     const cloudbaseConfig = window.CATEGORYLAB_CLOUDBASE || {};
     const cloudbaseHost = /tcloudbase|cloudbase|tencent/i.test(location.hostname) || new URLSearchParams(location.search).get("backend") === "cloudbase";
@@ -387,6 +391,11 @@
     let profile = null;
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
+    function categoryLabAccessDigest() {
+      const digest = sessionStorage.getItem(CATEGORY_LAB_AUTH_KEY) || "";
+      return CATEGORY_LAB_OWNER_ACCESS_DIGESTS.has(digest) ? digest : "";
+    }
+
     function showMessage(text, type = "") {
       message.className = `message show ${type}`.trim();
       message.textContent = text;
@@ -402,9 +411,10 @@
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CategoryLab-Admin-Code": cloudbaseAdminCode
+          "X-CategoryLab-Admin-Code": cloudbaseAdminCode,
+          "X-CategoryLab-Access-Digest": categoryLabAccessDigest()
         },
-        body: JSON.stringify({ action, adminCode: cloudbaseAdminCode, ...payload })
+        body: JSON.stringify({ action, adminCode: cloudbaseAdminCode, categoryLabAccessDigest: categoryLabAccessDigest(), ...payload })
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok || !result.ok) {
@@ -683,7 +693,7 @@
         document.querySelector('label[for="password"]').textContent = "内部访问码";
         loginForm.elements.email.placeholder = "Louise";
         loginForm.elements.password.placeholder = "请输入内部访问码";
-        if (!cloudbaseAdminCode) {
+        if (!cloudbaseAdminCode && !categoryLabAccessDigest()) {
           showLoginForm();
           return;
         }

