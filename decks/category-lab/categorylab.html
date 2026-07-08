@@ -925,6 +925,33 @@
       display: grid;
       gap: 10px;
     }
+    .tasting-process-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+    .tasting-process-stack {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .tasting-process-wide {
+      grid-column: 1 / -1;
+    }
+    .tasting-decision-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      align-items: start;
+    }
+    .tasting-process-grid textarea {
+      min-height: 88px;
+    }
+    .tasting-decision-grid textarea {
+      min-height: 104px;
+    }
     .sensory-score-row {
       display: grid;
       grid-template-columns: 110px minmax(0, 1fr);
@@ -1661,7 +1688,7 @@
         scrollbar-width: none;
       }
       .nav::-webkit-scrollbar { display: none; }
-      .grid, .recipe-layout, .split, .form.three, .recipe-list-grid, .workspace-grid, .logic-grid, .list-form, .score-input-grid, .detail-grid, .import-strip { grid-template-columns: 1fr; }
+      .grid, .recipe-layout, .split, .form.three, .recipe-list-grid, .workspace-grid, .logic-grid, .list-form, .score-input-grid, .detail-grid, .import-strip, .tasting-process-grid, .tasting-decision-grid { grid-template-columns: 1fr; }
       .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .launch-dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .validation-kpis .kpi,
@@ -2689,6 +2716,14 @@
           </div>
           <div class="field"><label>产品图片（可多张，自动标注图一、图二…）</label><input id="sensoryImage" type="file" accept="image/*" multiple></div>
           <div class="sensory-gallery" id="sensoryGallery"></div>
+          <div class="tasting-process-grid">
+            <div class="field"><label>本版调整点 / 打样目的</label><textarea id="sensorySamplePurpose" placeholder="这一版相比上一版改了什么；为什么需要这次复样"></textarea></div>
+            <div class="tasting-process-stack">
+              <div class="field"><label>试吃场景 / 反馈来源</label><select id="sensoryFeedbackSource"><option value="前期打磨测试" selected>前期打磨测试</option><option value="众测后优化">众测后优化</option><option value="中试后优化">中试后优化</option><option value="上市后优化">上市后优化</option></select></div>
+              <div class="field"><label>本轮结论</label><select id="sensoryRoundConclusion"><option value="继续调整" selected>继续调整</option><option value="暂停">暂停</option><option value="通过且储备">通过且储备</option><option value="通过且进入众测">通过且进入众测</option></select></div>
+            </div>
+            <div class="field tasting-process-wide"><label>关键卡点 / 备注</label><textarea id="sensoryKeyBlocker" placeholder="只写最影响决策的一件事：风味 / 外观 / 结构 / 成本 / 供应 / 门店操作"></textarea></div>
+          </div>
           <div class="sensory-score-grid">
             <div class="sensory-score-row">
               <div class="field"><label>外观评分</label><select id="sensoryAppearanceScore"></select></div>
@@ -2708,8 +2743,10 @@
             </div>
           </div>
           <p class="small">评分标准：1分=明显不合格；2分=问题较多；3分=可接受但需优化；4分=表现良好；5分=优秀，可作为确认方向。</p>
-          <div class="field" id="sensoryOverallEvaluationField"><label>总体评价</label><textarea id="sensoryOverallEvaluation" placeholder="本版本测试结论、当前状态、是否进入下一轮"></textarea></div>
-          <div class="field"><label>下一步改进方向</label><textarea id="sensoryNote" placeholder="问题判断、下一轮调整方向、需要供应商反馈的事项"></textarea></div>
+          <div class="tasting-decision-grid">
+            <div class="field" id="sensoryOverallEvaluationField"><label>总体评价</label><textarea id="sensoryOverallEvaluation" placeholder="本版本测试结论、当前状态、是否进入下一轮"></textarea></div>
+            <div class="field"><label>下一步改进方向</label><textarea id="sensoryNote" placeholder="问题判断、下一轮调整方向、需要供应商反馈的事项"></textarea></div>
+          </div>
           <button class="btn primary" id="sensorySubmitBtn" type="submit">保存 OEM 品类测试</button>
         </form>
       </div>
@@ -7042,6 +7079,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const img = record.image ? `<img class="record-image" src="${record.image}" alt="${escapeAttr(record.project)}" ${previewImageAttrs(record.image, record.project || "感官图片")}>` : "";
       const sensory = record.sensory || {};
       const text = [
+        record.roundConclusion ? `结论：${escapeHtml(record.roundConclusion)}` : "",
+        record.keyBlocker ? `卡点：${escapeHtml(record.keyBlocker)}` : "",
         sensory.appearance ? `外观：${escapeHtml(sensory.appearance)}` : "",
         sensory.aroma ? `香气：${escapeHtml(sensory.aroma)}` : "",
         sensory.flavor ? `风味：${escapeHtml(sensory.flavor)}` : "",
@@ -8135,7 +8174,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function exportDevCsv(records = visibleDevRecords(), filename = "研发过程记录.csv") {
-      const rows = [["时间","产品","品牌","品类","档期名称","版本","类型","供应商","规格","价格(RMB)","重量(g)","长度(mm)","宽度(mm)","高度(mm)","物料/用量","原始重量(g)","去皮后(g)","切配后(g)","加热后(g)","冷却后(g)","最终可用量(g)","得率链路","外观","外观评分","风味","风味评分","香气","香气评分","组织质地","组织质地评分","总体评价","下一步改进方向"]];
+      const rows = [["时间","产品","品牌","品类","档期名称","版本","类型","供应商","规格","价格(RMB)","重量(g)","长度(mm)","宽度(mm)","高度(mm)","物料/用量","原始重量(g)","去皮后(g)","切配后(g)","加热后(g)","冷却后(g)","最终可用量(g)","得率链路","本版调整点 / 打样目的","试吃场景 / 反馈来源","本轮结论","关键卡点 / 备注","外观","外观评分","风味","风味评分","香气","香气评分","组织质地","组织质地评分","总体评价","下一步改进方向"]];
       (records || []).forEach(record => rows.push([
         record.time,
         record.project,
@@ -8159,6 +8198,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         record.yield?.cooled || "",
         record.yield?.final || "",
         yieldChainFromRecord(record),
+        record.samplePurpose || "",
+        record.feedbackSource || "",
+        record.roundConclusion || "",
+        record.keyBlocker || "",
         record.sensory?.appearance || "",
         record.sensory?.appearanceScore || "",
         record.sensory?.flavor || "",
@@ -8168,7 +8211,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         record.sensory?.texture || "",
         record.sensory?.textureScore || "",
         record.overallEvaluation || "",
-        record.note
+        record.note || record.nextAction || ""
       ]));
       exportCsv(filename, rows);
     }
@@ -8312,15 +8355,26 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             <div class="detail-item"><span>组织质地</span>${escapeHtml(sensory.texture || "")}${sensory.textureScore ? `（${escapeHtml(sensory.textureScore)}分）` : ""}</div>
           </div>`
         : "";
+      const tastingProcessRows = [
+        ["本版调整点 / 打样目的", record.samplePurpose || ""],
+        ["试吃场景 / 反馈来源", record.feedbackSource || ""],
+        ["本轮结论", record.roundConclusion || ""],
+        ["关键卡点 / 备注", record.keyBlocker || ""]
+      ].filter(([, value]) => value);
+      const nextStepDirection = record.note || record.nextAction || "";
+      const tastingProcessHtml = tastingProcessRows.length
+        ? `<h3>试吃过程记录</h3><div class="detail-grid">${tastingProcessRows.map(([label, value]) => `<div class="detail-item"><span>${escapeHtml(label)}</span>${escapeHtml(value).replaceAll("\n", "<br>")}</div>`).join("")}</div>`
+        : "";
       document.querySelector("#recordDetailBody").innerHTML = `
         <div class="detail-grid">
           ${detailRows.map(([label, value]) => `<div class="detail-item"><span>${escapeHtml(label)}</span>${escapeHtml(value)}</div>`).join("")}
         </div>
         ${materialHtml}
         ${yieldHtml}
+        ${tastingProcessHtml}
         ${sensoryHtml}
         ${record.overallEvaluation ? `<h3>总体评价</h3><p>${escapeHtml(record.overallEvaluation).replaceAll("\n", "<br>")}</p>` : ""}
-        ${record.note ? `<h3>下一步改进方向</h3><p>${escapeHtml(record.note).replaceAll("\n", "<br>")}</p>` : ""}
+        ${nextStepDirection ? `<h3>下一步改进方向</h3><p>${escapeHtml(nextStepDirection).replaceAll("\n", "<br>")}</p>` : ""}
       `;
       openModal("recordDetailModal");
     }
@@ -8441,6 +8495,31 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       updateYieldAuto();
     }
 
+    function normalizeTastingFeedbackSource(value) {
+      const currentOptions = ["前期打磨测试", "众测后优化", "中试后优化", "上市后优化"];
+      if (currentOptions.includes(value)) return value;
+      const legacyMap = {
+        "内部试吃": "前期打磨测试",
+        "产品会": "前期打磨测试",
+        "供应商现场": "前期打磨测试",
+        "门店测试": "中试后优化",
+        "消费者测试": "众测后优化",
+        "其他": "前期打磨测试"
+      };
+      return legacyMap[value] || "前期打磨测试";
+    }
+
+    function normalizeTastingRoundConclusion(value) {
+      const currentOptions = ["继续调整", "暂停", "通过且储备", "通过且进入众测"];
+      if (currentOptions.includes(value)) return value;
+      const legacyMap = {
+        "通过": "通过且储备",
+        "待报价": "继续调整",
+        "进产品会": "通过且进入众测"
+      };
+      return legacyMap[value] || "继续调整";
+    }
+
     function fillSensoryModal(record) {
       resetSensoryModal();
       editingDevRecordId = record.id;
@@ -8466,8 +8545,12 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#sensoryFlavorScore").value = sensory.flavorScore || "";
       document.querySelector("#sensoryAromaScore").value = sensory.aromaScore || "";
       document.querySelector("#sensoryTextureScore").value = sensory.textureScore || "";
+      document.querySelector("#sensorySamplePurpose").value = record.samplePurpose || "";
+      document.querySelector("#sensoryFeedbackSource").value = normalizeTastingFeedbackSource(record.feedbackSource);
+      document.querySelector("#sensoryRoundConclusion").value = normalizeTastingRoundConclusion(record.roundConclusion);
+      document.querySelector("#sensoryKeyBlocker").value = record.keyBlocker || "";
       document.querySelector("#sensoryOverallEvaluation").value = record.overallEvaluation || "";
-      document.querySelector("#sensoryNote").value = record.note || "";
+      document.querySelector("#sensoryNote").value = record.note || record.nextAction || "";
       sensoryImages = [...sensoryImageList(record)];
       renderSensoryGallery();
     }
@@ -9512,6 +9595,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         type: recordType,
         images: [...sensoryImages],
         image: sensoryImages[0] || "",
+        samplePurpose: document.querySelector("#sensorySamplePurpose").value.trim(),
+        feedbackSource: document.querySelector("#sensoryFeedbackSource").value,
+        roundConclusion: document.querySelector("#sensoryRoundConclusion").value,
+        keyBlocker: document.querySelector("#sensoryKeyBlocker").value.trim(),
         overallEvaluation: document.querySelector("#sensoryOverallEvaluation").value.trim(),
         sensory: {
           appearance: document.querySelector("#sensoryAppearance").value.trim(),
@@ -9527,7 +9614,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         yield: {},
         note: document.querySelector("#sensoryNote").value.trim()
       };
-      if (!record.project && !record.supplier && !record.brand && !record.overallEvaluation && !record.note && !Object.values(record.sensory).some(Boolean)) return;
+      if (!record.project && !record.supplier && !record.brand && !record.samplePurpose && !record.overallEvaluation && !record.note && !record.keyBlocker && !Object.values(record.sensory).some(Boolean)) return;
       upsertDevRecord(record);
       event.target.reset();
       closeModal("sensoryModal");
