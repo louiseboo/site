@@ -540,7 +540,11 @@
             </div>
             <div>
               <label for="testCategory">测试类别 *</label>
-              <input id="testCategory" name="testCategory" required autocomplete="off" placeholder="如：档期测试 / 新品提案">
+              <select id="testCategory" name="testCategory" required>
+                <option value="">请选择</option>
+                <option value="档期测试">档期测试</option>
+                <option value="新品提案">新品提案</option>
+              </select>
             </div>
           </div>
         </div>
