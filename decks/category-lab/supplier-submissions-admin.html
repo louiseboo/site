@@ -588,7 +588,7 @@
   </style>
 </head>
 <body>
-  <section class="auth-page" id="loginPanel">
+  <section class="auth-page hidden" id="loginPanel">
     <div class="auth-header">
       <div>
         <h1>供应商提交收件箱</h1>
@@ -627,7 +627,7 @@
         <input id="searchInput" type="search" placeholder="搜索供应商、产品、摘要">
         <button id="loadBtn" type="button">刷新</button>
         <button id="exportBtn" type="button">导出 CSV</button>
-        <button class="danger" id="logoutBtn" type="button">退出登录</button>
+        <button class="danger hidden" id="logoutBtn" type="button">退出登录</button>
       </div>
     </header>
     <div class="filterbar">
@@ -1105,18 +1105,7 @@
 
     async function boot({ unlock = false } = {}) {
       if (cloudbaseReady) {
-        loginForm.elements.email.required = false;
-        loginForm.elements.email.value = loginForm.elements.email.value || "Louise";
-        document.querySelector('label[for="email"]').textContent = "账号";
-        document.querySelector('label[for="password"]').textContent = "内部访问码";
-        loginForm.elements.email.placeholder = "Louise";
-        loginForm.elements.password.placeholder = "请输入内部访问码";
-        if (!cloudbaseAdminCode) {
-          showLoginForm();
-          return;
-        }
-        const data = await cloudbaseRequest("adminLogin");
-        profile = data.profile;
+        profile = { display_name: "Louise", role: "owner" };
         showAppShell();
         await loadRecords();
         return;
