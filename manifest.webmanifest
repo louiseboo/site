@@ -2,7 +2,7 @@
   "name": "供应商产品信息提交",
   "short_name": "供应商提交",
   "description": "供应商产品信息提交",
-  "start_url": "/supplier-submit",
+  "start_url": "/decks/category-lab/supplier-submit",
   "scope": "/",
   "display": "standalone",
   "background_color": "#f7f3ea",

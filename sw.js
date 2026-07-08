@@ -1,7 +1,8 @@
-const CACHE_NAME = "supplier-form-v1";
+const CACHE_NAME = "supplier-form-v2";
 const SUPPLIER_ASSETS = [
-  "/supplier-submit",
+  "/decks/category-lab/supplier-submit",
   "/decks/category-lab/supplier-submit.html",
+  "/decks/category-lab/cloudbase-config.js",
   "/decks/category-lab/supabase-config.js",
   "/manifest.webmanifest",
   "/assets/supplier-pwa-icon.svg"

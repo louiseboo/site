@@ -1,0 +1,11 @@
+{
+  "name": "supplier-feedback-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.18.3"
+  }
+}

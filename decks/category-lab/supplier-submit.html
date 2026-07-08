@@ -646,9 +646,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./supabase-config.js"></script>
+  <script src="./cloudbase-config.js"></script>
   <script>
     const TABLE_BUCKET = window.CATEGORYLAB_SUPABASE?.bucket || "supplier-feedback-images";
     const config = window.CATEGORYLAB_SUPABASE || {};
+    const cloudbaseConfig = window.CATEGORYLAB_CLOUDBASE || {};
     const form = document.querySelector("#submissionForm");
     const message = document.querySelector("#message");
     const submitBtn = document.querySelector("#submitBtn");
@@ -662,7 +664,10 @@
     const modeSections = [...document.querySelectorAll("[data-mode-section]")];
     const followupCodeSection = document.querySelector("[data-followup-code-section]");
     const followupSummary = document.querySelector("#followupSummary");
+    const cloudbaseHost = /tcloudbase|cloudbase|tencent/i.test(location.hostname) || new URLSearchParams(location.search).get("backend") === "cloudbase";
+    const cloudbaseReady = Boolean(cloudbaseConfig.apiUrl) && cloudbaseHost;
     const supabaseReady = Boolean(config.url && config.anonKey && window.supabase);
+    const backendReady = cloudbaseReady || supabaseReady;
     const client = supabaseReady ? window.supabase.createClient(config.url, config.anonKey) : null;
     const PRODUCT_FIELD_NAMES = [
       "productName",
@@ -779,6 +784,19 @@
         record?.version_label ? `版本：${record.version_label}` : "",
         record?.sample_date ? `送样时间：${record.sample_date}` : ""
       ].filter(Boolean).join(" ｜ ");
+    }
+
+    async function cloudbaseRequest(action, payload = {}) {
+      const response = await fetch(cloudbaseConfig.apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, ...payload })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || `请求失败（${response.status}）`);
+      }
+      return result.data;
     }
 
     function setMode(mode) {
@@ -1187,6 +1205,28 @@
       return blob || file;
     }
 
+    function blobToDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function cloudbaseImagePayloads(files) {
+      const images = [];
+      for (const file of [...(files || [])].slice(0, 6)) {
+        const blob = await compressImage(file);
+        images.push({
+          name: file.name,
+          type: "image/jpeg",
+          dataUrl: await blobToDataUrl(blob)
+        });
+      }
+      return images;
+    }
+
     async function uploadImages(recordId, files, existingImages = []) {
       files = [...(files || [])].slice(0, 6);
       if (!files.length) return existingImages;
@@ -1212,7 +1252,7 @@
 
     function friendlyError(error) {
       const text = error?.message || String(error || "");
-      if (text.includes("Failed to fetch")) return "网络请求失败。请先确认网络可以访问 Supabase；如果刚才上传了图片，请先去掉图片再提交一次。";
+      if (text.includes("Failed to fetch")) return "网络请求失败。请检查当前网络后再提交；如果刚才上传了图片，请先去掉图片再提交一次。";
       if (text.includes("品名不能为空") || text.includes("供应商不能为空")) return text;
       if (text.includes("提交编号不存在")) return "提交编号不存在，请检查第一段提交成功后显示的编号。";
       return text || "提交失败。";
@@ -1221,6 +1261,12 @@
     async function loadFollowupRecord() {
       const code = field("followupCode").value.trim().toUpperCase();
       if (!code) return null;
+      if (cloudbaseReady) {
+        followupRecord = await cloudbaseRequest("getSupplierFeedbackByFollowupCode", { followupCode: code });
+        followupSummary.style.display = followupRecord ? "block" : "none";
+        followupSummary.textContent = followupRecord ? compactRecordSummary(followupRecord) : "";
+        return followupRecord;
+      }
       const { data, error } = await client.rpc("get_supplier_feedback_by_followup_code", {
         p_followup_code: code
       });
@@ -1235,6 +1281,13 @@
       validateFollowup();
       const code = field("followupCode").value.trim().toUpperCase();
       if (!code) throw new Error("请填写提交编号。");
+      if (cloudbaseReady) {
+        followupRecord = await cloudbaseRequest("completeSupplierFeedback", {
+          followupCode: code,
+          payload: feedbackPayload()
+        });
+        return followupRecord;
+      }
       const { data, error } = await client.rpc("complete_supplier_feedback", {
         p_followup_code: code,
         p_payload: feedbackPayload()
@@ -1254,6 +1307,19 @@
 
       const results = [];
       for (const item of payloads) {
+        if (cloudbaseReady) {
+          const response = await cloudbaseRequest("submitSupplierFeedback", {
+            payload: item.payload,
+            images: await cloudbaseImagePayloads(item.product.files)
+          });
+          results.push({
+            id: response.id,
+            productName: item.payload.product_name,
+            followupCode: response.record?.followup_code || "",
+            imageWarning: ""
+          });
+          continue;
+        }
         const { data, error } = await client.rpc("submit_supplier_feedback", {
           p_payload: item.payload
         });
@@ -1354,7 +1420,7 @@
       }
     });
     field("followupCode").addEventListener("blur", async () => {
-      if (currentMode !== "followup" || !field("followupCode").value.trim() || !supabaseReady) return;
+      if (currentMode !== "followup" || !field("followupCode").value.trim() || !backendReady) return;
       try {
         await loadFollowupRecord();
       } catch (error) {
@@ -1366,8 +1432,8 @@
 
     form.addEventListener("submit", async event => {
       event.preventDefault();
-      if (!supabaseReady) {
-        showMessage("Supabase 尚未配置。请先填写 supabase-config.js。", "error");
+      if (!backendReady) {
+        showMessage("后端尚未配置。请先配置 CloudBase 或 Supabase。", "error");
         return;
       }
       if (!form.reportValidity()) return;
@@ -1405,8 +1471,8 @@
     products = [newProduct()];
     renderProducts();
     setMode("create");
-    if (!supabaseReady) {
-      showMessage("Supabase 尚未配置。请先填写 supabase-config.js。", "error");
+    if (!backendReady) {
+      showMessage("后端尚未配置。请先配置 CloudBase 或 Supabase。", "error");
     }
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {

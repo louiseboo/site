@@ -356,10 +356,14 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./supabase-config.js"></script>
+  <script src="./cloudbase-config.js"></script>
   <script>
     const TABLE = "supplier_feedback_records";
     const CATEGORYLAB_STORAGE_KEY = "burger-bom-tool-v1";
     const config = window.CATEGORYLAB_SUPABASE || {};
+    const cloudbaseConfig = window.CATEGORYLAB_CLOUDBASE || {};
+    const cloudbaseHost = /tcloudbase|cloudbase|tencent/i.test(location.hostname) || new URLSearchParams(location.search).get("backend") === "cloudbase";
+    const cloudbaseReady = Boolean(cloudbaseConfig.apiUrl) && cloudbaseHost;
     const supabaseReady = Boolean(config.url && config.anonKey && window.supabase);
     const client = supabaseReady ? window.supabase.createClient(config.url, config.anonKey) : null;
     const loginPanel = document.querySelector("#loginPanel");
@@ -381,6 +385,7 @@
     const profileBar = document.querySelector("#profileBar");
     let records = [];
     let profile = null;
+    let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
     function showMessage(text, type = "") {
       message.className = `message show ${type}`.trim();
@@ -390,6 +395,22 @@
     function clearMessage() {
       message.className = "message";
       message.textContent = "";
+    }
+
+    async function cloudbaseRequest(action, payload = {}) {
+      const response = await fetch(cloudbaseConfig.apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CategoryLab-Admin-Code": cloudbaseAdminCode
+        },
+        body: JSON.stringify({ action, adminCode: cloudbaseAdminCode, ...payload })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || `请求失败（${response.status}）`);
+      }
+      return result.data;
     }
 
     function escapeHtml(value) {
@@ -456,7 +477,10 @@
     }
 
     async function logout() {
-      if (client) await client.auth.signOut();
+      if (cloudbaseReady) {
+        sessionStorage.removeItem("categorylabCloudbaseAdminCode");
+        cloudbaseAdminCode = "";
+      } else if (client) await client.auth.signOut();
       clearMessage();
       showLoginForm();
       loginForm.elements.password.value = "";
@@ -611,6 +635,7 @@
     }
 
     async function loadProfile(session) {
+      if (cloudbaseReady) return;
       const { data, error } = await client
         .from("categorylab_profiles")
         .select("*")
@@ -626,12 +651,17 @@
       loadBtn.textContent = "读取中...";
       clearMessage();
       try {
-        const { data, error } = await client
-          .from(TABLE)
-          .select("*")
-          .order("created_at", { ascending: false });
-        if (error) throw error;
-        records = data || [];
+        if (cloudbaseReady) {
+          const data = await cloudbaseRequest("adminList");
+          records = data.records || [];
+        } else {
+          const { data, error } = await client
+            .from(TABLE)
+            .select("*")
+            .order("created_at", { ascending: false });
+          if (error) throw error;
+          records = data || [];
+        }
         renderRows();
         const missingImport = records.filter(row => row.status === "已确认" && !isImportedToCategoryLab(row)).length;
         if (missingImport > 0) {
@@ -646,6 +676,23 @@
     }
 
     async function boot({ unlock = false } = {}) {
+      if (cloudbaseReady) {
+        loginForm.elements.email.required = false;
+        loginForm.elements.email.value = loginForm.elements.email.value || "Louise";
+        document.querySelector('label[for="email"]').textContent = "账号";
+        document.querySelector('label[for="password"]').textContent = "内部访问码";
+        loginForm.elements.email.placeholder = "Louise";
+        loginForm.elements.password.placeholder = "请输入内部访问码";
+        if (!cloudbaseAdminCode) {
+          showLoginForm();
+          return;
+        }
+        const data = await cloudbaseRequest("adminLogin");
+        profile = data.profile;
+        showAppShell();
+        await loadRecords();
+        return;
+      }
       if (!supabaseReady) {
         showLoginForm();
         showMessage("Supabase 尚未配置。请先填写 supabase-config.js。", "error");
@@ -699,13 +746,20 @@
 
     async function saveRow(id) {
       if (!roleCanEdit()) return;
-      const { data, error } = await client
-        .from(TABLE)
-        .update(rowPayload(id))
-        .eq("id", id)
-        .select("*")
-        .single();
-      if (error) throw error;
+      let data;
+      if (cloudbaseReady) {
+        const response = await cloudbaseRequest("adminUpdate", { id, payload: rowPayload(id) });
+        data = response.record;
+      } else {
+        const response = await client
+          .from(TABLE)
+          .update(rowPayload(id))
+          .eq("id", id)
+          .select("*")
+          .single();
+        if (response.error) throw response.error;
+        data = response.data;
+      }
       const index = records.findIndex(row => row.id === id);
       if (index >= 0) records[index] = data;
       renderRows();
@@ -791,13 +845,20 @@
       else data.devRecords.unshift(record);
       localStorage.setItem(CATEGORYLAB_STORAGE_KEY, JSON.stringify(data));
 
-      const { data: updated, error } = await client
-        .from(TABLE)
-        .update(payload)
-        .eq("id", id)
-        .select("*")
-        .single();
-      if (error) throw error;
+      let updated;
+      if (cloudbaseReady) {
+        const response = await cloudbaseRequest("adminUpdate", { id, payload });
+        updated = response.record;
+      } else {
+        const response = await client
+          .from(TABLE)
+          .update(payload)
+          .eq("id", id)
+          .select("*")
+          .single();
+        if (response.error) throw response.error;
+        updated = response.data;
+      }
       const recordIndex = records.findIndex(item => item.id === id);
       if (recordIndex >= 0) records[recordIndex] = updated;
       renderRows();
@@ -809,11 +870,14 @@
       const row = records.find(item => item.id === id);
       const ok = window.confirm(`确认删除这条供应商提交？\n${row?.product_name || ""}`);
       if (!ok) return;
-      const { error } = await client
-        .from(TABLE)
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
+      if (cloudbaseReady) await cloudbaseRequest("adminDelete", { id });
+      else {
+        const { error } = await client
+          .from(TABLE)
+          .delete()
+          .eq("id", id);
+        if (error) throw error;
+      }
       records = records.filter(item => item.id !== id);
       renderRows();
       showMessage("已删除。", "success");
@@ -881,6 +945,21 @@
 
     loginForm.addEventListener("submit", async event => {
       event.preventDefault();
+      if (cloudbaseReady) {
+        cloudbaseAdminCode = loginForm.elements.password.value;
+        try {
+          const data = await cloudbaseRequest("adminLogin");
+          sessionStorage.setItem("categorylabCloudbaseAdminCode", cloudbaseAdminCode);
+          profile = data.profile;
+          showAppShell();
+          await loadRecords();
+        } catch (error) {
+          cloudbaseAdminCode = "";
+          sessionStorage.removeItem("categorylabCloudbaseAdminCode");
+          showMessage(error.message || "登录失败。", "error");
+        }
+        return;
+      }
       if (!supabaseReady) {
         showMessage("Supabase 尚未配置。请先填写 supabase-config.js。", "error");
         return;
@@ -901,6 +980,15 @@
     sessionLogoutBtn.addEventListener("click", logout);
     unlockBtn.addEventListener("click", () => boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error")));
     headerLoginBtn.addEventListener("click", async () => {
+      if (cloudbaseReady) {
+        if (cloudbaseAdminCode) {
+          await boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error"));
+          return;
+        }
+        showLoginForm();
+        loginForm.elements.password.focus();
+        return;
+      }
       const { data } = supabaseReady ? await client.auth.getSession() : { data: { session: null } };
       if (data.session) {
         await boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error"));
