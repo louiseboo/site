@@ -6,353 +6,654 @@
   <title>供应商提交收件箱</title>
   <style>
     :root {
-      --paper: #f7f3ea;
+      --paper: #f7f4ee;
       --panel: #fffdf8;
-      --line: #d7c7ad;
-      --ink: #1d1a16;
-      --muted: #756b5d;
-      --accent: #1f6f5b;
-      --danger: #b23b28;
-      --shadow: 0 16px 42px rgba(34, 28, 18, 0.12);
+      --side: #f3efe6;
+      --ink: #2b2620;
+      --body: #4a4438;
+      --muted: #6b6254;
+      --faint: #9a9081;
+      --line: #e6e0d4;
+      --line-soft: #eee8dc;
+      --button-line: #d4cbb9;
+      --pending: #a4550f;
+      --pending-bg: #f3e3cd;
+      --confirmed: #3d7a4a;
+      --danger: #c9503f;
+      --danger-dark: #a63a2b;
+      --danger-copy: #7a4238;
+      --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+      --sans: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
     }
     * { box-sizing: border-box; }
+    html, body { height: 100%; }
     body {
       margin: 0;
       background: var(--paper);
       color: var(--ink);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      line-height: 1.45;
+      font-family: var(--sans);
+      line-height: 1.5;
     }
-    main {
-      width: min(1460px, calc(100vw - 28px));
-      margin: 0 auto;
-      padding: 22px 0 42px;
-    }
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 14px;
-    }
-    h1 {
-      margin: 0;
-      font-size: clamp(22px, 2.4vw, 30px);
-      line-height: 1.15;
-      letter-spacing: 0;
-    }
-    .eyebrow {
-      margin: 0 0 8px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 900;
-    }
-    .header-actions {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-    .panel {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      box-shadow: 0 10px 30px rgba(34, 28, 18, 0.08);
-    }
-    .auth-panel {
-      max-width: 620px;
-      padding: 0;
-      margin: 0 auto;
-    }
-    .auth-card {
-      padding: 22px;
-    }
-    .auth-title {
-      margin: 0 0 6px;
-      font-size: 18px;
-      font-weight: 900;
-    }
-    .auth-copy {
-      margin: 0 0 16px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 700;
-    }
-    .toolbar {
-      display: grid;
-      grid-template-columns: minmax(260px, 1fr) 138px auto auto auto;
-      gap: 10px;
-      align-items: center;
-      padding: 12px;
-      border-bottom: 1px solid #eadfce;
-      background: #fbf7ee;
-    }
-    .profile-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      padding: 10px 12px;
-      border-bottom: 1px solid #eadfce;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-    }
-    input, select, textarea {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #fff;
-      color: var(--ink);
+    button, input, select, textarea, a {
       font: inherit;
-      padding: 7px 9px;
-      outline: none;
     }
-    input, select { min-height: 36px; }
-    textarea {
-      min-height: 64px;
-      resize: vertical;
-    }
-    input:focus, select:focus, textarea:focus {
-      border-color: #b18a47;
-      box-shadow: 0 0 0 3px rgba(177, 138, 71, 0.16);
-    }
-    label {
-      display: block;
-      margin: 0 0 6px;
-      color: #3e352b;
-      font-size: 12px;
-      font-weight: 900;
-    }
-    button, .link-button {
+    button, .button-link {
       appearance: none;
-      min-height: 36px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
-      background: #fff;
+      min-height: 38px;
+      border: 1px solid var(--button-line);
+      border-radius: 5px;
+      background: #fffdf8;
       color: var(--ink);
       cursor: pointer;
-      font: inherit;
-      font-weight: 900;
-      padding: 7px 11px;
+      font-weight: 700;
+      padding: 8px 12px;
       text-decoration: none;
       white-space: nowrap;
     }
-    button.primary {
+    button.primary, .button-link.primary {
       border-color: var(--ink);
       background: var(--ink);
       color: #fff;
     }
-    button.danger { color: var(--danger); }
+    button.danger {
+      color: var(--danger);
+    }
     button:disabled {
       cursor: not-allowed;
-      opacity: 0.55;
+      opacity: .48;
     }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      min-height: 26px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: #fff;
-      padding: 4px 8px;
-    }
-    .table-wrap {
-      overflow: auto;
-      max-height: calc(100vh - 230px);
-    }
-    table {
+    input, select, textarea {
       width: 100%;
-      min-width: 1340px;
-      border-collapse: collapse;
-      table-layout: fixed;
-      font-size: 12px;
+      border: 1px solid var(--button-line);
+      border-radius: 5px;
+      background: #fffdf8;
+      color: var(--ink);
+      padding: 8px 10px;
+      outline: none;
     }
-    th, td {
-      border-bottom: 1px solid #eadfce;
-      padding: 8px;
-      text-align: left;
-      vertical-align: top;
+    input, select { min-height: 36px; }
+    textarea {
+      min-height: 86px;
+      resize: vertical;
+      line-height: 1.7;
     }
-    th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: #efe4d1;
-      color: #3e352b;
-      font-size: 11px;
+    input:focus, select:focus, textarea:focus {
+      border-color: #b89254;
+      box-shadow: 0 0 0 3px rgba(184, 146, 84, .14);
     }
-    tbody tr:nth-child(even) td { background: rgba(255, 250, 241, 0.52); }
-    td strong {
-      display: block;
-      margin-bottom: 3px;
+    .hidden { display: none !important; }
+
+    .auth-page {
+      min-height: 100%;
+      padding: 28px;
     }
-    .muted {
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .thumbs {
+    .auth-header {
       display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      min-width: 76px;
-      max-width: 116px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      max-width: 980px;
+      margin: 0 auto 18px;
     }
-    .thumbs img {
-      width: 38px;
-      height: 38px;
+    .auth-header h1 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 26px;
+      line-height: 1.2;
+    }
+    .auth-header p,
+    .auth-copy {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .auth-card {
+      width: min(620px, 100%);
+      margin: 0 auto;
       border: 1px solid var(--line);
-      border-radius: 4px;
-      background: #f1eadf;
-      object-fit: cover;
+      background: var(--panel);
+      padding: 26px;
     }
-    .stack {
+    .auth-title {
+      margin: 0 0 8px;
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .auth-card label {
+      display: block;
+      margin: 16px 0 6px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .auth-actions {
       display: grid;
-      gap: 6px;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .inbox-app {
+      height: 100vh;
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr);
+      overflow: hidden;
+      background: var(--paper);
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      min-height: 66px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+      padding: 14px 20px 12px;
+    }
+    .top-title {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
       min-width: 0;
     }
-    .stack.compact { min-width: 0; }
-    .field-block {
-      display: grid;
-      gap: 4px;
+    .top-title h1 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.2;
     }
-    .field-block span {
-      color: var(--muted);
-      font-size: 10.5px;
-      font-weight: 900;
+    .top-title span {
+      color: var(--faint);
+      font-size: 11px;
+      white-space: nowrap;
     }
-    .import-state {
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .top-actions input {
+      width: 220px;
+      min-height: 34px;
+      background: transparent;
+    }
+    .top-actions button,
+    .top-actions .button-link {
+      min-height: 34px;
+      padding: 6px 10px;
+      background: transparent;
+      font-size: 12px;
+    }
+    .filterbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-height: 46px;
+      border-bottom: 1px solid var(--line);
+      background: var(--paper);
+      padding: 0 20px;
+    }
+    .filter-tabs {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .filter-tab {
+      min-height: auto;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
       color: var(--muted);
       font-size: 12px;
-      font-weight: 900;
+      font-weight: 700;
     }
-    .import-state.ok { color: var(--accent); }
-    .import-state.warn { color: var(--danger); }
-    .actions {
-      display: grid;
-      gap: 6px;
-      min-width: 0;
+    .filter-tab.active {
+      color: var(--ink);
+    }
+    .filter-tab span {
+      color: var(--faint);
+      font-weight: 600;
+    }
+    .sort-label {
+      color: var(--faint);
+      font-size: 11px;
+      white-space: nowrap;
     }
     .message {
       display: none;
-      margin: 14px 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px 13px;
-      background: #fff;
+      border-bottom: 1px solid var(--line);
+      background: #fffaf1;
       color: var(--muted);
+      padding: 10px 20px;
+      font-size: 12px;
       white-space: pre-wrap;
-      overflow-wrap: anywhere;
     }
     .message.show { display: block; }
     .message.error {
-      border-color: rgba(178, 59, 40, 0.42);
-      background: #fff8f6;
-      color: var(--danger);
+      background: #fff4f1;
+      color: var(--danger-dark);
     }
     .message.success {
-      border-color: rgba(31, 111, 91, 0.42);
-      background: #f6fffb;
-      color: var(--accent);
+      background: #f5fbf3;
+      color: var(--confirmed);
     }
-    .hidden { display: none !important; }
-    @media (max-width: 900px) {
-      main {
-        width: min(100vw - 22px, 1380px);
-        padding-top: 18px;
+    .workspace {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 400px minmax(0, 1fr) 260px;
+      overflow: hidden;
+    }
+    .list-pane,
+    .reading-pane,
+    .meta-sidebar {
+      min-height: 0;
+      overflow-y: auto;
+    }
+    .list-pane {
+      border-right: 1px solid var(--line);
+      background: var(--paper);
+    }
+    .submission-list {
+      display: grid;
+    }
+    .submission-item {
+      display: block;
+      width: 100%;
+      min-height: 112px;
+      border: 0;
+      border-bottom: 1px solid var(--line-soft);
+      border-left: 3px solid transparent;
+      border-radius: 0;
+      background: transparent;
+      padding: 14px 16px 13px;
+      text-align: left;
+      white-space: normal;
+    }
+    .submission-item.active {
+      border-left-color: var(--ink);
+      background: var(--panel);
+    }
+    .submission-item.confirmed {
+      opacity: .6;
+    }
+    .item-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 7px;
+    }
+    .item-title {
+      min-width: 0;
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.35;
+    }
+    .submission-item.active .item-title {
+      font-weight: 700;
+    }
+    .item-time {
+      flex: 0 0 auto;
+      color: var(--faint);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .item-meta {
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-word.pending { color: var(--pending); }
+    .status-word.confirmed { color: var(--confirmed); }
+    .item-summary {
+      display: -webkit-box;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12.5px;
+      font-weight: 400;
+      line-height: 1.6;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .empty-list,
+    .empty-detail {
+      padding: 24px;
+      color: var(--faint);
+      font-size: 13px;
+    }
+    .reading-pane {
+      background: var(--paper);
+      padding: 28px 36px 42px;
+    }
+    .reading-inner {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .detail-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .detail-title-row h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 26px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .status-badge.pending {
+      background: var(--pending-bg);
+      color: var(--pending);
+    }
+    .status-badge.confirmed {
+      background: #dfeadf;
+      color: var(--confirmed);
+    }
+    .detail-meta {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.65;
+    }
+    .image-strip {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      margin: 12px 0 24px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+    .image-button {
+      appearance: none;
+      display: block;
+      min-height: 0;
+      border: 0;
+      border-radius: 6px;
+      background: #eee7da;
+      padding: 0;
+      overflow: hidden;
+      cursor: zoom-in;
+    }
+    .image-button.main img {
+      width: 190px;
+      height: 132px;
+    }
+    .image-button img {
+      display: block;
+      width: 132px;
+      height: 132px;
+      object-fit: cover;
+    }
+    .section-block {
+      margin: 0 0 22px;
+    }
+    .section-block h3,
+    .edit-panel h3 {
+      margin: 0 0 9px;
+      font-family: var(--serif);
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .section-copy {
+      margin: 0;
+      color: var(--body);
+      font-size: 14px;
+      line-height: 1.85;
+      overflow-wrap: anywhere;
+    }
+    .section-block.critical {
+      border-top: 2px solid var(--danger);
+      padding-top: 10px;
+    }
+    .section-block.critical h3 {
+      color: var(--danger-dark);
+    }
+    .section-block.critical .section-copy {
+      color: var(--danger-copy);
+    }
+    .edit-panel {
+      margin-top: 28px;
+      border-top: 1px solid var(--line);
+      padding-top: 22px;
+    }
+    .edit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .edit-grid .span-2 { grid-column: 1 / -1; }
+    .field-label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .field-label input,
+    .field-label select,
+    .field-label textarea {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 400;
+    }
+    .meta-sidebar {
+      border-left: 1px solid var(--line);
+      background: var(--side);
+      padding: 22px 16px 28px;
+    }
+    .meta-actions {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .meta-actions button,
+    .meta-actions .button-link {
+      width: 100%;
+      justify-content: center;
+      text-align: center;
+    }
+    .meta-divider {
+      border-top: 1px solid var(--line);
+      margin: 18px 0;
+    }
+    .kv-list {
+      display: grid;
+      gap: 13px;
+    }
+    .kv-item {
+      display: grid;
+      gap: 4px;
+    }
+    .kv-item label,
+    .kv-item span {
+      color: var(--faint);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .kv-item b {
+      color: var(--ink);
+      font-size: 12.5px;
+      font-weight: 500;
+      overflow-wrap: anywhere;
+    }
+    .kv-item input,
+    .kv-item select {
+      min-height: 34px;
+      font-size: 12.5px;
+      font-weight: 500;
+    }
+    .import-state {
+      color: var(--faint);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+    .import-state.ok { color: var(--confirmed); }
+    .import-state.warn { color: var(--danger); }
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      background: rgba(43, 38, 32, .72);
+      padding: 28px;
+    }
+    .lightbox.hidden { display: none; }
+    .lightbox button {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      border-color: rgba(255, 255, 255, .4);
+      background: rgba(43, 38, 32, .72);
+      color: #fff;
+    }
+    .lightbox img {
+      max-width: min(980px, 92vw);
+      max-height: 86vh;
+      border-radius: 6px;
+      object-fit: contain;
+      background: #fff;
+    }
+    @media (max-width: 1100px) {
+      .workspace {
+        grid-template-columns: 360px minmax(0, 1fr);
       }
-      header { display: block; }
-      .header-actions { justify-content: stretch; margin-top: 12px; }
-      .toolbar { grid-template-columns: 1fr; }
-      button, .link-button { width: 100%; }
+      .meta-sidebar {
+        grid-column: 2;
+        border-top: 1px solid var(--line);
+        border-left: 0;
+      }
+    }
+    @media (max-width: 780px) {
+      .inbox-app {
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+      }
+      .topbar,
+      .filterbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .top-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+      .top-actions input {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+      .workspace {
+        display: block;
+        overflow: visible;
+      }
+      .list-pane,
+      .reading-pane,
+      .meta-sidebar {
+        overflow: visible;
+      }
+      .list-pane {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .reading-pane {
+        padding: 22px 18px 28px;
+      }
+      .edit-grid {
+        grid-template-columns: 1fr;
+      }
+      .meta-sidebar {
+        grid-column: auto;
+      }
     }
   </style>
 </head>
 <body>
-  <main>
-    <header>
+  <section class="auth-page" id="loginPanel">
+    <div class="auth-header">
       <div>
-        <p class="eyebrow">Category Lab Internal Inbox</p>
         <h1>供应商提交收件箱</h1>
+        <p>Category Lab 内部资料，只在登录后显示。</p>
       </div>
-      <div class="header-actions">
-        <button id="headerLoginBtn" type="button">登录</button>
-        <button class="danger hidden" id="headerLogoutBtn" type="button">退出登录</button>
-        <a class="link-button" href="/decks/category-lab/categorylab">打开 Category Lab</a>
+      <a class="button-link" href="/decks/category-lab/categorylab">打开 Category Lab</a>
+    </div>
+    <div class="auth-card hidden" id="sessionGate">
+      <p class="auth-title">收件箱已锁定</p>
+      <p class="auth-copy" id="sessionGateText">当前浏览器已有登录态。进入前请确认周围环境。</p>
+      <div class="auth-actions">
+        <button class="primary" id="unlockBtn" type="button">进入收件箱</button>
+        <button class="danger" id="sessionLogoutBtn" type="button">退出登录</button>
+      </div>
+    </div>
+    <form class="auth-card" id="loginForm">
+      <p class="auth-title">登录收件箱</p>
+      <p class="auth-copy">内部资料只在登录后显示。离开电脑前请退出登录。</p>
+      <label for="email">账号</label>
+      <input id="email" name="email" type="email" autocomplete="email" required>
+      <label for="password">密码</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <div class="auth-actions">
+        <button class="primary" type="submit">登录</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="inbox-app hidden" id="appPanel">
+    <header class="topbar">
+      <div class="top-title">
+        <h1>供应商提交收件箱</h1>
+        <span>Category Lab 内部 · 最后刷新 <b id="lastRefreshText">--</b></span>
+      </div>
+      <div class="top-actions">
+        <input id="searchInput" type="search" placeholder="搜索供应商、产品、摘要">
+        <button id="loadBtn" type="button">刷新</button>
+        <button id="exportBtn" type="button">导出 CSV</button>
+        <button class="danger" id="logoutBtn" type="button">退出登录</button>
       </div>
     </header>
-
-    <section class="panel auth-panel" id="loginPanel">
-      <div class="auth-card hidden" id="sessionGate">
-        <p class="auth-title">收件箱已锁定</p>
-        <p class="auth-copy" id="sessionGateText">当前浏览器已有登录态。进入前请确认周围环境。</p>
-        <div class="actions">
-          <button class="primary" id="unlockBtn" type="button">进入收件箱</button>
-          <button class="danger" id="sessionLogoutBtn" type="button">退出登录</button>
-        </div>
+    <div class="filterbar">
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-status-filter="待处理" type="button">待处理 <span id="pendingCount">0</span></button>
+        <button class="filter-tab" data-status-filter="已确认" type="button">已确认 <span id="confirmedCount">0</span></button>
+        <button class="filter-tab" data-status-filter="" type="button">全部 <span id="allCount">0</span></button>
       </div>
-      <form class="auth-card" id="loginForm">
-        <p class="auth-title">登录收件箱</p>
-        <p class="auth-copy">内部资料只在登录后显示。离开电脑前请退出登录。</p>
-        <label for="email">账号</label>
-        <input id="email" name="email" type="email" autocomplete="email" required>
-        <label for="password" style="margin-top:12px;">密码</label>
-        <input id="password" name="password" type="password" autocomplete="current-password" required>
-        <div class="actions" style="margin-top:16px;">
-          <button class="primary" type="submit">登录</button>
-        </div>
-      </form>
-    </section>
-
+      <div class="sort-label">按提交时间排序 ↓</div>
+    </div>
     <div class="message" id="message"></div>
+    <div class="workspace">
+      <aside class="list-pane">
+        <div class="submission-list" id="submissionList"></div>
+      </aside>
+      <main class="reading-pane">
+        <div class="reading-inner" id="detailPane"></div>
+      </main>
+      <aside class="meta-sidebar" id="metaPanel"></aside>
+    </div>
+  </section>
 
-    <section class="panel hidden" id="appPanel">
-      <div class="toolbar">
-        <input id="searchInput" type="search" placeholder="搜索品名、供应商、备注">
-        <select id="statusFilter">
-          <option value="">全部状态</option>
-          <option value="待处理">待处理</option>
-          <option value="已确认">已确认</option>
-        </select>
-        <button class="primary" id="loadBtn" type="button">刷新</button>
-        <button id="exportBtn" type="button">导出 CSV</button>
-        <button class="danger" id="logoutBtn" type="button">退出</button>
-      </div>
-      <div class="profile-bar" id="profileBar">
-        <span class="pill">未登录</span>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <colgroup>
-            <col style="width: 86px;">
-            <col style="width: 236px;">
-            <col style="width: 300px;">
-            <col style="width: 246px;">
-            <col style="width: 174px;">
-            <col style="width: 164px;">
-            <col style="width: 132px;">
-            <col style="width: 92px;">
-          </colgroup>
-          <thead>
-            <tr>
-              <th>产品照</th>
-              <th>供应商提交 / 调整点</th>
-              <th>规格 / 结构 / 卖点</th>
-              <th>现场反馈</th>
-              <th>下一步</th>
-              <th>关键卡点</th>
-              <th>状态</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody id="rows">
-            <tr><td colspan="8" class="muted">暂无数据。</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+  <div class="lightbox hidden" id="lightbox">
+    <button type="button" id="lightboxClose">关闭</button>
+    <img id="lightboxImage" alt="产品照片放大预览">
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./supabase-config.js"></script>
@@ -360,16 +661,13 @@
   <script>
     const TABLE = "supplier_feedback_records";
     const CATEGORYLAB_STORAGE_KEY = "burger-bom-tool-v1";
-    const CATEGORY_LAB_AUTH_KEY = "categorylab_access_granted_v1";
-    const CATEGORY_LAB_OWNER_ACCESS_DIGESTS = new Set([
-      "2287a4cfed43e12623e7483ffdd5b9d580af1471d36c3df3f1295c4869d7bd78"
-    ]);
     const config = window.CATEGORYLAB_SUPABASE || {};
     const cloudbaseConfig = window.CATEGORYLAB_CLOUDBASE || {};
     const cloudbaseHost = /tcloudbase|cloudbase|tencent/i.test(location.hostname) || new URLSearchParams(location.search).get("backend") === "cloudbase";
     const cloudbaseReady = Boolean(cloudbaseConfig.apiUrl) && cloudbaseHost;
     const supabaseReady = Boolean(config.url && config.anonKey && window.supabase);
     const client = supabaseReady ? window.supabase.createClient(config.url, config.anonKey) : null;
+
     const loginPanel = document.querySelector("#loginPanel");
     const appPanel = document.querySelector("#appPanel");
     const loginForm = document.querySelector("#loginForm");
@@ -377,24 +675,29 @@
     const sessionGateText = document.querySelector("#sessionGateText");
     const unlockBtn = document.querySelector("#unlockBtn");
     const sessionLogoutBtn = document.querySelector("#sessionLogoutBtn");
-    const headerLoginBtn = document.querySelector("#headerLoginBtn");
-    const headerLogoutBtn = document.querySelector("#headerLogoutBtn");
     const searchInput = document.querySelector("#searchInput");
-    const statusFilter = document.querySelector("#statusFilter");
     const loadBtn = document.querySelector("#loadBtn");
     const exportBtn = document.querySelector("#exportBtn");
     const logoutBtn = document.querySelector("#logoutBtn");
-    const rowsEl = document.querySelector("#rows");
     const message = document.querySelector("#message");
-    const profileBar = document.querySelector("#profileBar");
+    const listEl = document.querySelector("#submissionList");
+    const detailPane = document.querySelector("#detailPane");
+    const metaPanel = document.querySelector("#metaPanel");
+    const lastRefreshText = document.querySelector("#lastRefreshText");
+    const lightbox = document.querySelector("#lightbox");
+    const lightboxImage = document.querySelector("#lightboxImage");
+    const lightboxClose = document.querySelector("#lightboxClose");
+    const countEls = {
+      pending: document.querySelector("#pendingCount"),
+      confirmed: document.querySelector("#confirmedCount"),
+      all: document.querySelector("#allCount")
+    };
+
     let records = [];
     let profile = null;
+    let activeRecordId = new URLSearchParams(location.search).get("id") || "";
+    let statusFilter = "待处理";
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
-
-    function categoryLabAccessDigest() {
-      const digest = sessionStorage.getItem(CATEGORY_LAB_AUTH_KEY) || "";
-      return CATEGORY_LAB_OWNER_ACCESS_DIGESTS.has(digest) ? digest : "";
-    }
 
     function showMessage(text, type = "") {
       message.className = `message show ${type}`.trim();
@@ -406,25 +709,8 @@
       message.textContent = "";
     }
 
-    async function cloudbaseRequest(action, payload = {}) {
-      const response = await fetch(cloudbaseConfig.apiUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CategoryLab-Admin-Code": cloudbaseAdminCode,
-          "X-CategoryLab-Access-Digest": categoryLabAccessDigest()
-        },
-        body: JSON.stringify({ action, adminCode: cloudbaseAdminCode, categoryLabAccessDigest: categoryLabAccessDigest(), ...payload })
-      });
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok) {
-        throw new Error(result.error || `请求失败（${response.status}）`);
-      }
-      return result.data;
-    }
-
     function escapeHtml(value) {
-      return String(value || "").replace(/[&<>"']/g, char => ({
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
         "&": "&amp;",
         "<": "&lt;",
         ">": "&gt;",
@@ -433,8 +719,17 @@
       }[char]));
     }
 
+    function escapeAttr(value) {
+      return escapeHtml(value).replaceAll("\n", " ");
+    }
+
     function nl(value) {
       return escapeHtml(value).replace(/\n/g, "<br>");
+    }
+
+    function compactText(value, fallback = "-") {
+      const text = String(value ?? "").trim();
+      return text || fallback;
     }
 
     function dateText(value) {
@@ -444,57 +739,23 @@
       return date.toLocaleString("zh-CN", { hour12: false });
     }
 
+    function relativeTime(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "";
+      const diff = Date.now() - date.getTime();
+      const minutes = Math.floor(diff / 60000);
+      if (minutes < 1) return "刚刚";
+      if (minutes < 60) return `${minutes} 分钟前`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours} 小时前`;
+      const days = Math.floor(hours / 24);
+      if (days < 7) return `${days} 天前`;
+      return `${date.getMonth() + 1}/${String(date.getDate()).padStart(2, "0")}`;
+    }
+
     function roleCanEdit() {
       return ["owner", "pm"].includes(profile?.role);
-    }
-
-    function resetInMemoryState() {
-      profile = null;
-      records = [];
-      rowsEl.innerHTML = `<tr><td colspan="8" class="muted">暂无数据。</td></tr>`;
-      profileBar.innerHTML = `<span class="pill">未登录</span>`;
-    }
-
-    function setHeaderAuthState({ hasSession = false, unlocked = false } = {}) {
-      headerLoginBtn.classList.toggle("hidden", unlocked);
-      headerLoginBtn.textContent = hasSession ? "进入收件箱" : "登录";
-      headerLogoutBtn.classList.toggle("hidden", !hasSession);
-    }
-
-    function showLoginForm() {
-      resetInMemoryState();
-      loginPanel.classList.remove("hidden");
-      loginForm.classList.remove("hidden");
-      sessionGate.classList.add("hidden");
-      appPanel.classList.add("hidden");
-      setHeaderAuthState({ hasSession: false, unlocked: false });
-    }
-
-    function showSessionGate(session) {
-      resetInMemoryState();
-      loginPanel.classList.remove("hidden");
-      loginForm.classList.add("hidden");
-      sessionGate.classList.remove("hidden");
-      appPanel.classList.add("hidden");
-      sessionGateText.textContent = `当前登录账号：${session?.user?.email || "内部账号"}。进入前请确认周围环境。`;
-      setHeaderAuthState({ hasSession: true, unlocked: false });
-    }
-
-    function showAppShell() {
-      loginPanel.classList.add("hidden");
-      appPanel.classList.remove("hidden");
-      setHeaderAuthState({ hasSession: true, unlocked: true });
-    }
-
-    async function logout() {
-      if (cloudbaseReady) {
-        sessionStorage.removeItem("categorylabCloudbaseAdminCode");
-        cloudbaseAdminCode = "";
-      } else if (client) await client.auth.signOut();
-      clearMessage();
-      showLoginForm();
-      loginForm.elements.password.value = "";
-      loginForm.elements.email.focus();
     }
 
     function imageUrls(row) {
@@ -503,20 +764,48 @@
         : [];
     }
 
+    async function cloudbaseRequest(action, payload = {}) {
+      const response = await fetch(cloudbaseConfig.apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CategoryLab-Admin-Code": cloudbaseAdminCode
+        },
+        body: JSON.stringify({ action, adminCode: cloudbaseAdminCode, ...payload })
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) {
+        throw new Error(result.error || `请求失败（${response.status}）`);
+      }
+      return result.data;
+    }
+
     function optionHtml(options, selected) {
-      return options.map(option => `<option value="${escapeHtml(option)}" ${option === selected ? "selected" : ""}>${escapeHtml(option || "请选择")}</option>`).join("");
+      return options.map(option => `<option value="${escapeAttr(option)}" ${option === selected ? "selected" : ""}>${escapeHtml(option || "请选择")}</option>`).join("");
     }
 
-    function inputHtml(field, value, placeholder = "", disabled = "", type = "text") {
-      return `<input data-field="${escapeHtml(field)}" type="${escapeHtml(type)}" value="${escapeHtml(value || "")}" ${disabled} placeholder="${escapeHtml(placeholder)}">`;
+    function fieldInput(field, value, placeholder = "", type = "text") {
+      return `<input data-field="${escapeAttr(field)}" type="${escapeAttr(type)}" value="${escapeAttr(value || "")}" placeholder="${escapeAttr(placeholder)}" ${roleCanEdit() ? "" : "disabled"}>`;
     }
 
-    function textareaHtml(field, value, placeholder = "", disabled = "") {
-      return `<textarea data-field="${escapeHtml(field)}" ${disabled} placeholder="${escapeHtml(placeholder)}">${escapeHtml(value || "")}</textarea>`;
+    function fieldTextarea(field, value, placeholder = "", rows = 3) {
+      return `<textarea data-field="${escapeAttr(field)}" rows="${rows}" placeholder="${escapeAttr(placeholder)}" ${roleCanEdit() ? "" : "disabled"}>${escapeHtml(value || "")}</textarea>`;
     }
 
-    function fieldBlock(label, html) {
-      return `<label class="field-block"><span>${escapeHtml(label)}</span>${html}</label>`;
+    function fieldSelect(field, options, selected) {
+      return `<select data-field="${escapeAttr(field)}" ${roleCanEdit() ? "" : "disabled"}>${optionHtml(options, selected || "")}</select>`;
+    }
+
+    function fieldBlock(label, control, extraClass = "") {
+      return `<label class="field-label ${extraClass}"><span>${escapeHtml(label)}</span>${control}</label>`;
+    }
+
+    function kv(label, value) {
+      return `<div class="kv-item"><span>${escapeHtml(label)}</span><b>${escapeHtml(compactText(value))}</b></div>`;
+    }
+
+    function editableKv(label, field, value, placeholder = "", type = "text") {
+      return `<div class="kv-item"><label>${escapeHtml(label)}</label>${fieldInput(field, value, placeholder, type)}</div>`;
     }
 
     function categoryLabData() {
@@ -536,10 +825,9 @@
     }
 
     function visibleRecords() {
-      const status = statusFilter.value;
       const q = searchInput.value.trim().toLowerCase();
       return records.filter(row => {
-        const statusOk = !status || row.status === status;
+        const statusOk = !statusFilter || row.status === statusFilter;
         const haystack = [
           row.product_name,
           row.supplier_name,
@@ -558,90 +846,220 @@
       });
     }
 
-    function renderProfile() {
-      const total = records.length;
+    function recordById(id) {
+      return records.find(row => row.id === id) || null;
+    }
+
+    function activeRecord() {
+      return recordById(activeRecordId);
+    }
+
+    function syncUrl() {
+      const url = new URL(location.href);
+      if (activeRecordId) url.searchParams.set("id", activeRecordId);
+      else url.searchParams.delete("id");
+      history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+
+    function ensureActive(preferredId = activeRecordId) {
+      const rows = visibleRecords();
+      if (preferredId && rows.some(row => row.id === preferredId)) {
+        activeRecordId = preferredId;
+      } else {
+        activeRecordId = rows[0]?.id || "";
+      }
+      syncUrl();
+    }
+
+    function renderCounts() {
       const pending = records.filter(row => row.status === "待处理").length;
       const confirmed = records.filter(row => row.status === "已确认").length;
-      const missingImport = records.filter(row => row.status === "已确认" && !isImportedToCategoryLab(row)).length;
-      profileBar.innerHTML = `
-        <span class="pill">${escapeHtml(profile?.display_name || profile?.email || "")}</span>
-        <span class="pill">权限：${escapeHtml(profile?.role || "viewer")}</span>
-        <span class="pill">总计 ${total}</span>
-        <span class="pill">待处理 ${pending}</span>
-        <span class="pill">已确认 ${confirmed}</span>
-        <span class="pill">已确认未导入 ${missingImport}</span>
+      countEls.pending.textContent = pending;
+      countEls.confirmed.textContent = confirmed;
+      countEls.all.textContent = records.length;
+      document.querySelectorAll("[data-status-filter]").forEach(button => {
+        button.classList.toggle("active", button.dataset.statusFilter === statusFilter);
+      });
+    }
+
+    function submissionNumber(row) {
+      const same = records
+        .filter(item => (item.supplier_name || "") === (row.supplier_name || "") && (item.product_name || "") === (row.product_name || ""))
+        .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+      return Math.max(1, same.findIndex(item => item.id === row.id) + 1);
+    }
+
+    function statusClass(row) {
+      return row.status === "已确认" ? "confirmed" : "pending";
+    }
+
+    function renderList() {
+      const rows = visibleRecords();
+      if (!rows.length) {
+        listEl.innerHTML = `<div class="empty-list">暂无匹配记录。</div>`;
+        return;
+      }
+      listEl.innerHTML = rows.map(row => `
+        <button class="submission-item ${row.id === activeRecordId ? "active" : ""} ${row.status === "已确认" ? "confirmed" : ""}" data-record-id="${escapeAttr(row.id)}" type="button">
+          <span class="item-head">
+            <span class="item-title">${escapeHtml(compactText(row.product_name, "未命名产品"))}</span>
+            <span class="item-time">${escapeHtml(relativeTime(row.created_at))}</span>
+          </span>
+          <span class="item-meta">
+            ${escapeHtml(compactText(row.supplier_name, "未知供应商"))}
+            · ${escapeHtml(compactText(row.product_type || row.test_category, "未分类"))}
+            · <span class="status-word ${statusClass(row)}">${escapeHtml(row.status || "待处理")}</span>
+          </span>
+          <span class="item-summary">${escapeHtml(compactText(row.version_change || row.core_ingredients_selling_points || row.ingredients_structure, "暂无摘要"))}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderImageStrip(row) {
+      const imgs = imageUrls(row);
+      if (!imgs.length) return "";
+      return `
+        <div class="image-strip">
+          ${imgs.map((url, index) => `
+            <button class="image-button ${index === 0 ? "main" : ""}" data-image-url="${escapeAttr(url)}" type="button">
+              <img src="${escapeAttr(url)}" alt="产品照 ${index + 1}">
+            </button>
+          `).join("")}
+        </div>
       `;
     }
 
-    function renderRows() {
-      const rows = visibleRecords();
-      renderProfile();
-      const disabled = roleCanEdit() ? "" : "disabled";
-      rowsEl.innerHTML = rows.map(row => {
-        const imgs = imageUrls(row);
-        const imported = isImportedToCategoryLab(row);
-        const importText = imported ? "已导入 Category Lab" : "未导入 Category Lab";
-        const importClass = imported ? "import-state ok" : row.status === "已确认" ? "import-state warn" : "import-state";
-        return `
-          <tr data-row="${escapeHtml(row.id)}">
-            <td>
-              <div class="thumbs">
-                ${imgs.map((url, index) => `<a href="${escapeHtml(url)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(url)}" alt="产品照 ${index + 1}"></a>`).join("") || "-"}
-              </div>
-            </td>
-            <td>
-              <div class="stack">
-                ${fieldBlock("品名", inputHtml("product_name", row.product_name, "品名", disabled))}
-                ${fieldBlock("供应商", inputHtml("supplier_name", row.supplier_name, "供应商", disabled))}
-                ${fieldBlock("版本", inputHtml("version_label", row.version_label, "版本", disabled))}
-                ${fieldBlock("送样时间", inputHtml("sample_date", row.sample_date, "", disabled, "date"))}
-                ${fieldBlock("产品类型", inputHtml("product_type", row.product_type, "产品类型", disabled))}
-                ${fieldBlock("测试类别", inputHtml("test_category", row.test_category, "测试类别", disabled))}
-                ${fieldBlock("本版调整点", textareaHtml("version_change", row.version_change, "本版调整点", disabled))}
-              </div>
-              <div class="muted">提交编号：${escapeHtml(row.followup_code || "-")}</div>
-              <div class="muted">送样：${escapeHtml(row.sample_date || "")}</div>
-              <div class="muted">提交：${escapeHtml(dateText(row.created_at))}</div>
-            </td>
-            <td>
-              <div class="stack">
-                ${fieldBlock("成品规格（克）", inputHtml("finished_spec", row.finished_spec, "成品规格（克）", disabled))}
-                ${fieldBlock("报价（元，含税含运）", inputHtml("quote_rmb", row.quote_rmb, "报价（元，含税含运）", disabled))}
-                ${fieldBlock("产品结构", textareaHtml("ingredients_structure", row.ingredients_structure, "产品结构", disabled))}
-                ${fieldBlock("核心原料及卖点", textareaHtml("core_ingredients_selling_points", row.core_ingredients_selling_points, "核心原料及卖点", disabled))}
-              </div>
-            </td>
-            <td>
-              <div class="stack">
-                ${fieldBlock("测试场景 / 反馈来源", `<select data-field="tasting_scene" ${disabled}>
-                  ${optionHtml(["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], row.tasting_scene || "")}
-                </select>`)}
-                ${fieldBlock("测试反馈", `<textarea data-field="tasting_feedback" ${disabled} placeholder="测试反馈">${escapeHtml(row.tasting_feedback || "")}</textarea>`)}
-                ${fieldBlock("本轮结论", `<select data-field="round_conclusion" ${disabled}>
-                  ${optionHtml(["", "继续调整", "暂停", "通过且储备", "通过且进入众测"], row.round_conclusion || "")}
-                </select>`)}
-              </div>
-            </td>
-            <td>${fieldBlock("下一步改进方向", `<textarea data-field="next_step_direction" ${disabled} placeholder="下一步改进方向">${escapeHtml(row.next_step_direction || "")}</textarea>`)}</td>
-            <td>${fieldBlock("关键卡点 / 备注", `<textarea data-field="key_blocker" ${disabled} placeholder="关键卡点 / 备注">${escapeHtml(row.key_blocker || "")}</textarea>`)}</td>
-            <td>
-              <div class="stack compact">
-                ${fieldBlock("处理状态", `<select data-field="status" ${disabled}>
-                  ${optionHtml(["待处理", "已确认"], row.status || "待处理")}
-                </select>`)}
-                <div class="${importClass}">${importText}</div>
-              </div>
-            </td>
-            <td>
-              <div class="actions">
-                <button data-save="${escapeHtml(row.id)}" ${disabled} type="button">保存</button>
-                <button data-import="${escapeHtml(row.id)}" ${disabled} type="button">${imported ? "更新导入" : "导入"}</button>
-                <button class="danger" data-delete="${escapeHtml(row.id)}" ${disabled} type="button">删除</button>
-              </div>
-            </td>
-          </tr>
-        `;
-      }).join("") || `<tr><td colspan="8" class="muted">暂无数据。</td></tr>`;
+    function sectionHtml(title, value, className = "") {
+      const text = String(value || "").trim();
+      if (!text) return "";
+      return `<section class="section-block ${className}"><h3>${escapeHtml(title)}</h3><p class="section-copy">${nl(text)}</p></section>`;
+    }
+
+    function renderDetail() {
+      const row = activeRecord();
+      if (!row) {
+        detailPane.innerHTML = `<div class="empty-detail">请选择左侧记录。</div>`;
+        metaPanel.innerHTML = "";
+        return;
+      }
+      const badgeClass = statusClass(row);
+      detailPane.innerHTML = `
+        <div class="detail-title-row">
+          <h2>${escapeHtml(compactText(row.product_name, "未命名产品"))}</h2>
+          <span class="status-badge ${badgeClass}">${escapeHtml(row.status || "待处理")}</span>
+        </div>
+        <p class="detail-meta">
+          ${escapeHtml(compactText(row.supplier_name, "未知供应商"))}
+          ${row.product_type ? `（${escapeHtml(row.product_type)}）` : ""}
+          · ${escapeHtml(compactText(row.test_category, "未填测试类别"))}
+          · ${escapeHtml(dateText(row.created_at))}
+          · 第 ${submissionNumber(row)} 次提交
+        </p>
+        ${renderImageStrip(row)}
+        ${sectionHtml("本次提交 / 调整点", row.version_change)}
+        ${sectionHtml("产品结构", row.ingredients_structure)}
+        ${sectionHtml("核心原料及卖点", row.core_ingredients_selling_points)}
+        ${sectionHtml("现场反馈", row.tasting_feedback)}
+        ${sectionHtml("下一步", row.next_step_direction)}
+        ${sectionHtml("关键卡点", row.key_blocker, "critical")}
+        <section class="edit-panel">
+          <h3>内部整理</h3>
+          <div class="edit-grid">
+            ${fieldBlock("品名", fieldInput("product_name", row.product_name, "品名"))}
+            ${fieldBlock("版本", fieldInput("version_label", row.version_label, "V1 / V2 / V3"))}
+            ${fieldBlock("本版调整点", fieldTextarea("version_change", row.version_change, "本版调整点", 4), "span-2")}
+            ${fieldBlock("产品结构", fieldTextarea("ingredients_structure", row.ingredients_structure, "产品结构", 4), "span-2")}
+            ${fieldBlock("核心原料及卖点", fieldTextarea("core_ingredients_selling_points", row.core_ingredients_selling_points, "核心原料及卖点", 3), "span-2")}
+            ${fieldBlock("测试场景 / 反馈来源", fieldSelect("tasting_scene", ["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], row.tasting_scene))}
+            ${fieldBlock("本轮结论", fieldSelect("round_conclusion", ["", "继续调整", "暂停", "通过且储备", "通过且进入众测"], row.round_conclusion))}
+            ${fieldBlock("测试反馈", fieldTextarea("tasting_feedback", row.tasting_feedback, "测试反馈", 4), "span-2")}
+            ${fieldBlock("下一步改进方向", fieldTextarea("next_step_direction", row.next_step_direction, "下一步改进方向", 3), "span-2")}
+            ${fieldBlock("关键卡点 / 备注", fieldTextarea("key_blocker", row.key_blocker, "关键卡点 / 备注", 3), "span-2")}
+          </div>
+        </section>
+      `;
+      renderMeta(row);
+    }
+
+    function renderMeta(row) {
+      const imported = isImportedToCategoryLab(row);
+      const importText = imported ? "已导入 Category Lab" : "未导入 Category Lab";
+      const importClass = imported ? "import-state ok" : row.status === "已确认" ? "import-state warn" : "import-state";
+      metaPanel.innerHTML = `
+        <div class="meta-actions">
+          <button class="primary" data-confirm-active type="button" ${roleCanEdit() ? "" : "disabled"}>确认提交</button>
+          <button data-save-active type="button" ${roleCanEdit() ? "" : "disabled"}>保存修改</button>
+          <button data-import-active type="button" ${roleCanEdit() ? "" : "disabled"}>${imported ? "更新导入 Category Lab" : "导入 Category Lab"}</button>
+          <button data-note-active type="button" ${roleCanEdit() ? "" : "disabled"}>加内部备注</button>
+          <button class="danger" data-delete-active type="button" ${roleCanEdit() ? "" : "disabled"}>删除记录</button>
+        </div>
+        <div class="meta-divider"></div>
+        <div class="kv-list">
+          ${editableKv("供应商", "supplier_name", row.supplier_name, "供应商")}
+          ${editableKv("送样时间", "sample_date", row.sample_date, "YYYY-MM-DD")}
+          ${editableKv("类型", "product_type", row.product_type, "烘焙 / 蛋糕 / 三明治")}
+          ${editableKv("测试类别", "test_category", row.test_category, "测试类别")}
+          ${editableKv("成品规格（克）", "finished_spec", row.finished_spec, "如：165g/份")}
+          ${editableKv("报价（元，含税含运）", "quote_rmb", row.quote_rmb, "线下确认后填写")}
+          <div class="kv-item"><label>处理状态</label>${fieldSelect("status", ["待处理", "已确认"], row.status || "待处理")}</div>
+          <div class="${importClass}">${escapeHtml(importText)}</div>
+          ${kv("提交编号", row.followup_code)}
+          ${kv("提交时间", dateText(row.created_at))}
+          ${kv("更新时间", dateText(row.updated_at))}
+        </div>
+      `;
+    }
+
+    function renderAll(preferredId = activeRecordId) {
+      renderCounts();
+      ensureActive(preferredId);
+      renderList();
+      renderDetail();
+    }
+
+    function resetInMemoryState() {
+      profile = null;
+      records = [];
+      activeRecordId = "";
+      listEl.innerHTML = `<div class="empty-list">暂无数据。</div>`;
+      detailPane.innerHTML = "";
+      metaPanel.innerHTML = "";
+      renderCounts();
+    }
+
+    function showLoginForm() {
+      resetInMemoryState();
+      loginPanel.classList.remove("hidden");
+      loginForm.classList.remove("hidden");
+      sessionGate.classList.add("hidden");
+      appPanel.classList.add("hidden");
+    }
+
+    function showSessionGate(session) {
+      resetInMemoryState();
+      loginPanel.classList.remove("hidden");
+      loginForm.classList.add("hidden");
+      sessionGate.classList.remove("hidden");
+      appPanel.classList.add("hidden");
+      sessionGateText.textContent = `当前登录账号：${session?.user?.email || "内部账号"}。进入前请确认周围环境。`;
+    }
+
+    function showAppShell() {
+      loginPanel.classList.add("hidden");
+      appPanel.classList.remove("hidden");
+    }
+
+    async function logout() {
+      if (cloudbaseReady) {
+        sessionStorage.removeItem("categorylabCloudbaseAdminCode");
+        cloudbaseAdminCode = "";
+      } else if (client) {
+        await client.auth.signOut();
+      }
+      clearMessage();
+      showLoginForm();
+      loginForm.elements.password.value = "";
+      loginForm.elements.email.focus();
     }
 
     async function loadProfile(session) {
@@ -672,11 +1090,11 @@
           if (error) throw error;
           records = data || [];
         }
-        renderRows();
+        records.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        lastRefreshText.textContent = new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false });
+        renderAll(activeRecordId);
         const missingImport = records.filter(row => row.status === "已确认" && !isImportedToCategoryLab(row)).length;
-        if (missingImport > 0) {
-          showMessage(`有 ${missingImport} 条已确认记录还没有导入 Category Lab。`, "");
-        }
+        if (missingImport > 0) showMessage(`有 ${missingImport} 条已确认记录还没有导入 Category Lab。`, "");
       } catch (error) {
         showMessage(error.message || "读取失败。", "error");
       } finally {
@@ -693,7 +1111,7 @@
         document.querySelector('label[for="password"]').textContent = "内部访问码";
         loginForm.elements.email.placeholder = "Louise";
         loginForm.elements.password.placeholder = "请输入内部访问码";
-        if (!cloudbaseAdminCode && !categoryLabAccessDigest()) {
+        if (!cloudbaseAdminCode) {
           showLoginForm();
           return;
         }
@@ -722,48 +1140,48 @@
       await loadRecords();
     }
 
-    function rowElement(id) {
-      return rowsEl.querySelector(`[data-row="${CSS.escape(id)}"]`);
+    function detailValue(field) {
+      const node = appPanel.querySelector(`[data-field="${CSS.escape(field)}"]`);
+      return node?.value || "";
     }
 
-    function rowPayload(id) {
-      const tr = rowElement(id);
-      if (!tr) return {};
-      const value = field => tr.querySelector(`[data-field="${field}"]`)?.value || "";
-      const quoteText = value("quote_rmb").trim();
+    function activePayload() {
+      const row = activeRecord() || {};
+      const quoteText = detailValue("quote_rmb").trim();
       const quoteCleaned = quoteText.replace(/[^0-9.]/g, "");
       const quote = Number(quoteCleaned);
       return {
-        product_name: value("product_name").trim(),
-        supplier_name: value("supplier_name").trim(),
-        version_label: value("version_label").trim(),
-        sample_date: value("sample_date") || null,
-        product_type: value("product_type").trim(),
-        test_category: value("test_category").trim(),
-        version_change: value("version_change").trim(),
-        finished_spec: value("finished_spec").trim(),
-        ingredients_structure: value("ingredients_structure").trim(),
+        product_name: detailValue("product_name").trim() || row.product_name || "",
+        supplier_name: detailValue("supplier_name").trim() || row.supplier_name || "",
+        version_label: detailValue("version_label").trim(),
+        sample_date: detailValue("sample_date").trim() || null,
+        product_type: detailValue("product_type").trim(),
+        test_category: detailValue("test_category").trim(),
+        version_change: detailValue("version_change").trim(),
+        finished_spec: detailValue("finished_spec").trim(),
+        ingredients_structure: detailValue("ingredients_structure").trim(),
         quote_rmb: quoteCleaned && Number.isFinite(quote) ? quote : null,
-        core_ingredients_selling_points: value("core_ingredients_selling_points").trim(),
-        tasting_scene: value("tasting_scene"),
-        tasting_feedback: value("tasting_feedback").trim(),
-        round_conclusion: value("round_conclusion"),
-        next_step_direction: value("next_step_direction").trim(),
-        key_blocker: value("key_blocker").trim(),
-        status: value("status")
+        core_ingredients_selling_points: detailValue("core_ingredients_selling_points").trim(),
+        tasting_scene: detailValue("tasting_scene"),
+        tasting_feedback: detailValue("tasting_feedback").trim(),
+        round_conclusion: detailValue("round_conclusion"),
+        next_step_direction: detailValue("next_step_direction").trim(),
+        key_blocker: detailValue("key_blocker").trim(),
+        status: detailValue("status") || row.status || "待处理"
       };
     }
 
-    async function saveRow(id) {
-      if (!roleCanEdit()) return;
+    async function saveRow(id = activeRecordId, override = {}) {
+      if (!roleCanEdit() || !id) return null;
+      const payload = { ...activePayload(), ...override };
       let data;
       if (cloudbaseReady) {
-        const response = await cloudbaseRequest("adminUpdate", { id, payload: rowPayload(id) });
+        const response = await cloudbaseRequest("adminUpdate", { id, payload });
         data = response.record;
       } else {
         const response = await client
           .from(TABLE)
-          .update(rowPayload(id))
+          .update(payload)
           .eq("id", id)
           .select("*")
           .single();
@@ -772,12 +1190,8 @@
       }
       const index = records.findIndex(row => row.id === id);
       if (index >= 0) records[index] = data;
-      renderRows();
-      if (data.status === "已确认" && !isImportedToCategoryLab(data)) {
-        showMessage("已保存。这条记录已确认，但还没有导入 Category Lab。", "");
-      } else {
-        showMessage("已保存。", "success");
-      }
+      renderAll(id);
+      return data;
     }
 
     function categoryLabRecord(row) {
@@ -830,12 +1244,11 @@
       };
     }
 
-    async function importToCategoryLab(id) {
-      if (!roleCanEdit()) return;
-      const row = records.find(item => item.id === id);
+    async function importToCategoryLab(id = activeRecordId) {
+      if (!roleCanEdit() || !id) return;
+      const row = recordById(id);
       if (!row) return;
-      const payload = { ...rowPayload(id), status: "已确认" };
-      const mergedRow = { ...row, ...payload };
+      const mergedRow = { ...row, ...activePayload(), status: "已确认" };
       const raw = localStorage.getItem(CATEGORYLAB_STORAGE_KEY);
       if (!raw) {
         showMessage("当前浏览器还没有 Category Lab 本地数据。请先打开一次 Category Lab，再回来导入。", "error");
@@ -854,34 +1267,18 @@
       if (index >= 0) data.devRecords[index] = { ...data.devRecords[index], ...record };
       else data.devRecords.unshift(record);
       localStorage.setItem(CATEGORYLAB_STORAGE_KEY, JSON.stringify(data));
-
-      let updated;
-      if (cloudbaseReady) {
-        const response = await cloudbaseRequest("adminUpdate", { id, payload });
-        updated = response.record;
-      } else {
-        const response = await client
-          .from(TABLE)
-          .update(payload)
-          .eq("id", id)
-          .select("*")
-          .single();
-        if (response.error) throw response.error;
-        updated = response.data;
-      }
-      const recordIndex = records.findIndex(item => item.id === id);
-      if (recordIndex >= 0) records[recordIndex] = updated;
-      renderRows();
-      showMessage(`已导入 Category Lab：${mergedRow.product_name || ""}`, "success");
+      const updated = await saveRow(id, { ...mergedRow, status: "已确认" });
+      showMessage(`已导入 Category Lab：${updated?.product_name || mergedRow.product_name || ""}`, "success");
     }
 
-    async function deleteRow(id) {
-      if (!roleCanEdit()) return;
-      const row = records.find(item => item.id === id);
+    async function deleteRow(id = activeRecordId) {
+      if (!roleCanEdit() || !id) return;
+      const row = recordById(id);
       const ok = window.confirm(`确认删除这条供应商提交？\n${row?.product_name || ""}`);
       if (!ok) return;
-      if (cloudbaseReady) await cloudbaseRequest("adminDelete", { id });
-      else {
+      if (cloudbaseReady) {
+        await cloudbaseRequest("adminDelete", { id });
+      } else {
         const { error } = await client
           .from(TABLE)
           .delete()
@@ -889,7 +1286,7 @@
         if (error) throw error;
       }
       records = records.filter(item => item.id !== id);
-      renderRows();
+      renderAll("");
       showMessage("已删除。", "success");
     }
 
@@ -953,6 +1350,25 @@
       URL.revokeObjectURL(url);
     }
 
+    function appendInternalNote(text) {
+      const field = appPanel.querySelector('[data-field="key_blocker"]');
+      if (!field || !text) return;
+      const current = field.value.trim();
+      field.value = [current, `内部备注：${text}`].filter(Boolean).join("\n");
+      field.focus();
+    }
+
+    function moveSelection(delta) {
+      const rows = visibleRecords();
+      if (!rows.length) return;
+      const index = Math.max(0, rows.findIndex(row => row.id === activeRecordId));
+      const next = rows[Math.min(rows.length - 1, Math.max(0, index + delta))];
+      if (next) {
+        activeRecordId = next.id;
+        renderAll(next.id);
+      }
+    }
+
     loginForm.addEventListener("submit", async event => {
       event.preventDefault();
       if (cloudbaseReady) {
@@ -985,43 +1401,75 @@
       await boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error"));
     });
 
-    logoutBtn.addEventListener("click", logout);
-    headerLogoutBtn.addEventListener("click", logout);
     sessionLogoutBtn.addEventListener("click", logout);
     unlockBtn.addEventListener("click", () => boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error")));
-    headerLoginBtn.addEventListener("click", async () => {
-      if (cloudbaseReady) {
-        if (cloudbaseAdminCode) {
-          await boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error"));
-          return;
-        }
-        showLoginForm();
-        loginForm.elements.password.focus();
-        return;
-      }
-      const { data } = supabaseReady ? await client.auth.getSession() : { data: { session: null } };
-      if (data.session) {
-        await boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error"));
-        return;
-      }
-      showLoginForm();
-      loginForm.elements.email.focus();
-    });
-
+    logoutBtn.addEventListener("click", logout);
     loadBtn.addEventListener("click", loadRecords);
     exportBtn.addEventListener("click", exportCsv);
-    statusFilter.addEventListener("change", renderRows);
-    searchInput.addEventListener("input", renderRows);
-    rowsEl.addEventListener("click", async event => {
-      const saveBtn = event.target.closest("[data-save]");
-      const importBtn = event.target.closest("[data-import]");
-      const deleteBtn = event.target.closest("[data-delete]");
+    searchInput.addEventListener("input", () => renderAll(""));
+    document.querySelectorAll("[data-status-filter]").forEach(button => {
+      button.addEventListener("click", () => {
+        statusFilter = button.dataset.statusFilter;
+        renderAll("");
+      });
+    });
+    listEl.addEventListener("click", event => {
+      const item = event.target.closest("[data-record-id]");
+      if (!item) return;
+      activeRecordId = item.dataset.recordId;
+      renderAll(activeRecordId);
+    });
+    appPanel.addEventListener("click", async event => {
       try {
-        if (saveBtn) await saveRow(saveBtn.dataset.save);
-        if (importBtn) await importToCategoryLab(importBtn.dataset.import);
-        if (deleteBtn) await deleteRow(deleteBtn.dataset.delete);
+        const imageButton = event.target.closest("[data-image-url]");
+        if (imageButton) {
+          lightboxImage.src = imageButton.dataset.imageUrl;
+          lightbox.classList.remove("hidden");
+          return;
+        }
+        if (event.target.closest("[data-save-active]")) {
+          await saveRow();
+          showMessage("已保存。", "success");
+        }
+        if (event.target.closest("[data-confirm-active]")) {
+          await saveRow(activeRecordId, { status: "已确认" });
+          showMessage("已确认。", "success");
+        }
+        if (event.target.closest("[data-import-active]")) await importToCategoryLab();
+        if (event.target.closest("[data-note-active]")) {
+          const note = window.prompt("请输入内部备注：");
+          if (note) {
+            appendInternalNote(note);
+            await saveRow();
+            showMessage("内部备注已保存。", "success");
+          }
+        }
+        if (event.target.closest("[data-delete-active]")) await deleteRow();
       } catch (error) {
         showMessage(error.message || "操作失败。", "error");
+      }
+    });
+    lightboxClose.addEventListener("click", () => lightbox.classList.add("hidden"));
+    lightbox.addEventListener("click", event => {
+      if (event.target === lightbox) lightbox.classList.add("hidden");
+    });
+    document.addEventListener("keydown", async event => {
+      const tag = event.target?.tagName;
+      if (["INPUT", "TEXTAREA", "SELECT"].includes(tag)) return;
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        moveSelection(1);
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        moveSelection(-1);
+      } else if (event.key === "Enter" && activeRecordId && roleCanEdit()) {
+        event.preventDefault();
+        try {
+          await saveRow(activeRecordId, { status: "已确认" });
+          showMessage("已确认。", "success");
+        } catch (error) {
+          showMessage(error.message || "操作失败。", "error");
+        }
       }
     });
 

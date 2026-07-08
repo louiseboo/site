@@ -1959,15 +1959,16 @@
     .launch-tab-panel.hidden-file {
       display: none;
     }
-    .supplier-inbox-panel {
-      min-height: calc(100vh - 210px);
+    .supplier-inbox-entry {
+      display: grid;
+      gap: 14px;
+      max-width: 620px;
+      padding: 8px 0;
     }
-    .supplier-inbox-frame {
-      width: 100%;
-      min-height: calc(100vh - 270px);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fffdf8;
+    .supplier-inbox-entry p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
     }
   </style>
 </head>
@@ -2182,8 +2183,13 @@
                 <a class="btn compact" href="/decks/category-lab/supplier-submissions-admin" target="_blank" rel="noopener">新窗口打开</a>
               </div>
             </div>
-            <div class="panel-body supplier-inbox-panel">
-              <iframe class="supplier-inbox-frame" title="供应商收件箱" src="/decks/category-lab/supplier-submissions-admin"></iframe>
+            <div class="panel-body">
+              <div class="supplier-inbox-entry">
+                <p>收件箱作为独立管理页打开，避免嵌入页缓存和登录状态互相影响。</p>
+                <div class="actions">
+                  <a class="btn primary" href="/decks/category-lab/supplier-submissions-admin" target="_blank" rel="noopener">打开供应商收件箱</a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -9076,18 +9082,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("");
     }
 
-    function refreshSupplierInboxFrameForAuth() {
-      const frame = document.querySelector(".supplier-inbox-frame");
-      if (!frame) return;
-      const currentSrc = frame.getAttribute("src") || "/decks/category-lab/supplier-submissions-admin";
-      const url = new URL(currentSrc, location.origin);
-      url.searchParams.set("authRefresh", String(Date.now()));
-      frame.src = `${url.pathname}${url.search}${url.hash}`;
-    }
-
     function unlockCategoryLab() {
       document.body.classList.remove("auth-locked");
-      refreshSupplierInboxFrameForAuth();
     }
 
     function lockCategoryLab() {
