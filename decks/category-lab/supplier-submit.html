@@ -501,6 +501,20 @@
               <label for="sampleDate">送样时间 *</label>
               <input id="sampleDate" name="sampleDate" type="date" required>
             </div>
+            <div>
+              <label for="productType">产品类型 *</label>
+              <select id="productType" name="productType" required>
+                <option value="">请选择</option>
+                <option value="烘焙">烘焙</option>
+                <option value="蛋糕">蛋糕</option>
+                <option value="三明治">三明治</option>
+                <option value="预包装食品">预包装食品</option>
+              </select>
+            </div>
+            <div>
+              <label for="testCategory">测试类别 *</label>
+              <input id="testCategory" name="testCategory" required autocomplete="off" placeholder="如：档期测试 / 新品提案">
+            </div>
           </div>
         </div>
 
@@ -656,6 +670,8 @@
       followupCodeSection.classList.toggle("hidden", currentMode !== "followup");
       setRequired("supplierName", currentMode === "create");
       setRequired("sampleDate", currentMode === "create");
+      setRequired("productType", currentMode === "create");
+      setRequired("testCategory", currentMode === "create");
       setRequired("followupCode", currentMode === "followup");
       setRequired("tastingScene", currentMode === "followup");
       setRequired("roundConclusion", currentMode === "followup");
@@ -992,11 +1008,15 @@
     function productPayload(product, imagePaths = []) {
       const sharedSupplier = field("supplierName").value.trim();
       const sharedDate = field("sampleDate").value;
+      const sharedProductType = field("productType").value;
+      const sharedTestCategory = field("testCategory").value.trim();
       return {
         product_name: productValue(product, "productName").trim(),
         supplier_name: sharedSupplier,
         version_label: productValue(product, "versionLabel").trim(),
         sample_date: sharedDate,
+        product_type: sharedProductType,
+        test_category: sharedTestCategory,
         version_change: productValue(product, "versionChange").trim(),
         finished_spec: productValue(product, "finishedSpec").trim(),
         ingredients_structure: structureText(product).trim(),

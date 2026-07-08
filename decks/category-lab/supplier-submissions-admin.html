@@ -510,6 +510,8 @@
           row.product_name,
           row.supplier_name,
           row.version_label,
+          row.product_type,
+          row.test_category,
           row.version_change,
           row.finished_spec,
           row.ingredients_structure,
@@ -559,6 +561,8 @@
                 ${fieldBlock("供应商", inputHtml("supplier_name", row.supplier_name, "供应商", disabled))}
                 ${fieldBlock("版本", inputHtml("version_label", row.version_label, "版本", disabled))}
                 ${fieldBlock("送样时间", inputHtml("sample_date", row.sample_date, "", disabled, "date"))}
+                ${fieldBlock("产品类型", inputHtml("product_type", row.product_type, "产品类型", disabled))}
+                ${fieldBlock("测试类别", inputHtml("test_category", row.test_category, "测试类别", disabled))}
                 ${fieldBlock("本版调整点", textareaHtml("version_change", row.version_change, "本版调整点", disabled))}
               </div>
               <div class="muted">提交编号：${escapeHtml(row.followup_code || "-")}</div>
@@ -677,6 +681,8 @@
         supplier_name: value("supplier_name").trim(),
         version_label: value("version_label").trim(),
         sample_date: value("sample_date") || null,
+        product_type: value("product_type").trim(),
+        test_category: value("test_category").trim(),
         version_change: value("version_change").trim(),
         finished_spec: value("finished_spec").trim(),
         ingredients_structure: value("ingredients_structure").trim(),
@@ -718,8 +724,8 @@
       return {
         id: `supplier-${row.id}`,
         time: row.created_at ? dateText(row.created_at) : new Date().toLocaleString("zh-CN"),
-        category: "",
-        campaign: row.tasting_scene || "",
+        category: row.product_type || "",
+        campaign: row.test_category || row.tasting_scene || "",
         project: row.product_name || "",
         supplier: row.supplier_name || "",
         brand: "",
@@ -751,6 +757,8 @@
         supplierSubmissionId: row.id,
         supplierSubmissionSummary: [
           row.followup_code ? `提交编号：${row.followup_code}` : "",
+          row.product_type ? `产品类型：${row.product_type}` : "",
+          row.test_category ? `测试类别：${row.test_category}` : "",
           row.version_change ? `本版调整点：${row.version_change}` : "",
           row.core_ingredients_selling_points ? `核心原料及卖点：${row.core_ingredients_selling_points}` : "",
           row.key_blocker ? `关键卡点 / 备注：${row.key_blocker}` : ""
@@ -823,6 +831,8 @@
         "版本",
         "提交编号",
         "送样时间",
+        "产品类型",
+        "测试类别",
         "本版调整点",
         "成品规格（克）",
         "产品结构",
@@ -843,6 +853,8 @@
         row.version_label,
         row.followup_code,
         row.sample_date,
+        row.product_type,
+        row.test_category,
         row.version_change,
         row.finished_spec,
         row.ingredients_structure,

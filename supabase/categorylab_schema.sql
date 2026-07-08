@@ -19,6 +19,8 @@ create table if not exists public.supplier_feedback_records (
   supplier_name text not null,
   version_label text,
   sample_date date,
+  product_type text,
+  test_category text,
   version_change text,
   finished_spec text,
   ingredients_structure text,
@@ -39,6 +41,10 @@ create table if not exists public.supplier_feedback_records (
 
 alter table public.supplier_feedback_records
   add column if not exists followup_code text;
+
+alter table public.supplier_feedback_records
+  add column if not exists product_type text,
+  add column if not exists test_category text;
 
 alter table public.supplier_feedback_records
   drop constraint if exists supplier_feedback_records_status_check;
@@ -212,6 +218,8 @@ begin
     supplier_name,
     version_label,
     sample_date,
+    product_type,
+    test_category,
     version_change,
     finished_spec,
     ingredients_structure,
@@ -234,6 +242,8 @@ begin
     v_supplier_name,
     nullif(btrim(p_payload ->> 'version_label'), ''),
     nullif(p_payload ->> 'sample_date', '')::date,
+    nullif(btrim(p_payload ->> 'product_type'), ''),
+    nullif(btrim(p_payload ->> 'test_category'), ''),
     nullif(btrim(p_payload ->> 'version_change'), ''),
     nullif(btrim(p_payload ->> 'finished_spec'), ''),
     nullif(btrim(p_payload ->> 'ingredients_structure'), ''),
@@ -354,6 +364,8 @@ begin
     supplier_name = v_supplier_name,
     version_label = nullif(btrim(p_payload ->> 'version_label'), ''),
     sample_date = nullif(p_payload ->> 'sample_date', '')::date,
+    product_type = nullif(btrim(p_payload ->> 'product_type'), ''),
+    test_category = nullif(btrim(p_payload ->> 'test_category'), ''),
     version_change = nullif(btrim(p_payload ->> 'version_change'), ''),
     finished_spec = nullif(btrim(p_payload ->> 'finished_spec'), ''),
     ingredients_structure = nullif(btrim(p_payload ->> 'ingredients_structure'), ''),
