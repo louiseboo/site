@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>供应商提交收件箱</title>
+  <title>产品信息收件箱</title>
   <style>
     :root {
       --paper: #f7f4ee;
@@ -22,8 +22,8 @@
       --danger: #c9503f;
       --danger-dark: #a63a2b;
       --danger-copy: #7a4238;
-      --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
-      --sans: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", "Segoe UI", Arial, sans-serif;
+      --serif: var(--sans);
     }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
@@ -591,7 +591,7 @@
   <section class="auth-page hidden" id="loginPanel">
     <div class="auth-header">
       <div>
-        <h1>供应商提交收件箱</h1>
+        <h1>产品信息收件箱</h1>
         <p>Category Lab 内部资料，只在登录后显示。</p>
       </div>
       <a class="button-link" href="/decks/category-lab/categorylab">打开 Category Lab</a>
@@ -620,7 +620,7 @@
   <section class="inbox-app hidden" id="appPanel">
     <header class="topbar">
       <div class="top-title">
-        <h1>供应商提交收件箱</h1>
+        <h1>产品信息收件箱</h1>
         <span>Category Lab 内部 · 最后刷新 <b id="lastRefreshText">--</b></span>
       </div>
       <div class="top-actions">
@@ -634,6 +634,7 @@
       <div class="filter-tabs">
         <button class="filter-tab active" data-status-filter="待处理" type="button">待处理 <span id="pendingCount">0</span></button>
         <button class="filter-tab" data-status-filter="已确认" type="button">已确认 <span id="confirmedCount">0</span></button>
+        <button class="filter-tab" data-status-filter="已导入" type="button">已导入 Category Lab <span id="importedCount">0</span></button>
         <button class="filter-tab" data-status-filter="" type="button">全部 <span id="allCount">0</span></button>
       </div>
       <div class="sort-label">按提交时间排序 ↓</div>
@@ -690,6 +691,7 @@
     const countEls = {
       pending: document.querySelector("#pendingCount"),
       confirmed: document.querySelector("#confirmedCount"),
+      imported: document.querySelector("#importedCount"),
       all: document.querySelector("#allCount")
     };
 
@@ -827,7 +829,9 @@
     function visibleRecords() {
       const q = searchInput.value.trim().toLowerCase();
       return records.filter(row => {
-        const statusOk = !statusFilter || row.status === statusFilter;
+        const statusOk = statusFilter === "已导入"
+          ? isImportedToCategoryLab(row)
+          : (!statusFilter || row.status === statusFilter);
         const haystack = [
           row.product_name,
           row.supplier_name,
@@ -874,8 +878,10 @@
     function renderCounts() {
       const pending = records.filter(row => row.status === "待处理").length;
       const confirmed = records.filter(row => row.status === "已确认").length;
+      const imported = records.filter(row => isImportedToCategoryLab(row)).length;
       countEls.pending.textContent = pending;
       countEls.confirmed.textContent = confirmed;
+      countEls.imported.textContent = imported;
       countEls.all.textContent = records.length;
       document.querySelectorAll("[data-status-filter]").forEach(button => {
         button.classList.toggle("active", button.dataset.statusFilter === statusFilter);
@@ -990,7 +996,6 @@
           <button class="primary" data-confirm-active type="button" ${roleCanEdit() ? "" : "disabled"}>确认提交</button>
           <button data-save-active type="button" ${roleCanEdit() ? "" : "disabled"}>保存修改</button>
           <button data-import-active type="button" ${roleCanEdit() ? "" : "disabled"}>${imported ? "更新导入 Category Lab" : "导入 Category Lab"}</button>
-          <button data-note-active type="button" ${roleCanEdit() ? "" : "disabled"}>加内部备注</button>
           <button class="danger" data-delete-active type="button" ${roleCanEdit() ? "" : "disabled"}>删除记录</button>
         </div>
         <div class="meta-divider"></div>
@@ -1001,7 +1006,6 @@
           ${editableKv("测试类别", "test_category", row.test_category, "测试类别")}
           ${editableKv("成品规格（克）", "finished_spec", row.finished_spec, "如：165g/份")}
           ${editableKv("报价（元，含税含运）", "quote_rmb", row.quote_rmb, "线下确认后填写")}
-          <div class="kv-item"><label>处理状态</label>${fieldSelect("status", ["待处理", "已确认"], row.status || "待处理")}</div>
           <div class="${importClass}">${escapeHtml(importText)}</div>
           ${kv("提交编号", row.followup_code)}
           ${kv("提交时间", dateText(row.created_at))}
@@ -1156,7 +1160,7 @@
         round_conclusion: detailValue("round_conclusion"),
         next_step_direction: detailValue("next_step_direction").trim(),
         key_blocker: detailValue("key_blocker").trim(),
-        status: detailValue("status") || row.status || "待处理"
+        status: row.status || "待处理"
       };
     }
 
@@ -1263,7 +1267,7 @@
     async function deleteRow(id = activeRecordId) {
       if (!roleCanEdit() || !id) return;
       const row = recordById(id);
-      const ok = window.confirm(`确认删除这条供应商提交？\n${row?.product_name || ""}`);
+      const ok = window.confirm(`确认删除这条产品信息？\n${row?.product_name || ""}`);
       if (!ok) return;
       if (cloudbaseReady) {
         await cloudbaseRequest("adminDelete", { id });
@@ -1334,17 +1338,9 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `供应商提交_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `产品信息收件箱_${new Date().toISOString().slice(0, 10)}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-    }
-
-    function appendInternalNote(text) {
-      const field = appPanel.querySelector('[data-field="key_blocker"]');
-      if (!field || !text) return;
-      const current = field.value.trim();
-      field.value = [current, `内部备注：${text}`].filter(Boolean).join("\n");
-      field.focus();
     }
 
     function moveSelection(delta) {
@@ -1425,14 +1421,6 @@
           showMessage("已确认。", "success");
         }
         if (event.target.closest("[data-import-active]")) await importToCategoryLab();
-        if (event.target.closest("[data-note-active]")) {
-          const note = window.prompt("请输入内部备注：");
-          if (note) {
-            appendInternalNote(note);
-            await saveRow();
-            showMessage("内部备注已保存。", "success");
-          }
-        }
         if (event.target.closest("[data-delete-active]")) await deleteRow();
       } catch (error) {
         showMessage(error.message || "操作失败。", "error");
