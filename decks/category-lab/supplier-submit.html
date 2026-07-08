@@ -536,26 +536,7 @@
     <section class="panel">
       <form id="submissionForm">
         <div class="section">
-          <p class="section-title">提交类型</p>
-          <div class="mode-switch" role="group" aria-label="提交类型">
-            <button class="mode-button" data-mode="create" type="button" aria-pressed="true">提交测试前资料</button>
-            <button class="mode-button" data-mode="followup" type="button" aria-pressed="false">补充测试反馈</button>
-          </div>
-        </div>
-
-        <div class="section hidden" data-followup-code-section>
-          <p class="section-title">对应记录</p>
-          <div class="grid two">
-            <div>
-              <label for="followupCode">提交编号 *</label>
-              <input id="followupCode" name="followupCode" autocomplete="off" placeholder="第一段提交成功后显示的编号">
-            </div>
-          </div>
-          <div class="followup-summary" id="followupSummary"></div>
-        </div>
-
-        <div class="section" data-mode-section="create">
-          <p class="section-title">第一段：测试前资料</p>
+          <p class="section-title">测试前资料</p>
           <div class="grid two">
             <div>
               <label for="supplierName">供应商 *</label>
@@ -582,47 +563,11 @@
           </div>
         </div>
 
-        <div class="section" data-mode-section="create">
+        <div class="section">
           <p class="section-title">产品清单</p>
           <div class="product-list" id="productsContainer"></div>
           <div class="structure-tools" style="margin-top:12px;">
             <button class="ghost-button" id="addProductBtn" type="button">新增产品</button>
-          </div>
-        </div>
-
-        <div class="section" data-mode-section="followup">
-          <p class="section-title">第二段：补充测试反馈</p>
-          <div class="grid two">
-            <div>
-              <label for="tastingScene">测试场景 / 反馈来源 *</label>
-              <select id="tastingScene" name="tastingScene">
-                <option value="">请选择</option>
-                <option value="前期打磨测试">前期打磨测试</option>
-                <option value="众测后优化">众测后优化</option>
-                <option value="中试后优化">中试后优化</option>
-                <option value="上市后优化">上市后优化</option>
-              </select>
-            </div>
-            <div>
-              <label for="roundConclusion">本轮结论 *</label>
-              <select id="roundConclusion" name="roundConclusion">
-                <option value="">请选择</option>
-                <option value="继续调整">继续调整</option>
-                <option value="暂停">暂停</option>
-                <option value="通过且储备">通过且储备</option>
-                <option value="通过且进入众测">通过且进入众测</option>
-              </select>
-            </div>
-            <div class="grid two feedback-pair span-2">
-            <div>
-              <label for="tastingFeedback">测试反馈 *</label>
-              <textarea id="tastingFeedback" name="tastingFeedback" placeholder="如现场已有 Peet's 反馈，可记录口头反馈；测试前可暂空。"></textarea>
-            </div>
-            <div>
-              <label for="nextStepDirection">下一步改进方向 *</label>
-              <textarea id="nextStepDirection" name="nextStepDirection" placeholder="只写需要供应商调整的方向，例如颜色、甜度、结构、克重、包装等。"></textarea>
-            </div>
-            </div>
           </div>
         </div>
 
@@ -634,7 +579,7 @@
       <dialog class="confirm-dialog" id="confirmDialog" aria-labelledby="confirmTitle">
         <div class="confirm-body">
           <p class="confirm-title" id="confirmTitle">确认提交</p>
-          <p class="confirm-copy" id="confirmCopy">请确认本次填写的信息真实、完整，并已完成提交前检查。提交后，Peet's 将在后台接收记录，用于后续产品评审与跟进。</p>
+          <p class="confirm-copy" id="confirmCopy">请确认本次填写的信息真实、完整，并已完成提交前检查。提交后由 Category Lab 产品负责人接收，用于测试资料整理。</p>
         </div>
         <div class="confirm-actions">
           <button id="confirmCancelBtn" type="button">返回修改</button>
@@ -660,10 +605,6 @@
     const confirmSubmitBtn = document.querySelector("#confirmSubmitBtn");
     const productsContainer = document.querySelector("#productsContainer");
     const addProductBtn = document.querySelector("#addProductBtn");
-    const modeButtons = [...document.querySelectorAll("[data-mode]")];
-    const modeSections = [...document.querySelectorAll("[data-mode-section]")];
-    const followupCodeSection = document.querySelector("[data-followup-code-section]");
-    const followupSummary = document.querySelector("#followupSummary");
     const cloudbaseHost = /tcloudbase|cloudbase|tencent/i.test(location.hostname) || new URLSearchParams(location.search).get("backend") === "cloudbase";
     const cloudbaseReady = Boolean(cloudbaseConfig.apiUrl) && cloudbaseHost;
     const supabaseReady = Boolean(config.url && config.anonKey && window.supabase);
@@ -672,14 +613,11 @@
     const PRODUCT_FIELD_NAMES = [
       "productName",
       "versionLabel",
-      "quoteRmb",
       "finishedSpec",
       "versionChange",
       "coreIngredientsSellingPoints"
     ];
     let products = [];
-    let currentMode = "create";
-    let followupRecord = null;
 
     function showMessage(text, type = "") {
       message.className = `message show ${type}`.trim();
@@ -719,7 +657,7 @@
 
       const wrapper = document.createElement("div");
       wrapper.className = "submission-result";
-      appendText(wrapper, "p", `已提交 ${results.length} 个产品，Peet's 会在后台确认。`, "submission-result-title");
+      appendText(wrapper, "p", `已提交 ${results.length} 个产品，Category Lab 产品负责人会进行资料整理。`, "submission-result-title");
 
       const list = document.createElement("div");
       list.className = "submission-result-list";
@@ -745,7 +683,7 @@
         list.appendChild(row);
       });
       wrapper.appendChild(list);
-      appendText(wrapper, "p", "测试后补充测试反馈时，请使用对应产品的提交编号。", "submission-result-note");
+      appendText(wrapper, "p", "提交编号仅供 Category Lab 内部检索，请自行留存以便沟通。", "submission-result-note");
       warnings.forEach(warning => appendText(wrapper, "p", warning, "submission-result-note"));
       message.appendChild(wrapper);
     }
@@ -777,15 +715,6 @@
       return Number(value || 0).toFixed(2).replace(/\.?0+$/, "");
     }
 
-    function compactRecordSummary(record) {
-      return [
-        record?.product_name ? `品名：${record.product_name}` : "",
-        record?.supplier_name ? `供应商：${record.supplier_name}` : "",
-        record?.version_label ? `版本：${record.version_label}` : "",
-        record?.sample_date ? `送样时间：${record.sample_date}` : ""
-      ].filter(Boolean).join(" ｜ ");
-    }
-
     async function cloudbaseRequest(action, payload = {}) {
       const response = await fetch(cloudbaseConfig.apiUrl, {
         method: "POST",
@@ -797,33 +726,6 @@
         throw new Error(result.error || `请求失败（${response.status}）`);
       }
       return result.data;
-    }
-
-    function setMode(mode) {
-      currentMode = mode === "followup" ? "followup" : "create";
-      modeButtons.forEach(button => {
-        button.setAttribute("aria-pressed", button.dataset.mode === currentMode ? "true" : "false");
-      });
-      modeSections.forEach(section => {
-        const show = section.dataset.modeSection === currentMode;
-        section.classList.toggle("hidden", !show);
-      });
-      followupCodeSection.classList.toggle("hidden", currentMode !== "followup");
-      setRequired("supplierName", currentMode === "create");
-      setRequired("sampleDate", currentMode === "create");
-      setRequired("productType", currentMode === "create");
-      setRequired("testCategory", currentMode === "create");
-      setRequired("followupCode", currentMode === "followup");
-      setRequired("tastingScene", currentMode === "followup");
-      setRequired("roundConclusion", currentMode === "followup");
-      setRequired("tastingFeedback", currentMode === "followup");
-      setRequired("nextStepDirection", currentMode === "followup");
-      syncModeFieldState();
-      followupRecord = null;
-      followupSummary.style.display = "none";
-      followupSummary.textContent = "";
-      submitBtn.textContent = currentMode === "followup" ? "提交测试反馈" : "提交";
-      clearMessage();
     }
 
     function rowId() {
@@ -883,20 +785,16 @@
     }
 
     function syncModeFieldState() {
-      const productDisabled = currentMode !== "create";
       productsContainer.querySelectorAll("input, select, textarea, button").forEach(control => {
         if (control.id === "addProductBtn") return;
         if (control.matches("[data-delete-product]") && products.length <= 1) {
           control.disabled = true;
           return;
         }
-        control.disabled = productDisabled || (control.matches("[data-delete-product]") && products.length <= 1);
+        control.disabled = control.matches("[data-delete-product]") && products.length <= 1;
       });
       productsContainer.querySelectorAll("[data-product-required]").forEach(control => {
-        control.required = currentMode === "create";
-      });
-      ["tastingScene", "roundConclusion", "tastingFeedback", "nextStepDirection"].forEach(name => {
-        if (field(name)) field(name).disabled = currentMode !== "followup";
+        control.required = true;
       });
     }
 
@@ -937,7 +835,6 @@
         if (!card) continue;
         requiredProductValue(card, "productName", "品名", index);
         requiredProductValue(card, "versionLabel", "版本", index);
-        requiredProductValue(card, "quoteRmb", "报价", index);
         requiredProductValue(card, "finishedSpec", "成品规格", index);
         requiredProductValue(card, "versionChange", "本版调整点", index);
         requiredProductValue(card, "coreIngredientsSellingPoints", "核心原料及卖点", index);
@@ -946,37 +843,8 @@
       }
     }
 
-    function validateFollowup() {
-      const required = [
-        ["followupCode", "提交编号"],
-        ["tastingScene", "测试场景 / 反馈来源"],
-        ["roundConclusion", "本轮结论"],
-        ["tastingFeedback", "测试反馈"],
-        ["nextStepDirection", "下一步改进方向"]
-      ];
-      for (const [name, label] of required) {
-        const input = field(name);
-        if (!String(input?.value || "").trim()) focusAndExplain(input, `请填写${label}。`);
-      }
-    }
-
-    function hasExistingFollowupFeedback(record) {
-      return ["tasting_scene", "tasting_feedback", "round_conclusion", "next_step_direction"]
-        .some(name => String(record?.[name] || "").trim());
-    }
-
-    function confirmationCopyForMode(mode, record) {
-      if (mode !== "followup") {
-        return "请确认本次填写的产品资料真实、完整，并已完成提交前检查。提交后，Peet's 将在后台接收记录，用于后续产品评审与跟进。";
-      }
-      if (hasExistingFollowupFeedback(record)) {
-        return "该提交编号对应的记录已填写过测试反馈。当前内容提交后，将覆盖原有测试场景、测试反馈、本轮结论和下一步改进方向。请确认是否继续提交。";
-      }
-      return "请确认本次补充的测试反馈、结论及下一步改进方向准确无误。提交后，系统将把反馈合并至对应产品记录，用于后续产品评审与跟进。";
-    }
-
     function confirmSubmission() {
-      const copy = confirmationCopyForMode(currentMode, currentMode === "followup" ? followupRecord : null);
+      const copy = "请确认本次填写的产品资料真实、完整，并已完成提交前检查。提交后由 Category Lab 产品负责人接收，用于测试资料整理。";
       if (confirmCopy) confirmCopy.textContent = copy;
       if (!confirmDialog?.showModal) {
         return Promise.resolve(window.confirm(`确认提交\n\n${copy}`));
@@ -1032,10 +900,6 @@
             <div>
               <label>版本 *</label>
               <input data-product-field="versionLabel" data-product-required required value="${escapeAttr(productValue(product, "versionLabel"))}" placeholder="V1 / V2 / V3">
-            </div>
-            <div>
-              <label>报价（元，含税含运） *</label>
-              <input data-product-field="quoteRmb" data-product-required required inputmode="decimal" value="${escapeAttr(productValue(product, "quoteRmb"))}" placeholder="确认配方后填写">
             </div>
             <div>
               <label>成品规格（克） *</label>
@@ -1162,17 +1026,7 @@
         finished_spec: productValue(product, "finishedSpec").trim(),
         ingredients_structure: structureText(product).trim(),
         image_paths: imagePaths,
-        quote_rmb: productValue(product, "quoteRmb").trim(),
         core_ingredients_selling_points: productValue(product, "coreIngredientsSellingPoints").trim()
-      };
-    }
-
-    function feedbackPayload() {
-      return {
-        tasting_scene: field("tastingScene").value,
-        tasting_feedback: field("tastingFeedback").value.trim(),
-        round_conclusion: field("roundConclusion").value,
-        next_step_direction: field("nextStepDirection").value.trim()
       };
     }
 
@@ -1254,47 +1108,7 @@
       const text = error?.message || String(error || "");
       if (text.includes("Failed to fetch")) return "网络请求失败。请检查当前网络后再提交；如果刚才上传了图片，请先去掉图片再提交一次。";
       if (text.includes("品名不能为空") || text.includes("供应商不能为空")) return text;
-      if (text.includes("提交编号不存在")) return "提交编号不存在，请检查第一段提交成功后显示的编号。";
       return text || "提交失败。";
-    }
-
-    async function loadFollowupRecord() {
-      const code = field("followupCode").value.trim().toUpperCase();
-      if (!code) return null;
-      if (cloudbaseReady) {
-        followupRecord = await cloudbaseRequest("getSupplierFeedbackByFollowupCode", { followupCode: code });
-        followupSummary.style.display = followupRecord ? "block" : "none";
-        followupSummary.textContent = followupRecord ? compactRecordSummary(followupRecord) : "";
-        return followupRecord;
-      }
-      const { data, error } = await client.rpc("get_supplier_feedback_by_followup_code", {
-        p_followup_code: code
-      });
-      if (error) throw error;
-      followupRecord = data || null;
-      followupSummary.style.display = followupRecord ? "block" : "none";
-      followupSummary.textContent = followupRecord ? compactRecordSummary(followupRecord) : "";
-      return followupRecord;
-    }
-
-    async function submitFollowup() {
-      validateFollowup();
-      const code = field("followupCode").value.trim().toUpperCase();
-      if (!code) throw new Error("请填写提交编号。");
-      if (cloudbaseReady) {
-        followupRecord = await cloudbaseRequest("completeSupplierFeedback", {
-          followupCode: code,
-          payload: feedbackPayload()
-        });
-        return followupRecord;
-      }
-      const { data, error } = await client.rpc("complete_supplier_feedback", {
-        p_followup_code: code,
-        p_payload: feedbackPayload()
-      });
-      if (error) throw error;
-      followupRecord = data;
-      return data;
     }
 
     async function submitCreate() {
@@ -1336,7 +1150,7 @@
             if (updateError) throw updateError;
           }
         } catch (error) {
-          imageWarning = `图片没有上传成功：${friendlyError(error)}。基础信息已收到，图片可后续补充给 Peet's。`;
+            imageWarning = `图片没有上传成功：${friendlyError(error)}。基础信息已收到，图片可后续补充给产品负责人。`;
         }
         results.push({
           id: data.id,
@@ -1352,14 +1166,8 @@
       form.reset();
       products = [newProduct()];
       renderProducts();
-      followupSummary.style.display = "none";
-      followupSummary.textContent = "";
-      followupRecord = null;
     }
 
-    modeButtons.forEach(button => {
-      button.addEventListener("click", () => setMode(button.dataset.mode));
-    });
     message.addEventListener("click", event => {
       const button = event.target.closest("[data-copy-followup-code]");
       if (!button) return;
@@ -1419,17 +1227,6 @@
         renderProducts();
       }
     });
-    field("followupCode").addEventListener("blur", async () => {
-      if (currentMode !== "followup" || !field("followupCode").value.trim() || !backendReady) return;
-      try {
-        await loadFollowupRecord();
-      } catch (error) {
-        followupSummary.style.display = "none";
-        followupSummary.textContent = "";
-        showMessage(friendlyError(error), "error");
-      }
-    });
-
     form.addEventListener("submit", async event => {
       event.preventDefault();
       if (!backendReady) {
@@ -1438,39 +1235,26 @@
       }
       if (!form.reportValidity()) return;
       try {
-        if (currentMode === "followup") {
-          validateFollowup();
-          await loadFollowupRecord();
-        } else {
-          syncAllProducts();
-          validateProducts();
-        }
+        syncAllProducts();
+        validateProducts();
         const confirmed = await confirmSubmission();
         if (!confirmed) return;
         submitBtn.disabled = true;
         submitBtn.textContent = "提交中...";
-        if (currentMode === "followup") {
-          const record = await submitFollowup();
-          await resetFormAfterSubmit();
-          setMode("followup");
-          showMessage(`测试反馈已补充，系统已合并到原记录。\n${compactRecordSummary(record)}`, "success");
-        } else {
-          const results = await submitCreate();
-          await resetFormAfterSubmit();
-          const warnings = results.map(result => result.imageWarning).filter(Boolean);
-          showCreateResult(results, warnings);
-        }
+        const results = await submitCreate();
+        await resetFormAfterSubmit();
+        const warnings = results.map(result => result.imageWarning).filter(Boolean);
+        showCreateResult(results, warnings);
       } catch (error) {
         showMessage(friendlyError(error), "error");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = currentMode === "followup" ? "提交测试反馈" : "提交";
+        submitBtn.textContent = "提交";
       }
     });
 
     products = [newProduct()];
     renderProducts();
-    setMode("create");
     if (!backendReady) {
       showMessage("后端尚未配置。请先配置 CloudBase 或 Supabase。", "error");
     }

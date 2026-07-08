@@ -5,9 +5,7 @@ const COLLECTION = "supplier_feedback_records";
 const IMAGE_LIMIT = 6;
 const PUBLIC_ACTIONS = new Set([
   "ping",
-  "submitSupplierFeedback",
-  "getSupplierFeedbackByFollowupCode",
-  "completeSupplierFeedback"
+  "submitSupplierFeedback"
 ]);
 
 let cachedApp;
@@ -79,6 +77,17 @@ function normalizeRecordPayload(payload = {}) {
     key_blocker: nullableText(payload.key_blocker),
     status: ["待处理", "已确认"].includes(payload.status) ? payload.status : "待处理"
   };
+}
+
+function sanitizePublicSubmissionPayload(payload = {}) {
+  const normalized = normalizeRecordPayload(payload);
+  delete normalized.quote_rmb;
+  delete normalized.tasting_scene;
+  delete normalized.tasting_feedback;
+  delete normalized.round_conclusion;
+  delete normalized.next_step_direction;
+  delete normalized.key_blocker;
+  return normalized;
 }
 
 function normalizeFeedbackPayload(payload = {}) {
@@ -182,7 +191,7 @@ function assertAdmin(event, body) {
 }
 
 async function submitSupplierFeedback(app, collection, body) {
-  const payload = normalizeRecordPayload(body.payload);
+  const payload = sanitizePublicSubmissionPayload(body.payload);
   requireFields(payload, ["product_name", "supplier_name"]);
 
   const id = crypto.randomUUID();
@@ -272,8 +281,6 @@ async function handleEvent(event = {}) {
 
     if (action === "ping") data = { ok: true };
     else if (action === "submitSupplierFeedback") data = await submitSupplierFeedback(app, collection, body);
-    else if (action === "getSupplierFeedbackByFollowupCode") data = await getByFollowupCode(collection, body.followupCode);
-    else if (action === "completeSupplierFeedback") data = await completeSupplierFeedback(collection, body);
     else if (action === "adminLogin") {
       assertAdmin(event, body);
       data = { profile: { display_name: "Louise", role: "owner" } };
@@ -317,5 +324,7 @@ exports._private = {
   parseEventBody,
   normalizeRecordPayload,
   requireFields,
-  databaseWriteRecord
+  databaseWriteRecord,
+  sanitizePublicSubmissionPayload,
+  isPublicAction: action => PUBLIC_ACTIONS.has(action)
 };
