@@ -133,6 +133,19 @@
       padding: 10px 11px;
       outline: none;
     }
+    input[type="date"] {
+      min-height: 45px;
+      line-height: 1.4;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input[type="date"]::-webkit-date-and-time-value {
+      min-height: 24px;
+      text-align: left;
+    }
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      margin-left: auto;
+    }
     input:focus, select:focus, textarea:focus {
       border-color: #b18a47;
       box-shadow: 0 0 0 3px rgba(177, 138, 71, 0.16);
