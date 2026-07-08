@@ -1,0 +1,18 @@
+{
+  "name": "供应商产品信息提交",
+  "short_name": "供应商提交",
+  "description": "供应商产品信息提交",
+  "start_url": "/supplier-submit",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f3ea",
+  "theme_color": "#f7f3ea",
+  "icons": [
+    {
+      "src": "/assets/supplier-pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
