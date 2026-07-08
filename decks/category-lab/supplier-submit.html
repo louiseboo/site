@@ -710,10 +710,23 @@
       }
     }
 
+    function hasExistingFollowupFeedback(record) {
+      return ["tasting_scene", "tasting_feedback", "round_conclusion", "next_step_direction"]
+        .some(name => String(record?.[name] || "").trim());
+    }
+
+    function confirmationCopyForMode(mode, record) {
+      if (mode !== "followup") {
+        return "请确认本次填写的产品资料真实、完整，并已完成提交前检查。提交后，Peet's 将在后台接收记录，用于后续产品评审与跟进。";
+      }
+      if (hasExistingFollowupFeedback(record)) {
+        return "该提交编号对应的第一页已填写过现场反馈。当前内容提交后，将覆盖原有测试场景、测试反馈、本轮结论和下一步改进方向。请确认是否继续提交。";
+      }
+      return "请确认本次补充的现场反馈、结论及下一步改进方向准确无误。提交后，系统将把反馈合并至对应产品记录，用于后续产品评审与跟进。";
+    }
+
     function confirmSubmission() {
-      const copy = currentMode === "followup"
-        ? "请确认本次补充的现场反馈、结论及下一步改进方向准确无误。提交后，系统将把反馈合并至对应产品记录，用于后续产品评审与跟进。"
-        : "请确认本次填写的产品资料真实、完整，并已完成提交前检查。提交后，Peet's 将在后台接收记录，用于后续产品评审与跟进。";
+      const copy = confirmationCopyForMode(currentMode, currentMode === "followup" ? followupRecord : null);
       if (confirmCopy) confirmCopy.textContent = copy;
       if (!confirmDialog?.showModal) {
         return Promise.resolve(window.confirm(`确认提交\n\n${copy}`));
@@ -1144,6 +1157,7 @@
       try {
         if (currentMode === "followup") {
           validateFollowup();
+          await loadFollowupRecord();
         } else {
           syncAllProducts();
           validateProducts();
