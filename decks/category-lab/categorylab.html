@@ -1494,6 +1494,47 @@
       font-size: 12px;
       font-weight: 700;
     }
+    .account-strip .btn[disabled] {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+    .permission-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+    .permission-summary .mini-card {
+      background: #faf6ef;
+      padding: 10px;
+    }
+    .permission-role {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .permission-lock {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .viewer-mode-note {
+      display: none;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    body.account-viewer .viewer-mode-note {
+      display: block;
+    }
     .card-stack {
       display: grid;
       gap: 10px;
@@ -2892,9 +2933,14 @@
 
   <div class="modal" id="accountPermissionModal">
     <div class="modal-card">
-      <div class="modal-head"><h2>账户与板块权限</h2><button class="btn" data-close-modal="accountPermissionModal">关闭</button></div>
+      <div class="modal-head"><h2>工作模式与板块权限</h2><button class="btn" data-close-modal="accountPermissionModal">关闭</button></div>
       <div class="panel-body">
-        <div class="small compact-block">当前为前端协作权限，用于隐藏侧栏和面板入口；正式线上访问控制需要后端登录鉴权。</div>
+        <div class="small compact-block">这里管理的是 Category Lab 内部工作模式：控制不同模式能看到哪些板块，减少误操作。正式多人账号和后端权限后续再接入。</div>
+        <div class="permission-summary">
+          <div class="mini-card"><div class="mini-card-title">Owner</div><p class="small">完整管理权限，可看全部板块，可调整协作模式。</p></div>
+          <div class="mini-card"><div class="mini-card-title">Editor</div><p class="small">协作编辑模式，只显示授权板块，适合让助手或同事帮忙整理。</p></div>
+          <div class="mini-card"><div class="mini-card-title">Viewer</div><p class="small">只读协作模式，只用于查看和对照，不作为正式数据权限。</p></div>
+        </div>
         <div class="card-stack compact-block" id="accountPermissionList"></div>
         <div class="row-actions compact-block"><button class="btn primary" id="saveAccountPermissionsBtn" type="button">保存权限</button></div>
       </div>
@@ -4594,6 +4640,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return categoryLabAccountProfiles.find(account => account.id === activeAccountId) || categoryLabAccountProfiles[0] || categoryLabAccounts[0];
     }
 
+    function isOwnerAccount(account = activeAccount()) {
+      return account.role === "Owner" || account.id === "owner";
+    }
+
+    function accountRoleDescription(role) {
+      return {
+        Owner: "完整管理权限",
+        Editor: "协作编辑模式",
+        Viewer: "只读协作模式"
+      }[role] || "协作模式";
+    }
+
     function renderAccountSwitch() {
       const select = document.querySelector("#accountSwitch");
       if (!select) return;
@@ -4607,6 +4665,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const account = activeAccount();
       const allowed = new Set(account.permissions || []);
       const currentView = document.querySelector(".view.active")?.id || "home";
+      const manageButton = document.querySelector("#accountPermissionBtn");
+      document.body.classList.toggle("account-viewer", account.role === "Viewer");
+      if (manageButton) {
+        const canManage = isOwnerAccount(account);
+        manageButton.disabled = !canManage;
+        manageButton.title = canManage ? "管理协作模式能看到的板块" : "只有 Louise · Owner 可以管理权限";
+      }
       document.querySelectorAll(".nav button[data-view]").forEach(button => {
         const view = button.dataset.view;
         const visible = allowed.has(view);
@@ -4618,23 +4683,36 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         }
       });
       if (!allowed.has(currentView)) activateView(allowed.values().next().value || "home");
+      document.querySelectorAll(".viewer-mode-note").forEach(note => note.remove());
+      if (account.role === "Viewer") {
+        const panel = document.querySelector(".view.active");
+        const note = document.createElement("div");
+        note.className = "viewer-mode-note";
+        note.textContent = "当前为 Viewer 只读协作模式。此模式用于查看与对照，不建议在此模式下编辑数据。";
+        panel?.prepend(note);
+      }
     }
 
     function renderAccountPermissionList() {
       const host = document.querySelector("#accountPermissionList");
       if (!host) return;
+      if (!isOwnerAccount()) {
+        host.innerHTML = `<div class="mini-card"><div class="mini-card-title">无管理权限</div><p class="small">只有 Louise · Owner 可以调整板块权限。</p></div>`;
+        return;
+      }
       host.innerHTML = categoryLabAccountProfiles.map(account => `
         <div class="mini-card" data-account-permission="${escapeAttr(account.id)}">
           <div class="mini-card-head">
             <div>
               <div class="mini-card-title">${escapeHtml(account.name)}</div>
-              <p class="small">${escapeHtml(account.role || "")}</p>
+              <p class="small"><span class="permission-role">${escapeHtml(account.role || "")}</span> ${escapeHtml(accountRoleDescription(account.role))}</p>
             </div>
-            <span class="pill">${escapeHtml((account.permissions || []).length)} 个板块</span>
+            <span class="pill">${isOwnerAccount(account) ? "全部板块" : `${escapeHtml((account.permissions || []).length)} 个板块`}</span>
           </div>
+          ${isOwnerAccount(account) ? `<div class="permission-lock compact-block">Owner 固定拥有全部板块权限，不能关闭。</div>` : ""}
           <div class="checkbox-grid">
             ${categoryLabViews.map(view => `
-              <label><input type="checkbox" data-account-view="${escapeAttr(view.id)}" ${account.permissions?.includes(view.id) ? "checked" : ""}>${escapeHtml(view.label)}</label>
+              <label><input type="checkbox" data-account-view="${escapeAttr(view.id)}" ${account.permissions?.includes(view.id) ? "checked" : ""} ${isOwnerAccount(account) ? "disabled" : ""}>${escapeHtml(view.label)}</label>
             `).join("")}
           </div>
         </div>
@@ -4642,10 +4720,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function saveAccountPermissions() {
+      if (!isOwnerAccount()) {
+        alert("只有 Louise · Owner 可以保存权限设置。");
+        return;
+      }
       document.querySelectorAll("[data-account-permission]").forEach(card => {
         const account = categoryLabAccountProfiles.find(item => item.id === card.dataset.accountPermission);
         if (!account) return;
-        account.permissions = Array.from(card.querySelectorAll("[data-account-view]:checked")).map(input => input.dataset.accountView);
+        if (isOwnerAccount(account)) {
+          account.permissions = categoryLabViews.map(view => view.id);
+          return;
+        }
+        account.permissions = Array.from(card.querySelectorAll("[data-account-view]:checked:not(:disabled)")).map(input => input.dataset.accountView);
         if (!account.permissions.includes("home")) account.permissions.unshift("home");
       });
       persistCategoryLabAccounts();
@@ -9285,6 +9371,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       applyAccountPermissions();
     });
     document.querySelector("#accountPermissionBtn")?.addEventListener("click", () => {
+      if (!isOwnerAccount()) {
+        alert("只有 Louise · Owner 可以管理权限。");
+        return;
+      }
       renderAccountPermissionList();
       openModal("accountPermissionModal");
     });
