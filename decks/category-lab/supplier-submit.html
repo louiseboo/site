@@ -325,6 +325,61 @@
       background: #f6fffb;
       color: var(--accent);
     }
+    .submission-result {
+      display: grid;
+      gap: 10px;
+    }
+    .submission-result-title {
+      margin: 0;
+      color: inherit;
+      font-weight: 900;
+    }
+    .submission-result-list {
+      display: grid;
+      gap: 8px;
+    }
+    .submission-result-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid rgba(31, 111, 91, 0.18);
+      border-radius: 6px;
+      background: #fff;
+      padding: 10px 11px;
+    }
+    .submission-result-info {
+      min-width: 0;
+    }
+    .submission-product-name {
+      display: block;
+      color: var(--ink);
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+    .submission-code {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+    .copy-code-button {
+      flex: 0 0 auto;
+      min-height: 34px;
+      border-color: var(--ink);
+      background: var(--ink);
+      color: #fff;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+    .submission-result-note {
+      margin: 0;
+      color: inherit;
+      font-size: 13px;
+      font-weight: 800;
+    }
     .confirm-dialog {
       width: min(460px, calc(100vw - 36px));
       border: 1px solid var(--line);
@@ -447,6 +502,15 @@
       }
       .message {
         margin: 0 12px 14px;
+      }
+      .submission-result-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+      }
+      .copy-code-button {
+        justify-self: stretch;
+        width: 100%;
       }
       .confirm-dialog {
         width: calc(100vw - 24px);
@@ -620,6 +684,65 @@
     function clearMessage() {
       message.className = "message";
       message.textContent = "";
+    }
+
+    function appendText(parent, tagName, text, className = "") {
+      const node = document.createElement(tagName);
+      if (className) node.className = className;
+      node.textContent = text;
+      parent.appendChild(node);
+      return node;
+    }
+
+    async function copyFollowupCode(button, code) {
+      if (!code) return;
+      const defaultText = button.textContent;
+      try {
+        await navigator.clipboard.writeText(code);
+        button.textContent = "已复制";
+        window.setTimeout(() => {
+          button.textContent = defaultText;
+        }, 1600);
+      } catch (error) {
+        showMessage(`复制失败，请手动复制提交编号：${code}`, "error");
+      }
+    }
+
+    function showCreateResult(results, warnings = []) {
+      message.className = `message show ${warnings.length ? "error" : "success"}`.trim();
+      message.textContent = "";
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "submission-result";
+      appendText(wrapper, "p", `已提交 ${results.length} 个产品，Peet's 会在后台确认。`, "submission-result-title");
+
+      const list = document.createElement("div");
+      list.className = "submission-result-list";
+      results.forEach((result, index) => {
+        const row = document.createElement("div");
+        row.className = "submission-result-row";
+
+        const info = document.createElement("div");
+        info.className = "submission-result-info";
+        appendText(info, "span", `产品 ${index + 1}：${result.productName}`, "submission-product-name");
+        appendText(info, "span", result.followupCode ? `提交编号：${result.followupCode}` : "提交编号：未生成", "submission-code");
+        row.appendChild(info);
+
+        if (result.followupCode) {
+          const button = document.createElement("button");
+          button.className = "copy-code-button";
+          button.type = "button";
+          button.dataset.copyFollowupCode = result.followupCode;
+          button.textContent = "复制编号";
+          row.appendChild(button);
+        }
+
+        list.appendChild(row);
+      });
+      wrapper.appendChild(list);
+      appendText(wrapper, "p", "测试后补充测试反馈时，请使用对应产品的提交编号。", "submission-result-note");
+      warnings.forEach(warning => appendText(wrapper, "p", warning, "submission-result-note"));
+      message.appendChild(wrapper);
     }
 
     function escapeAttr(value) {
@@ -1171,6 +1294,11 @@
     modeButtons.forEach(button => {
       button.addEventListener("click", () => setMode(button.dataset.mode));
     });
+    message.addEventListener("click", event => {
+      const button = event.target.closest("[data-copy-followup-code]");
+      if (!button) return;
+      copyFollowupCode(button, button.dataset.copyFollowupCode);
+    });
     addProductBtn.addEventListener("click", () => {
       syncAllProducts();
       const product = newProduct();
@@ -1263,10 +1391,8 @@
         } else {
           const results = await submitCreate();
           await resetFormAfterSubmit();
-          const codeText = results.map((result, index) => `产品 ${index + 1}：${result.productName}${result.followupCode ? `｜提交编号：${result.followupCode}` : ""}`).join("\n");
           const warnings = results.map(result => result.imageWarning).filter(Boolean);
-          const warningText = warnings.length ? `\n\n${warnings.join("\n")}` : "";
-          showMessage(`已提交 ${results.length} 个产品，Peet's 会在后台确认。\n${codeText}\n测试后补充测试反馈时，请使用对应产品的提交编号。${warningText}`, warnings.length ? "error" : "success");
+          showCreateResult(results, warnings);
         }
       } catch (error) {
         showMessage(friendlyError(error), "error");
