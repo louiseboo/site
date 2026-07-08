@@ -475,7 +475,7 @@
           <p class="section-title">提交类型</p>
           <div class="mode-switch" role="group" aria-label="提交类型">
             <button class="mode-button" data-mode="create" type="button" aria-pressed="true">提交测试前资料</button>
-            <button class="mode-button" data-mode="followup" type="button" aria-pressed="false">补充现场反馈</button>
+            <button class="mode-button" data-mode="followup" type="button" aria-pressed="false">补充测试反馈</button>
           </div>
         </div>
 
@@ -513,7 +513,7 @@
         </div>
 
         <div class="section" data-mode-section="followup">
-          <p class="section-title">第二段：现场反馈（测试后如有）</p>
+          <p class="section-title">第二段：补充测试反馈</p>
           <div class="grid two">
             <div>
               <label for="tastingScene">测试场景 / 反馈来源 *</label>
@@ -592,11 +592,7 @@
       "quoteRmb",
       "finishedSpec",
       "versionChange",
-      "coreIngredientsSellingPoints",
-      "tastingScene",
-      "tastingFeedback",
-      "roundConclusion",
-      "nextStepDirection"
+      "coreIngredientsSellingPoints"
     ];
     let products = [];
     let currentMode = "create";
@@ -669,7 +665,7 @@
       followupRecord = null;
       followupSummary.style.display = "none";
       followupSummary.textContent = "";
-      submitBtn.textContent = currentMode === "followup" ? "提交现场反馈" : "提交";
+      submitBtn.textContent = currentMode === "followup" ? "提交测试反馈" : "提交";
       clearMessage();
     }
 
@@ -817,9 +813,9 @@
         return "请确认本次填写的产品资料真实、完整，并已完成提交前检查。提交后，Peet's 将在后台接收记录，用于后续产品评审与跟进。";
       }
       if (hasExistingFollowupFeedback(record)) {
-        return "该提交编号对应的第一页已填写过现场反馈。当前内容提交后，将覆盖原有测试场景、测试反馈、本轮结论和下一步改进方向。请确认是否继续提交。";
+        return "该提交编号对应的记录已填写过测试反馈。当前内容提交后，将覆盖原有测试场景、测试反馈、本轮结论和下一步改进方向。请确认是否继续提交。";
       }
-      return "请确认本次补充的现场反馈、结论及下一步改进方向准确无误。提交后，系统将把反馈合并至对应产品记录，用于后续产品评审与跟进。";
+      return "请确认本次补充的测试反馈、结论及下一步改进方向准确无误。提交后，系统将把反馈合并至对应产品记录，用于后续产品评审与跟进。";
     }
 
     function confirmSubmission() {
@@ -920,26 +916,6 @@
               <textarea data-product-field="ingredientsStructure" hidden></textarea>
               <p class="spec-compare" data-spec-compare>可写胚体、奶油、鸡肉、酱料等；蛋糕可不标克重，但分层结构要写清楚。</p>
             </div>
-            <div class="grid two feedback-choice">
-            <div>
-              <label>测试场景 / 反馈来源</label>
-              ${selectHtml("tastingScene", ["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], productValue(product, "tastingScene"))}
-            </div>
-            <div>
-              <label>本轮结论</label>
-              ${selectHtml("roundConclusion", ["", "继续调整", "暂停", "通过且储备", "通过且进入众测"], productValue(product, "roundConclusion"))}
-            </div>
-            </div>
-            <div class="grid two feedback-pair span-3">
-            <div>
-              <label>测试反馈</label>
-              <textarea data-product-field="tastingFeedback" placeholder="如现场已有 Peet's 反馈，可记录口头反馈；测试前可暂空。">${escapeAttr(productValue(product, "tastingFeedback"))}</textarea>
-            </div>
-            <div>
-              <label>下一步改进方向</label>
-              <textarea data-product-field="nextStepDirection" placeholder="只写需要供应商调整的方向，例如颜色、甜度、结构、克重、包装等。">${escapeAttr(productValue(product, "nextStepDirection"))}</textarea>
-            </div>
-            </div>
             <div class="span-3">
               <label>产品照 *</label>
               <input data-product-images type="file" accept="image/*" multiple>
@@ -1026,11 +1002,7 @@
         ingredients_structure: structureText(product).trim(),
         image_paths: imagePaths,
         quote_rmb: productValue(product, "quoteRmb").trim(),
-        core_ingredients_selling_points: productValue(product, "coreIngredientsSellingPoints").trim(),
-        tasting_scene: productValue(product, "tastingScene"),
-        tasting_feedback: productValue(product, "tastingFeedback").trim(),
-        round_conclusion: productValue(product, "roundConclusion"),
-        next_step_direction: productValue(product, "nextStepDirection").trim()
+        core_ingredients_selling_points: productValue(product, "coreIngredientsSellingPoints").trim()
       };
     }
 
@@ -1267,20 +1239,20 @@
           const record = await submitFollowup();
           await resetFormAfterSubmit();
           setMode("followup");
-          showMessage(`现场反馈已补充，系统已合并到原记录。\n${compactRecordSummary(record)}`, "success");
+          showMessage(`测试反馈已补充，系统已合并到原记录。\n${compactRecordSummary(record)}`, "success");
         } else {
           const results = await submitCreate();
           await resetFormAfterSubmit();
           const codeText = results.map((result, index) => `产品 ${index + 1}：${result.productName}${result.followupCode ? `｜提交编号：${result.followupCode}` : ""}`).join("\n");
           const warnings = results.map(result => result.imageWarning).filter(Boolean);
           const warningText = warnings.length ? `\n\n${warnings.join("\n")}` : "";
-          showMessage(`已提交 ${results.length} 个产品，Peet's 会在后台确认。\n${codeText}\n测试后补充现场反馈时，请使用对应产品的提交编号。${warningText}`, warnings.length ? "error" : "success");
+          showMessage(`已提交 ${results.length} 个产品，Peet's 会在后台确认。\n${codeText}\n测试后补充测试反馈时，请使用对应产品的提交编号。${warningText}`, warnings.length ? "error" : "success");
         }
       } catch (error) {
         showMessage(friendlyError(error), "error");
       } finally {
         submitBtn.disabled = false;
-        submitBtn.textContent = currentMode === "followup" ? "提交现场反馈" : "提交";
+        submitBtn.textContent = currentMode === "followup" ? "提交测试反馈" : "提交";
       }
     });
 
