@@ -9076,8 +9076,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return Array.from(new Uint8Array(digest)).map(byte => byte.toString(16).padStart(2, "0")).join("");
     }
 
+    function refreshSupplierInboxFrameForAuth() {
+      const frame = document.querySelector(".supplier-inbox-frame");
+      if (!frame) return;
+      const currentSrc = frame.getAttribute("src") || "/decks/category-lab/supplier-submissions-admin";
+      const url = new URL(currentSrc, location.origin);
+      url.searchParams.set("authRefresh", String(Date.now()));
+      frame.src = `${url.pathname}${url.search}${url.hash}`;
+    }
+
     function unlockCategoryLab() {
       document.body.classList.remove("auth-locked");
+      refreshSupplierInboxFrameForAuth();
     }
 
     function lockCategoryLab() {
