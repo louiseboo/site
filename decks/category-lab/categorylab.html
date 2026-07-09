@@ -1783,6 +1783,11 @@
       border-radius: 50%;
       background: #2f281f;
       transform: translateX(-50%);
+      cursor: pointer;
+    }
+    .timeline-dot:hover {
+      transform: translateX(-50%) scale(1.35);
+      box-shadow: 0 0 0 4px rgba(199, 185, 157, .28);
     }
     .timeline-dot.pending {
       border-color: #8a806f;
@@ -1984,7 +1989,9 @@
       height: 4px;
       border-radius: 999px;
       background: #e4dac9;
+      cursor: pointer;
     }
+    .launch-mini-progress i:hover { background: var(--gold); }
     .launch-mini-progress i.done { background: #2f281f; }
     .launch-mini-progress i.current { background: var(--amber); }
     .launch-mini-progress i.bad { background: var(--red); }
@@ -2008,6 +2015,11 @@
       font-weight: 800;
       line-height: 1.15;
       white-space: nowrap;
+      cursor: pointer;
+    }
+    .launch-node-chip:hover {
+      border-color: var(--gold);
+      box-shadow: 0 1px 0 rgba(47, 40, 31, .08);
     }
     .launch-node-chip.done {
       border-color: #b9dac8;
@@ -2028,6 +2040,28 @@
     .launch-node-chip small {
       font-size: 10px;
       font-weight: 800;
+    }
+    .launch-offset-guide {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: #fffaf0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+    .launch-offset-guide b {
+      color: var(--text);
+      font-size: 12px;
+    }
+    .launch-offset-guide span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
     .launch-plan-actual {
       display: grid;
@@ -4230,19 +4264,75 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       "factsheet提交审核", "审核Tony", "审核Dan", "factsheet发送", "规格书",
       "大生产", "大生产验收", "运输测试", "烤程SOP"
     ];
+    function completedCoffeeBarFlow() {
+      return Object.fromEntries(coffeeBarFlowItems.map(item => [item, true]));
+    }
+    function productCalendarLaunchDate(value = "") {
+      const match = String(value || "").match(/(\d{4})[/-](\d{1,2})[/-](\d{1,2})/);
+      if (!match) return "";
+      return `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}`;
+    }
+    function calendarPeriodCode(period = {}) {
+      const date = productCalendarLaunchDate(period.start);
+      if (!date) return "0000";
+      const [, month, day] = date.match(/^\d{4}-(\d{2})-(\d{2})$/) || [];
+      return `${month || "00"}${day || "00"}`;
+    }
+    function calendarSkuEntries(period = {}) {
+      const entries = [];
+      Object.entries(period.sku || {}).forEach(([key, value]) => {
+        const row = productCalendarSkuRows.find(item => item.key === key);
+        String(value || "").split("\n").map(item => item.trim()).filter(Boolean).forEach(name => {
+          const category = row?.group === "Sandwich&Meal" ? "三明治" : row?.group === "Cake&Dessert" ? "蛋糕" : row?.group === "Bakery" ? "烘焙" : "其他";
+          entries.push({ name, category });
+        });
+      });
+      if (!entries.length && period.focus) {
+        String(period.focus).split("\n").map(item => item.trim()).filter(Boolean).forEach(name => entries.push({ name, category: "其他" }));
+      }
+      if (!entries.length) entries.push({ name: "档期产品待补", category: "其他" });
+      return entries;
+    }
+    function buildFeishuCalendarLaunchProjects() {
+      const coveredCampaigns = new Set(["SOE：埃塞", "桂花酒酿", "大航海家", "迪克森少校冬日盛典II"]);
+      return (productCalendarData["2026"] || [])
+        .filter(period => period.start && period.name && !period.name.startsWith("FY26") && !coveredCampaigns.has(period.name))
+        .flatMap(period => {
+          const launchDate = productCalendarLaunchDate(period.start);
+          if (!launchDate) return [];
+          const completed = Boolean(period.end && productCalendarLaunchDate(period.end) && productCalendarLaunchDate(period.end) <= "2026-07-01");
+          const campaignName = `${calendarPeriodCode(period)} ${period.name}`;
+          return calendarSkuEntries(period).map((item, index) => ({
+            id: `feishu-calendar-2026-${calendarPeriodCode(period)}-${index + 1}`,
+            name: item.name,
+            launchDate,
+            category: item.category,
+            categories: [item.category],
+            launchCampaign: campaignName,
+            launchCampaignId: "",
+            owner: "Louise",
+            calendarCompleted: completed,
+            source: "Feishu · FY26 产品日历",
+            note: `${period.name}：来自 FY26 产品日历。${item.name === "档期产品待补" ? "食品 SKU 待补。" : ""}`,
+            checkedFlow: completed ? completedCoffeeBarFlow() : feishuCoffeeBarFlow({ brief: true })
+          }));
+        });
+    }
+    const feishuCalendarLaunchProjects = buildFeishuCalendarLaunchProjects();
     const feishuCoffeeBarLaunchProjects = [
-      { id: "feishu-coffee-bar-blueberry-cheesecake-20260702", name: "蓝莓芝士蛋糕", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 Q3烘焙换新", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true }) },
-      { id: "feishu-coffee-bar-high-protein-bagel-20260702", name: "高蛋白全麦贝果", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 Q3烘焙换新", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
-      { id: "feishu-coffee-bar-fig-cheese-bun-20260702", name: "无花果乳酪包", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 Q3烘焙换新", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
-      { id: "feishu-coffee-bar-mulberry-fig-ciabatta-20260702", name: "桑葚无花果恰巴塔", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 Q3烘焙换新", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
-      { id: "feishu-coffee-bar-basil-pesto-panini-20260702", name: "罗勒青酱帕尼尼", launchDate: "2026-07-02", category: "三明治", launchCampaign: "0702 Q3三明治换新", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true }) },
-      { id: "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702", name: "黑松露厚切鸡排贝果三明治", launchDate: "2026-07-02", category: "三明治", launchCampaign: "0702 Q3三明治换新", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：鸡排和面包改进。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
-      { id: "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806", name: "桂花酒酿蛋糕", launchDate: "2026-08-06", category: "烘焙", launchCampaign: "0806 桂花档期", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
-      { id: "feishu-coffee-bar-core-chocolate-cake-20260806", name: "核心品巧克力蛋糕", launchDate: "2026-08-06", category: "烘焙", launchCampaign: "0806 桂花档期", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
-      { id: "feishu-coffee-bar-mango-pomelo-sago-cake-20260924", name: "杨枝甘露蛋糕", launchDate: "2026-09-24", category: "烘焙", launchCampaign: "0924 Q4烘焙换新", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
-      { id: "feishu-coffee-bar-q4-sandwich-refresh-20260924", name: "Q4三明治换新", launchDate: "2026-09-24", category: "三明治", launchCampaign: "0924 Q4三明治换新", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) },
-      { id: "feishu-coffee-bar-q4-bakery-refresh-20260924", name: "Q4烘焙换新", launchDate: "2026-09-24", category: "烘焙", launchCampaign: "0924 Q4烘焙换新", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) },
-      { id: "feishu-coffee-bar-holiday-cake-20261208", name: "12月：节日蛋糕", launchDate: "2026-12-08", category: "烘焙", launchCampaign: "1208 迪克森少校 2", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) }
+      ...feishuCalendarLaunchProjects,
+      { id: "feishu-coffee-bar-blueberry-cheesecake-20260702", name: "蓝莓芝士蛋糕", launchDate: "2026-07-02", category: "蛋糕", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true }) },
+      { id: "feishu-coffee-bar-high-protein-bagel-20260702", name: "高蛋白全麦贝果", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
+      { id: "feishu-coffee-bar-fig-cheese-bun-20260702", name: "无花果乳酪包", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
+      { id: "feishu-coffee-bar-mulberry-fig-ciabatta-20260702", name: "桑葚无花果恰巴塔", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
+      { id: "feishu-coffee-bar-basil-pesto-panini-20260702", name: "罗勒青酱帕尼尼", launchDate: "2026-07-02", category: "三明治", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true }) },
+      { id: "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702", name: "黑松露厚切鸡排贝果三明治", launchDate: "2026-07-02", category: "三明治", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：鸡排和面包改进。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
+      { id: "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806", name: "桂花酒酿蛋糕", launchDate: "2026-08-06", category: "蛋糕", launchCampaign: "0806 桂花酒酿", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
+      { id: "feishu-coffee-bar-core-chocolate-cake-20260806", name: "核心品巧克力蛋糕", launchDate: "2026-08-06", category: "蛋糕", launchCampaign: "0806 桂花酒酿", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
+      { id: "feishu-coffee-bar-mango-pomelo-sago-cake-20260924", name: "杨枝甘露蛋糕", launchDate: "2026-09-24", category: "蛋糕", launchCampaign: "0924 大航海家", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
+      { id: "feishu-coffee-bar-q4-sandwich-refresh-20260924", name: "Q4三明治换新", launchDate: "2026-09-24", category: "三明治", launchCampaign: "0924 大航海家", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) },
+      { id: "feishu-coffee-bar-q4-bakery-refresh-20260924", name: "Q4烘焙换新", launchDate: "2026-09-24", category: "烘焙", launchCampaign: "0924 大航海家", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) },
+      { id: "feishu-coffee-bar-holiday-cake-20261208", name: "12月：节日蛋糕", launchDate: "2026-12-08", category: "蛋糕", launchCampaign: "1208 迪克森少校冬日盛典II", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) }
     ];
     function feishuCoffeeBarFlow(flags = {}) {
       return {
@@ -4475,6 +4565,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let editingBakeRecordId = null;
     let editingLaunchProjectId = null;
     let activeLaunchProjectId = null;
+    let activeLaunchMilestoneKey = "";
     let launchStatusFilter = "";
     let productCalendarYear = "2026";
 
@@ -4877,18 +4968,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function defaultLaunchCampaignForProject(project = {}) {
       const byId = {
-        "feishu-coffee-bar-blueberry-cheesecake-20260702": "0702 Q3烘焙换新",
-        "feishu-coffee-bar-high-protein-bagel-20260702": "0702 Q3烘焙换新",
-        "feishu-coffee-bar-fig-cheese-bun-20260702": "0702 Q3烘焙换新",
-        "feishu-coffee-bar-mulberry-fig-ciabatta-20260702": "0702 Q3烘焙换新",
-        "feishu-coffee-bar-basil-pesto-panini-20260702": "0702 Q3三明治换新",
-        "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702": "0702 Q3三明治换新",
-        "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806": "0806 桂花档期",
-        "feishu-coffee-bar-core-chocolate-cake-20260806": "0806 桂花档期",
-        "feishu-coffee-bar-mango-pomelo-sago-cake-20260924": "0924 Q4烘焙换新",
-        "feishu-coffee-bar-q4-sandwich-refresh-20260924": "0924 Q4三明治换新",
-        "feishu-coffee-bar-q4-bakery-refresh-20260924": "0924 Q4烘焙换新",
-        "feishu-coffee-bar-holiday-cake-20261208": "1208 迪克森少校 2"
+        "feishu-coffee-bar-blueberry-cheesecake-20260702": "0702 SOE：埃塞",
+        "feishu-coffee-bar-high-protein-bagel-20260702": "0702 SOE：埃塞",
+        "feishu-coffee-bar-fig-cheese-bun-20260702": "0702 SOE：埃塞",
+        "feishu-coffee-bar-mulberry-fig-ciabatta-20260702": "0702 SOE：埃塞",
+        "feishu-coffee-bar-basil-pesto-panini-20260702": "0702 SOE：埃塞",
+        "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702": "0702 SOE：埃塞",
+        "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806": "0806 桂花酒酿",
+        "feishu-coffee-bar-core-chocolate-cake-20260806": "0806 桂花酒酿",
+        "feishu-coffee-bar-mango-pomelo-sago-cake-20260924": "0924 大航海家",
+        "feishu-coffee-bar-q4-sandwich-refresh-20260924": "0924 大航海家",
+        "feishu-coffee-bar-q4-bakery-refresh-20260924": "0924 大航海家",
+        "feishu-coffee-bar-holiday-cake-20261208": "1208 迪克森少校冬日盛典II"
       };
       return byId[project.id] || "";
     }
@@ -4910,7 +5001,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (!actualDates.formula && actualDates.sample) actualDates.formula = actualDates.sample;
       if (!actualDates.sop && actualDates.training) actualDates.sop = actualDates.training;
       const categories = splitLaunchCategories(project.categories?.length ? project.categories : (project.category || "烘焙"));
-      const launchCampaign = project.launchCampaign || project.campaign || defaultLaunchCampaignForProject(project);
+      const requiredLaunchCampaign = defaultLaunchCampaignForProject(project);
+      const launchCampaign = requiredLaunchCampaign || project.launchCampaign || project.campaign || "";
       return {
         ...project,
         id: project.id || crypto.randomUUID(),
@@ -4922,10 +5014,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         launchCampaignId: project.launchCampaignId || "",
         owner: project.owner || "Louise",
         issueNote: project.issueNote || "",
+        calendarCompleted: Boolean(project.calendarCompleted),
         actualDates,
         checkedFlow: Object.fromEntries(coffeeBarFlowItems.map(item => [
           item,
-          Boolean(checkedFlow[item]) || (flowAliases[item] || []).some(alias => Boolean(checkedFlow[alias]))
+          Boolean(project.calendarCompleted) || Boolean(checkedFlow[item]) || (flowAliases[item] || []).some(alias => Boolean(checkedFlow[alias]))
         ]))
       };
     }
@@ -5468,14 +5561,17 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function calculateLaunchMilestones(project) {
+      const today = formatDateInput(new Date());
       return launchMilestoneTemplates.map(template => {
         const plannedDate = addDays(project.launchDate, template.offsetDays);
         const actualDate = project.actualDates?.[template.key] || "";
         const flowDone = Boolean(project.checkedFlow?.[template.label]);
-        const displayActualDate = actualDate || (flowDone ? plannedDate : "");
+        const launchDatePassed = template.key === "launch" && project.launchDate && dayDiff(project.launchDate, today) <= 0;
+        const completedByCalendar = Boolean(project.calendarCompleted);
+        const displayActualDate = actualDate || ((flowDone || completedByCalendar || launchDatePassed) ? plannedDate : "");
         const expectedDays = Math.abs(template.offsetDays);
-        const daysFromToday = plannedDate ? dayDiff(plannedDate, formatDateInput(new Date())) : "";
-        const done = Boolean(actualDate) || flowDone;
+        const daysFromToday = plannedDate ? dayDiff(plannedDate, today) : "";
+        const done = completedByCalendar || Boolean(actualDate) || flowDone || launchDatePassed;
         const status = done ? "已完成" : (Number.isFinite(daysFromToday) && daysFromToday < 0 ? "逾期" : (Number.isFinite(daysFromToday) && daysFromToday <= 7 ? "临近" : "待完成"));
         return { ...template, plannedDate, actualDate, displayActualDate, expectedDays, done, status };
       });
@@ -5568,6 +5664,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         .slice()
         .sort((a, b) => dayDiff(a.plannedDate, b.plannedDate) || a.offsetDays - b.offsetDays);
       return pending[0] || metrics.milestones[metrics.milestones.length - 1] || null;
+    }
+
+    function launchSelectedMilestone(project, milestones = calculateLaunchMilestones(project)) {
+      if (launchItemIsActive(project) && activeLaunchMilestoneKey) {
+        return milestones.find(item => item.key === activeLaunchMilestoneKey) || launchCurrentMilestone(project);
+      }
+      return launchCurrentMilestone(project);
     }
 
     function launchProjectSearchText(project) {
@@ -5687,7 +5790,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           </div>
           ${projects.map(project => {
             const milestones = calculateLaunchMilestones(project);
-            const current = launchCurrentMilestone(project);
+            const current = launchSelectedMilestone(project, milestones);
             const completion = launchCompletion(project);
             const tone = launchGroupTone(launchProjectGroupKey(project));
             const start = milestones[0]?.plannedDate || project.launchDate;
@@ -5712,7 +5815,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
                 <span class="timeline-actual-bar ${tone}" style="--start:${startX}%;--end:${actualEndX}%"></span>
                 ${milestones.map(item => {
                   const dotTone = item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "pending") : "pending";
-                  return `<span class="timeline-dot ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" title="${escapeAttr(item.label)} ${escapeAttr(item.plannedDate || "")}" style="--x:${launchTimelinePosition(item.plannedDate, minTime, maxTime)}%"></span>`;
+                  return `<span class="timeline-dot ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(item.plannedDate, minTime, maxTime)}%"></span>`;
                 }).join("")}
                 <span class="timeline-date-label ${tone}${labelEndClass}" style="--x:${endX}%">上市 ${escapeHtml(launchDateLabel(project.launchDate))}</span>
                 <span class="timeline-today" style="--today:${todayX}%"></span>
@@ -5747,9 +5850,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         milestone?.label,
         launchOffsetText(milestone),
         milestone?.plannedDate ? `计划 ${milestone.plannedDate}` : "",
-        milestone?.actualDate ? `实际 ${milestone.actualDate}` : "",
+        milestone?.key !== "launch" && milestone?.actualDate ? `实际 ${milestone.actualDate}` : "",
         milestone?.status ? `状态 ${milestone.status}` : ""
       ].filter(Boolean).join(" · ");
+    }
+
+    function launchOffsetGuideHtml() {
+      return `
+        <div class="launch-offset-guide">
+          <b>默认倒推</b>
+          ${launchMilestoneTemplates.map(item => `<span>${escapeHtml(item.label)} ${escapeHtml(launchOffsetText(item))}</span>`).join("")}
+        </div>
+      `;
     }
 
     function launchUrgencyText(project, milestone) {
@@ -5773,19 +5885,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         host.innerHTML = `<div class="empty">当前筛选下没有匹配档期。<button class="btn compact primary" data-open-launch-empty type="button">新增档期</button></div>`;
         return;
       }
-      host.innerHTML = groups.map(group => `
+      host.innerHTML = `${launchOffsetGuideHtml()}${groups.map(group => `
         <div class="launch-list-group">
           <div class="launch-group-title ${launchGroupTone(group.key)}">${escapeHtml(launchGroupLabel(group.key))} · ${group.items.length}</div>
           ${group.items.map(project => {
             const milestones = calculateLaunchMilestones(project);
-            const current = launchCurrentMilestone(project) || milestones[0];
+            const current = launchSelectedMilestone(project, milestones) || milestones[0];
             const completion = launchCompletion(project);
             const tone = launchGroupTone(group.key);
             const delta = launchDeltaText(current);
             const products = project.products || [];
             const productNames = products.map(item => item.name).filter(Boolean);
             const editTarget = products[0]?.id || project.id;
-            const launchActual = project.actualDates?.launch || "";
             return `
               <div class="launch-list-row ${tone} ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}">
                 <div class="launch-row-title">
@@ -5795,28 +5906,31 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
                 </div>
                 <div class="launch-plan-actual">
                   <b>计划 ${escapeHtml(launchDateLabel(project.launchDate))}</b>
-                  <span>实际</span>
-                  <input class="small-input" type="date" value="${escapeAttr(launchActual)}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="launch">
+                  <span>上市日固定</span>
                 </div>
                 <div class="launch-node-cell">
                   <b>${escapeHtml(current?.label || "-")}</b>
                   <div class="launch-mini-progress">
-                    ${milestones.map(item => `<i class="${item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "current") : ""}"></i>`).join("")}
+                    ${milestones.map(item => `<i class="${item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "current") : ""}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" title="${escapeAttr(launchMilestoneTitle(item))}"></i>`).join("")}
                   </div>
                   <span>${completion.done}/${completion.total}</span>
                   <div class="launch-node-chips">
                     ${milestones.map(item => `
-                      <span class="launch-node-chip ${escapeAttr(launchMilestoneChipClass(item, current))}" title="${escapeAttr(launchMilestoneTitle(item))}">
-                        <b>${escapeHtml(item.label)}</b><small>${escapeHtml(launchOffsetText(item))}</small>
+                      <span class="launch-node-chip ${escapeAttr(launchMilestoneChipClass(item, current))}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" title="${escapeAttr(launchMilestoneTitle(item))}">
+                        <b>${escapeHtml(item.label)}</b>
                       </span>
                     `).join("")}
                   </div>
                 </div>
                 <div class="launch-plan-actual">
                   <b>计划 ${escapeHtml(launchDateLabel(current?.plannedDate))}</b>
-                  <span>实际</span>
-                  <input class="small-input" type="date" value="${escapeAttr(current?.actualDate || "")}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(current?.key || "")}">
-                  ${delta ? `<span class="launch-delta ${delta.startsWith("+") ? "bad" : "good"}">${escapeHtml(delta)}</span>` : ""}
+                  ${current?.key === "launch" ? `
+                    <span>上市日固定，不填实际</span>
+                  ` : `
+                    <span>实际</span>
+                    <input class="small-input" type="date" value="${escapeAttr(current?.actualDate || "")}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(current?.key || "")}">
+                    ${delta ? `<span class="launch-delta ${delta.startsWith("+") ? "bad" : "good"}">${escapeHtml(delta)}</span>` : ""}
+                  `}
                 </div>
                 <div class="launch-days-num">${escapeHtml(launchUrgencyText(project, current))}</div>
                 <div><span class="status-dot ${tone}">${escapeHtml(launchStatusText(project))}</span></div>
@@ -5825,7 +5939,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             `;
           }).join("")}
         </div>
-      `).join("");
+      `).join("")}`;
     }
 
     function ensureActiveLaunchProject() {
@@ -5844,12 +5958,23 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const directProject = (state.launchProjects || []).find(project => project.id === id);
       if (directProject) {
         activeLaunchProjectId = directProject.id;
+        activeLaunchMilestoneKey = activeLaunchMilestoneKey || launchCurrentMilestone(directProject)?.key || "";
         renderLaunchProjects();
         return;
       }
       const campaign = buildLaunchCampaigns(state.launchProjects || []).find(item => item.id === id);
       if (!campaign) return;
       activeLaunchProjectId = campaign.products?.[0]?.id || null;
+      activeLaunchMilestoneKey = activeLaunchMilestoneKey || launchCurrentMilestone(campaign)?.key || "";
+      renderLaunchProjects();
+    }
+
+    function selectLaunchMilestone(projectOrCampaignId, milestoneKey) {
+      const projects = state.launchProjects || [];
+      const directProject = projects.find(project => project.id === projectOrCampaignId);
+      const campaign = directProject ? null : buildLaunchCampaigns(projects).find(item => item.id === projectOrCampaignId);
+      activeLaunchProjectId = directProject?.id || campaign?.products?.[0]?.id || activeLaunchProjectId;
+      activeLaunchMilestoneKey = milestoneKey || "";
       renderLaunchProjects();
     }
 
@@ -10374,6 +10499,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         openLaunchProjectModal(editLaunch.dataset.editLaunch);
         return;
       }
+      const selectLaunchNode = event.target.closest("[data-select-launch-node]");
+      if (selectLaunchNode) {
+        selectLaunchMilestone(selectLaunchNode.dataset.selectLaunchNode, selectLaunchNode.dataset.milestoneKey);
+        return;
+      }
       const selectLaunch = event.target.closest("[data-select-launch]");
       if (selectLaunch) {
         if (event.target.closest("button, input, select, textarea, label, a")) return;
@@ -11100,7 +11230,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     document.body.addEventListener("change", event => {
       if (event.target.matches("[data-launch-actual]")) {
         const key = event.target.dataset.milestoneKey;
-        if (!key) return;
+        if (!key || key === "launch") return;
         const projects = state.launchProjects || [];
         const directProject = projects.find(item => item.id === event.target.dataset.launchActual);
         const campaign = directProject ? null : buildLaunchCampaigns(projects).find(item => item.id === event.target.dataset.launchActual);
@@ -11110,6 +11240,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             project.actualDates = project.actualDates || {};
             project.actualDates[key] = event.target.value;
           });
+          activeLaunchMilestoneKey = key;
           persist();
           renderLaunchProjects();
         }
