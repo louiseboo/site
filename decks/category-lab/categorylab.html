@@ -1720,6 +1720,11 @@
     .timeline-project-info.bad { border-left-color: var(--red); background: #fff8f5; }
     .timeline-project-info.warn { border-left-color: var(--amber); background: #fffaf0; }
     .timeline-project-info.done { border-left-color: var(--green); opacity: .68; }
+    .timeline-project-info.active {
+      border-left-color: #2f281f;
+      background: #f0dfc8;
+      opacity: 1;
+    }
     .timeline-project-info b {
       display: block;
       margin-bottom: 5px;
@@ -1754,6 +1759,13 @@
         #fffdf8;
     }
     .timeline-project-info.done + .timeline-track-cell { opacity: .68; }
+    .timeline-project-info.active + .timeline-track-cell,
+    .timeline-track-cell.active {
+      background:
+        linear-gradient(90deg, rgba(138, 90, 54, .18) 1px, transparent 1px) 0 0 / 25% 100%,
+        #f3e4cf;
+      opacity: 1;
+    }
     .timeline-plan-bar,
     .timeline-actual-bar {
       position: absolute;
@@ -1828,6 +1840,21 @@
     .timeline-dot.launch {
       border-radius: 2px;
       background: #2f281f;
+    }
+    .timeline-dot.actual {
+      top: 48px;
+      width: 10px;
+      height: 10px;
+      border-color: #2f281f;
+      background: #2f281f;
+    }
+    .timeline-dot.actual.done {
+      border-color: #2f281f;
+      background: #2f281f;
+    }
+    .timeline-dot.actual.pending {
+      border-color: #8a806f;
+      background: #8a806f;
     }
     .timeline-date-label {
       position: absolute;
@@ -1968,11 +1995,25 @@
     .timeline-project-info.active,
     .timeline-track-cell.active,
     .launch-list-row.active {
-      box-shadow: inset 0 0 0 1px var(--gold);
+      box-shadow: inset 0 0 0 2px rgba(138, 90, 54, .72);
+    }
+    .launch-list-row.active {
+      border-left-color: #2f281f;
+      background: #f1dfc8;
+      opacity: 1;
+    }
+    .launch-list-row.active b,
+    .launch-list-row.active .launch-days-num {
+      color: #2f281f;
     }
     .launch-list-row.bad { border-left-color: var(--red); background: #fff8f5; }
     .launch-list-row.warn { border-left-color: var(--amber); background: #fffaf0; }
     .launch-list-row.done { border-left-color: var(--green); opacity: .65; }
+    .launch-list-row.done.active {
+      border-left-color: #2f281f;
+      background: #f1dfc8;
+      opacity: 1;
+    }
     .launch-row-title b {
       display: block;
       font-size: 14px;
@@ -2303,8 +2344,10 @@
       background: #fffaf0;
     }
     .calendar-period-row.active {
-      box-shadow: inset 3px 0 0 var(--gold);
+      background: #f1dfc8;
+      box-shadow: inset 4px 0 0 #2f281f, inset 0 0 0 1px rgba(138, 90, 54, .32);
     }
+    .calendar-period-row.done.active { opacity: 1; }
     .calendar-period-row.done { opacity: .68; }
     .calendar-period-row.current { background: #fff8f5; }
     .calendar-date-stack {
@@ -5980,6 +6023,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return item?.id === activeLaunchProjectId || (item?.products || []).some(project => project.id === activeLaunchProjectId);
     }
 
+    function launchSelectTargetId(item = {}) {
+      const products = visibleLaunchProducts(item.products || []);
+      return products[0]?.id || item.products?.[0]?.id || item.id || "";
+    }
+
     function timeValue(value) {
       const parsed = Date.parse(value);
       return Number.isFinite(parsed) ? parsed : 0;
@@ -6548,19 +6596,25 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             const labelEndClass = endX > 88 ? " end" : "";
             const products = project.products || [];
             const productNames = products.map(item => item.name).filter(Boolean);
+            const selectTargetId = launchSelectTargetId(project);
             return `
-              <div class="timeline-project-info ${tone} ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}">
+              <div class="timeline-project-info ${tone} ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(selectTargetId)}">
                 <b>${escapeHtml(project.name || "未命名档期")}</b>
                 <span>${escapeHtml(project.category || "未分类")} · ${escapeHtml(launchMilestoneDisplayLabel(current) || "暂无节点")} · 完成 ${completion.done}/${completion.total}</span>
                 <small>${escapeHtml(productNames.length ? productNames.join("、") : (project.owner || ""))}</small>
                 <em>${escapeHtml(launchStatusText(project))} · 上市 ${escapeHtml(launchDateLabel(project.launchDate))} · ${escapeHtml(daysText)}</em>
               </div>
-              <div class="timeline-track-cell ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}">
+              <div class="timeline-track-cell ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(selectTargetId)}">
                 <span class="timeline-plan-bar" style="--start:${startX}%;--end:${endX}%"></span>
                 <span class="timeline-actual-bar ${tone}" style="--start:${startX}%;--end:${actualEndX}%"></span>
                 ${milestones.map(item => {
                   const dotTone = item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "pending") : "pending";
-                  return `<span class="timeline-dot ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" data-tooltip="${escapeAttr(launchMilestoneTooltip(item))}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(item.plannedDate, minTime, maxTime)}%"></span>`;
+                  return `<span class="timeline-dot ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" data-tooltip="${escapeAttr(launchMilestoneTooltip(item))}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(item.plannedDate, minTime, maxTime)}%"></span>`;
+                }).join("")}
+                ${milestones.filter(item => item.displayActualDate || item.actualDate).map(item => {
+                  const actualDate = item.displayActualDate || item.actualDate;
+                  const dotTone = item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "pending") : "pending";
+                  return `<span class="timeline-dot actual ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" data-tooltip="${escapeAttr(launchMilestoneTooltip(item))}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(actualDate, minTime, maxTime)}%"></span>`;
                 }).join("")}
                 <span class="timeline-date-label ${tone}${labelEndClass}" style="--x:${endX}%">上市 ${escapeHtml(launchDateLabel(project.launchDate))}</span>
                 <span class="timeline-today" style="--today:${todayX}%"></span>
@@ -6614,26 +6668,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function launchMilestoneTitle(milestone) {
-      const actualText = milestone?.key === "launch" ? "上市日固定" : (milestone?.actualDate || "未填");
-      const gapText = milestone?.key === "launch" ? "" : (launchDeltaText(milestone) || "未填");
+      const actualText = milestone?.displayActualDate || milestone?.actualDate || (milestone?.key === "launch" ? milestone?.plannedDate : "") || "未填";
       return [
-        milestone?.label,
-        milestone?.plannedDate ? `计划 ${milestone.plannedDate}` : "",
-        `实际 ${actualText}`,
-        gapText ? `gap ${gapText}` : "",
-        milestone?.status ? `状态 ${milestone.status}` : ""
+        milestone?.plannedDate ? `计划日期 ${milestone.plannedDate}` : "",
+        `实际日期 ${actualText}`
       ].filter(Boolean).join(" · ");
     }
 
     function launchMilestoneTooltip(milestone) {
-      const actualText = milestone?.key === "launch" ? "上市日固定" : (milestone?.actualDate || "未填");
-      const gapText = milestone?.key === "launch" ? "" : (launchDeltaText(milestone) || "未填");
+      const actualText = milestone?.displayActualDate || milestone?.actualDate || (milestone?.key === "launch" ? milestone?.plannedDate : "") || "未填";
       const rows = [
-        launchMilestoneDisplayLabel(milestone),
-        milestone?.plannedDate ? `计划：${milestone.plannedDate}` : "",
-        `实际：${actualText}`,
-        gapText ? `gap：${gapText}` : "",
-        milestone?.status ? `状态：${milestone.status}` : ""
+        milestone?.plannedDate ? `计划日期：${milestone.plannedDate}` : "",
+        `实际日期：${actualText}`
       ].filter(Boolean);
       return rows.join("\n");
     }
@@ -6684,8 +6730,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             const tone = launchGroupTone(group.key);
             const delta = launchDeltaText(current);
             const products = visibleLaunchProducts(project.products || []);
+            const selectTargetId = launchSelectTargetId(project);
             return `
-              <div class="launch-list-row ${tone} ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}">
+              <div class="launch-list-row ${tone} ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(selectTargetId)}">
                 <div class="launch-row-title">
                   <b>${escapeHtml(project.name || "未命名档期")}</b>
                   <span>${escapeHtml(project.category || "未分类")}${products.length ? ` · ${products.length} 个食品` : ""}</span>
@@ -6706,12 +6753,12 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
                 <div class="launch-node-cell">
                   <b>${escapeHtml(current?.label || "-")}</b>
                   <div class="launch-mini-progress">
-                    ${milestones.map(item => `<i class="${item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "current") : ""}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" title="${escapeAttr(launchMilestoneTitle(item))}"></i>`).join("")}
+                    ${milestones.map(item => `<i class="${item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "current") : ""}" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" title="${escapeAttr(launchMilestoneTitle(item))}"></i>`).join("")}
                   </div>
                   <span>完成 ${completion.done}/${completion.total}</span>
                   <div class="launch-node-chips">
                     ${milestones.map(item => `
-                      <span class="launch-node-chip ${escapeAttr(launchMilestoneChipClass(item, current))}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" title="${escapeAttr(launchMilestoneTitle(item))}">
+                      <span class="launch-node-chip ${escapeAttr(launchMilestoneChipClass(item, current))}" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" title="${escapeAttr(launchMilestoneTitle(item))}">
                         <b>${escapeHtml(launchMilestoneDisplayLabel(item))}</b>
                       </span>
                     `).join("")}
@@ -6756,14 +6803,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const directProject = (state.launchProjects || []).find(project => project.id === id);
       if (directProject) {
         activeLaunchProjectId = directProject.id;
-        activeLaunchMilestoneKey = activeLaunchMilestoneKey || launchCurrentMilestone(directProject)?.key || "";
+        activeLaunchMilestoneKey = launchCurrentMilestone(directProject)?.key || "";
         renderLaunchProjects();
         return;
       }
       const campaign = buildLaunchCampaigns(state.launchProjects || []).find(item => item.id === id);
       if (!campaign) return;
       activeLaunchProjectId = campaign.products?.[0]?.id || null;
-      activeLaunchMilestoneKey = activeLaunchMilestoneKey || launchCurrentMilestone(campaign)?.key || "";
+      activeLaunchMilestoneKey = launchCurrentMilestone(campaign)?.key || "";
       renderLaunchProjects();
     }
 
