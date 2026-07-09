@@ -850,7 +850,7 @@
         if (!card) continue;
         requiredProductValue(card, "productName", "品名", index);
         requiredProductValue(card, "versionLabel", "版本", index);
-        requiredProductValue(card, "finishedSpec", "产品规格", index);
+        requiredProductValue(card, "finishedSpec", "产品规格（g）", index);
         dimensionFieldsForType(field("productType").value).forEach(name => {
           requiredProductValue(card, name, dimensionLabel(name), index);
         });
@@ -922,8 +922,8 @@
               <input data-product-field="versionLabel" data-product-required required value="${escapeAttr(productValue(product, "versionLabel"))}" placeholder="V1 / V2 / V3">
             </div>
             <div>
-              <label>产品规格 *</label>
-              <input data-product-field="finishedSpec" data-product-required required value="${escapeAttr(productValue(product, "finishedSpec"))}" placeholder="如：165g/份、单个规格、包装规格">
+              <label>产品规格（g） *</label>
+              <input data-product-field="finishedSpec" data-product-required required value="${escapeAttr(productValue(product, "finishedSpec"))}" placeholder="如：165/份、单个规格、包装规格">
             </div>
             ${dimensionFieldsHtml(product)}
             </div>
