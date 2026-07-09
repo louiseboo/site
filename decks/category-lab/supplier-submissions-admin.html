@@ -1385,6 +1385,14 @@
       return data;
     }
 
+    async function confirmActiveRow(id = activeRecordId) {
+      if (!roleCanEdit() || !id) return null;
+      const updated = await saveRow(id, { status: "已确认" });
+      statusFilter = "已确认";
+      renderAll(id);
+      return updated;
+    }
+
     function categoryLabRecord(row) {
       const tastingSummary = [
         row.round_conclusion ? `本轮结论：${row.round_conclusion}` : "",
@@ -1635,7 +1643,7 @@
           showMessage("已保存。", "success");
         }
         if (event.target.closest("[data-confirm-active]")) {
-          await saveRow(activeRecordId, { status: "已确认" });
+          await confirmActiveRow();
           showMessage("已确认。", "success");
         }
         if (event.target.closest("[data-import-active]")) await importToCategoryLab();
@@ -1660,7 +1668,7 @@
       } else if (event.key === "Enter" && activeRecordId && roleCanEdit()) {
         event.preventDefault();
         try {
-          await saveRow(activeRecordId, { status: "已确认" });
+          await confirmActiveRow();
           showMessage("已确认。", "success");
         } catch (error) {
           showMessage(error.message || "操作失败。", "error");

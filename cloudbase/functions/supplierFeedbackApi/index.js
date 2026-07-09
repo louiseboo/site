@@ -129,6 +129,15 @@ function normalizeFeedbackPayload(payload = {}) {
   };
 }
 
+function normalizeAdminUpdatePayload(payload = {}) {
+  const normalized = normalizeRecordPayload(payload);
+  const patch = {};
+  Object.keys(normalized).forEach(key => {
+    if (Object.hasOwn(payload, key)) patch[key] = normalized[key];
+  });
+  return patch;
+}
+
 function requireFields(payload, names) {
   const missing = names.filter(name => !text(payload[name]));
   if (missing.length) {
@@ -311,11 +320,9 @@ async function adminUpdate(collection, event, body) {
   assertAdmin(event, body);
   const id = text(body.id);
   if (!id) throw new Error("缺少记录 ID。");
-  const normalized = normalizeRecordPayload(body.payload);
-  if (!Object.hasOwn(body.payload || {}, "image_paths")) delete normalized.image_paths;
+  const normalized = normalizeAdminUpdatePayload(body.payload || {});
   const payload = {
     ...normalized,
-    ...normalizeFeedbackPayload(body.payload),
     updated_at: new Date().toISOString()
   };
   await collection.doc(id).update(payload);
@@ -402,6 +409,7 @@ exports._private = {
   makeFollowupCode,
   parseEventBody,
   normalizeRecordPayload,
+  normalizeAdminUpdatePayload,
   requireFields,
   databaseWriteRecord,
   sanitizePublicSubmissionPayload,
