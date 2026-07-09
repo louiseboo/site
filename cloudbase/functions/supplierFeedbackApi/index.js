@@ -33,6 +33,17 @@ function jsonResponse(statusCode, body) {
   };
 }
 
+function redirectResponse(location) {
+  return {
+    statusCode: 302,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Location": location
+    },
+    body: ""
+  };
+}
+
 function parseEventBody(event = {}) {
   if (!event.body) return event || {};
   if (typeof event.body === "object") return event.body;
@@ -40,6 +51,17 @@ function parseEventBody(event = {}) {
     ? Buffer.from(event.body, "base64").toString("utf8")
     : event.body;
   return raw ? JSON.parse(raw) : {};
+}
+
+function queryParams(event = {}) {
+  const direct = event.queryStringParameters || event.query || {};
+  if (direct && Object.keys(direct).length) return direct;
+  const rawUrl = event.url || event.path || event.rawPath || "";
+  try {
+    return Object.fromEntries(new URL(rawUrl, "https://example.local").searchParams.entries());
+  } catch (error) {
+    return {};
+  }
 }
 
 function text(value) {
@@ -176,6 +198,40 @@ async function uploadImages(app, recordId, images = []) {
   return uploaded;
 }
 
+async function tempUrlForFileID(app, fileID, maxAge = 60 * 60) {
+  const id = text(fileID);
+  if (!id || !id.startsWith("cloud://")) throw new Error("图片 fileID 不正确。");
+  const urlResult = await app.getTempFileURL({
+    fileList: [{ fileID: id, maxAge }]
+  });
+  const file = urlResult.fileList?.[0] || {};
+  const url = file.tempFileURL || file.url || "";
+  if (!url) throw new Error("图片临时链接生成失败。");
+  return url;
+}
+
+async function refreshImageUrls(app, imagePaths = []) {
+  if (!Array.isArray(imagePaths) || !imagePaths.length) return [];
+  return Promise.all(imagePaths.map(async image => {
+    if (!image?.fileID) return image;
+    try {
+      return {
+        ...image,
+        publicUrl: await tempUrlForFileID(app, image.fileID)
+      };
+    } catch (error) {
+      return image;
+    }
+  }));
+}
+
+async function hydrateRecordImages(app, record = {}) {
+  return {
+    ...record,
+    image_paths: await refreshImageUrls(app, record.image_paths)
+  };
+}
+
 function adminCodeFromEvent(event = {}, body = {}) {
   const headers = event.headers || {};
   return text(
@@ -242,7 +298,8 @@ async function completeSupplierFeedback(collection, body) {
 async function adminList(collection, event, body) {
   assertAdmin(event, body);
   const result = await collection.orderBy("created_at", "desc").limit(1000).get();
-  return { records: (result.data || []).map(publicRecord) };
+  const records = await Promise.all((result.data || []).map(record => hydrateRecordImages(getApp(), publicRecord(record))));
+  return { records };
 }
 
 async function adminUpdate(collection, event, body) {
@@ -258,7 +315,8 @@ async function adminUpdate(collection, event, body) {
   };
   await collection.doc(id).update(payload);
   const updated = await collection.doc(id).get();
-  return { record: publicRecord(updated.data?.[0] || { id, ...payload }) };
+  const record = await hydrateRecordImages(getApp(), publicRecord(updated.data?.[0] || { id, ...payload }));
+  return { record };
 }
 
 async function adminDelete(collection, event, body) {
@@ -275,6 +333,13 @@ async function handleEvent(event = {}) {
   }
 
   try {
+    const method = event.httpMethod || event.requestContext?.http?.method || "POST";
+    const query = queryParams(event);
+    if (method === "GET" && text(query.action) === "image") {
+      const tempUrl = await tempUrlForFileID(getApp(), query.fileID || query.fileId);
+      return redirectResponse(tempUrl);
+    }
+
     const body = parseEventBody(event);
     const action = text(body.action);
     if (!PUBLIC_ACTIONS.has(action) && !action.startsWith("admin")) {
@@ -309,10 +374,13 @@ function startServer() {
     const chunks = [];
     req.on("data", chunk => chunks.push(chunk));
     req.on("end", async () => {
+      const query = Object.fromEntries(new URL(req.url, "http://localhost").searchParams.entries());
       const result = await handleEvent({
         httpMethod: req.method,
         headers: req.headers,
-        body: Buffer.concat(chunks).toString("utf8")
+        body: Buffer.concat(chunks).toString("utf8"),
+        url: req.url,
+        queryStringParameters: query
       });
       res.writeHead(result.statusCode, result.headers);
       res.end(result.body || "");

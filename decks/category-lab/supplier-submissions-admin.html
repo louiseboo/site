@@ -760,9 +760,17 @@
       return ["owner", "pm"].includes(profile?.role);
     }
 
+    function cloudbaseImageUrl(fileID) {
+      if (!fileID || !cloudbaseConfig.apiUrl) return "";
+      const url = new URL(cloudbaseConfig.apiUrl);
+      url.searchParams.set("action", "image");
+      url.searchParams.set("fileID", fileID);
+      return url.toString();
+    }
+
     function imageUrls(row) {
       return Array.isArray(row.image_paths)
-        ? row.image_paths.map(image => image.publicUrl || image.url).filter(Boolean)
+        ? row.image_paths.map(image => cloudbaseImageUrl(image.fileID) || image.publicUrl || image.url).filter(Boolean)
         : [];
     }
 
