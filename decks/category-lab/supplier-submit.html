@@ -595,11 +595,15 @@
     const cloudbaseReady = Boolean(cloudbaseConfig.apiUrl) && cloudbaseHost;
     const supabaseReady = Boolean(config.url && config.anonKey && window.supabase);
     const backendReady = cloudbaseReady || supabaseReady;
+    const SUPPLIER_FORM_MAINTENANCE = false;
     const client = supabaseReady ? window.supabase.createClient(config.url, config.anonKey) : null;
     const PRODUCT_FIELD_NAMES = [
       "productName",
       "versionLabel",
       "finishedSpec",
+      "lengthMm",
+      "widthMm",
+      "heightMm",
       "versionChange",
       "coreIngredientsSellingPoints"
     ];
@@ -741,6 +745,30 @@
       return lines.join("\n");
     }
 
+    function dimensionFieldsForType(type) {
+      if (type === "蛋糕") return ["heightMm"];
+      if (type === "烘焙" || type === "三明治") return ["lengthMm", "widthMm", "heightMm"];
+      return [];
+    }
+
+    function dimensionLabel(fieldName) {
+      return {
+        lengthMm: "长度（mm）",
+        widthMm: "宽度（mm）",
+        heightMm: "高度（mm）"
+      }[fieldName] || fieldName;
+    }
+
+    function dimensionFieldsHtml(product) {
+      const fields = dimensionFieldsForType(field("productType").value);
+      return fields.map(name => `
+        <div>
+          <label>${dimensionLabel(name)} *</label>
+          <input data-product-field="${escapeAttr(name)}" data-product-required required inputmode="decimal" value="${escapeAttr(productValue(product, name))}" placeholder="单位：mm">
+        </div>
+      `).join("");
+    }
+
     function selectHtml(name, options, selected) {
       const opts = options.map(option => `<option value="${escapeAttr(option)}" ${option === selected ? "selected" : ""}>${escapeAttr(option || "请选择")}</option>`).join("");
       return `<select data-product-field="${escapeAttr(name)}">${opts}</select>`;
@@ -797,7 +825,10 @@
         if (!card) continue;
         requiredProductValue(card, "productName", "品名", index);
         requiredProductValue(card, "versionLabel", "版本", index);
-        requiredProductValue(card, "finishedSpec", "成品规格", index);
+        requiredProductValue(card, "finishedSpec", "产品规格", index);
+        dimensionFieldsForType(field("productType").value).forEach(name => {
+          requiredProductValue(card, name, dimensionLabel(name), index);
+        });
         requiredProductValue(card, "versionChange", "本版调整点", index);
         requiredProductValue(card, "coreIngredientsSellingPoints", "核心原料及卖点", index);
         requiredProductStructure(card, index);
@@ -864,9 +895,10 @@
               <input data-product-field="versionLabel" data-product-required required value="${escapeAttr(productValue(product, "versionLabel"))}" placeholder="V1 / V2 / V3">
             </div>
             <div>
-              <label>成品规格（克） *</label>
-              <input data-product-field="finishedSpec" data-product-required required value="${escapeAttr(productValue(product, "finishedSpec"))}" placeholder="如：165g/份">
+              <label>产品规格 *</label>
+              <input data-product-field="finishedSpec" data-product-required required value="${escapeAttr(productValue(product, "finishedSpec"))}" placeholder="如：165g/份、单个规格、包装规格">
             </div>
+            ${dimensionFieldsHtml(product)}
             </div>
             <div class="grid two product-notes">
             <div>
@@ -947,7 +979,7 @@
       }
       const diff = total - spec;
       const sign = diff > 0 ? "+" : "";
-      if (specCompareText) specCompareText.textContent = `成品规格 ${formatWeight(spec)}g；当前明细合计 ${formatWeight(total)}g；差异 ${sign}${formatWeight(diff)}g。`;
+      if (specCompareText) specCompareText.textContent = `产品规格 ${formatWeight(spec)}g；当前明细合计 ${formatWeight(total)}g；差异 ${sign}${formatWeight(diff)}g。`;
     }
 
     function renderProductPreview(productId) {
@@ -986,6 +1018,9 @@
         test_category: sharedTestCategory,
         version_change: productValue(product, "versionChange").trim(),
         finished_spec: productValue(product, "finishedSpec").trim(),
+        length_mm: productValue(product, "lengthMm").trim(),
+        width_mm: productValue(product, "widthMm").trim(),
+        height_mm: productValue(product, "heightMm").trim(),
         ingredients_structure: structureText(product).trim(),
         image_paths: imagePaths,
         core_ingredients_selling_points: productValue(product, "coreIngredientsSellingPoints").trim()
@@ -1135,6 +1170,10 @@
       renderProducts();
       productCard(product.id)?.querySelector('[data-product-field="productName"]')?.focus();
     });
+    field("productType").addEventListener("change", () => {
+      syncAllProducts();
+      renderProducts();
+    });
     productsContainer.addEventListener("input", event => {
       const card = event.target.closest("[data-product-id]");
       if (!card) return;
@@ -1184,6 +1223,10 @@
     });
     form.addEventListener("submit", async event => {
       event.preventDefault();
+      if (SUPPLIER_FORM_MAINTENANCE) {
+        showMessage("系统正在维护，请稍后，请 10 分钟之后再来。", "error");
+        return;
+      }
       if (!backendReady) {
         showMessage("后端尚未配置。请先配置 CloudBase 或 Supabase。", "error");
         return;
@@ -1210,6 +1253,13 @@
 
     products = [newProduct()];
     renderProducts();
+    if (SUPPLIER_FORM_MAINTENANCE) {
+      showMessage("系统正在维护，请稍后，请 10 分钟之后再来。", "error");
+      form.querySelectorAll("input, select, textarea, button").forEach(control => {
+        control.disabled = true;
+      });
+      submitBtn.textContent = "维护中";
+    }
     if (!backendReady) {
       showMessage("后端尚未配置。请先配置 CloudBase 或 Supabase。", "error");
     }

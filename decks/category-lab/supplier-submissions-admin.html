@@ -980,6 +980,9 @@
           row.campaign,
           row.version_change,
           row.finished_spec,
+          row.length_mm,
+          row.width_mm,
+          row.height_mm,
           row.ingredients_structure,
           row.core_ingredients_selling_points,
           row.tasting_feedback,
@@ -1093,7 +1096,10 @@
             ${fieldBlock("供应商", fieldInput("supplier_name", row.supplier_name, "供应商"))}
             ${fieldBlock("品名", fieldInput("product_name", row.product_name, "品名"))}
             ${fieldBlock("版本", fieldInput("version_label", row.version_label, "V1 / V2 / V3"))}
-            ${fieldBlock("成品规格（克）", fieldInput("finished_spec", row.finished_spec, "如：165g/份"))}
+            ${fieldBlock("产品规格", fieldInput("finished_spec", row.finished_spec, "如：165g/份、单个规格、包装规格"))}
+            ${fieldBlock("长度（mm）", fieldInput("length_mm", row.length_mm, "单位：mm"))}
+            ${fieldBlock("宽度（mm）", fieldInput("width_mm", row.width_mm, "单位：mm"))}
+            ${fieldBlock("高度（mm）", fieldInput("height_mm", row.height_mm, "单位：mm"))}
             ${fieldBlock("类型", fieldSelect("product_type", ["", "烘焙", "蛋糕", "三明治", "预包装食品"], row.product_type))}
             ${fieldBlock("测试类别", fieldSelect("test_category", ["", "档期测试", "新品提案"], row.test_category))}
             ${fieldBlock("送样时间", fieldInput("sample_date", row.sample_date, "YYYY-MM-DD", "date"))}
@@ -1116,7 +1122,10 @@
             ${factItem("供应商", row.supplier_name)}
             ${factItem("品名", row.product_name)}
             ${factItem("版本", row.version_label)}
-            ${factItem("成品规格（克）", row.finished_spec)}
+            ${factItem("产品规格", row.finished_spec)}
+            ${factItem("长度（mm）", row.length_mm)}
+            ${factItem("宽度（mm）", row.width_mm)}
+            ${factItem("高度（mm）", row.height_mm)}
             ${factItem("类型", row.product_type)}
             ${factItem("测试类别", row.test_category)}
             ${factItem("送样时间", row.sample_date)}
@@ -1187,7 +1196,10 @@
           ${kv("测试类别", row.test_category)}
           ${kv("档期名称", row.campaign)}
           ${kv("版本", row.version_label)}
-          ${kv("成品规格（克）", row.finished_spec)}
+          ${kv("产品规格", row.finished_spec)}
+          ${kv("长度（mm）", row.length_mm)}
+          ${kv("宽度（mm）", row.width_mm)}
+          ${kv("高度（mm）", row.height_mm)}
           <div class="${importClass}">${escapeHtml(importText)}</div>
           ${kv("提交编号", row.followup_code)}
           ${kv("提交时间", dateText(row.created_at))}
@@ -1335,6 +1347,9 @@
         campaign: detailValue("campaign", row.campaign || "").trim(),
         version_change: detailValue("version_change", row.version_change || "").trim(),
         finished_spec: detailValue("finished_spec", row.finished_spec || "").trim(),
+        length_mm: detailValue("length_mm", row.length_mm || "").trim(),
+        width_mm: detailValue("width_mm", row.width_mm || "").trim(),
+        height_mm: detailValue("height_mm", row.height_mm || "").trim(),
         ingredients_structure: detailValue("ingredients_structure", row.ingredients_structure || "").trim(),
         quote_rmb: quoteCleaned && Number.isFinite(quote) ? quote : null,
         core_ingredients_selling_points: detailValue("core_ingredients_selling_points", row.core_ingredients_selling_points || "").trim(),
@@ -1386,9 +1401,9 @@
         spec: row.finished_spec || "",
         price: row.quote_rmb || "",
         weight: "",
-        length: "",
-        width: "",
-        height: "",
+        length: row.length_mm || "",
+        width: row.width_mm || "",
+        height: row.height_mm || "",
         version: row.version_label || "V1",
         testDate: row.sample_date || "",
         type: "OEM 品类测试",
@@ -1414,6 +1429,7 @@
           row.product_type ? `产品类型：${row.product_type}` : "",
           row.test_category ? `测试类别：${row.test_category}` : "",
           row.campaign ? `档期名称：${row.campaign}` : "",
+          row.length_mm || row.width_mm || row.height_mm ? `尺寸（mm）：长 ${row.length_mm || "-"} / 宽 ${row.width_mm || "-"} / 高 ${row.height_mm || "-"}` : "",
           row.version_change ? `本版调整点：${row.version_change}` : "",
           row.core_ingredients_selling_points ? `核心原料及卖点：${row.core_ingredients_selling_points}` : "",
           row.key_blocker ? `关键卡点 / 备注：${row.key_blocker}` : ""
@@ -1483,7 +1499,10 @@
         "测试类别",
         "档期名称",
         "本版调整点",
-        "成品规格（克）",
+        "产品规格",
+        "长度（mm）",
+        "宽度（mm）",
+        "高度（mm）",
         "产品结构",
         "产品照",
         "测试场景 / 反馈来源",
@@ -1507,6 +1526,9 @@
         row.campaign,
         row.version_change,
         row.finished_spec,
+        row.length_mm,
+        row.width_mm,
+        row.height_mm,
         row.ingredients_structure,
         imageUrls(row).join(" "),
         row.tasting_scene,
