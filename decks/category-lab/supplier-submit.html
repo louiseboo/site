@@ -196,14 +196,14 @@
     .grid.product-main {
       grid-template-columns: minmax(240px, 1.65fr) minmax(118px, 0.7fr) minmax(170px, 1fr);
     }
+    .grid.product-main.cake {
+      grid-template-columns: minmax(240px, 1.65fr) minmax(118px, 0.7fr) minmax(170px, 1fr) minmax(120px, 0.6fr);
+    }
     .dimension-row {
       display: grid;
+      grid-column: 1 / -1;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
-    }
-    .dimension-row.single {
-      max-width: 260px;
-      grid-template-columns: minmax(0, 1fr);
     }
     .grid.two.product-notes,
     .grid.two.feedback-pair {
@@ -420,11 +420,10 @@
       form { padding: 16px; }
       .grid, .grid.two { grid-template-columns: 1fr; }
       .grid.product-main,
+      .grid.product-main.cake,
       .dimension-row,
-      .dimension-row.single,
       .grid.two.product-notes,
       .grid.two.feedback-pair { grid-template-columns: 1fr; }
-      .dimension-row.single { max-width: none; }
       .span-2, .span-3 { grid-column: auto; }
       .actions { justify-content: stretch; }
       button, .link-button { width: 100%; }
@@ -774,9 +773,17 @@
     function dimensionFieldsHtml(product) {
       const fields = dimensionFieldsForType(field("productType").value);
       if (!fields.length) return "";
-      const groupClass = fields.length === 1 ? "dimension-row single" : "dimension-row";
+      if (fields.length === 1) {
+        const name = fields[0];
+        return `
+        <div>
+          <label>${dimensionLabel(name)} *</label>
+          <input data-product-field="${escapeAttr(name)}" data-product-required required inputmode="decimal" value="${escapeAttr(productValue(product, name))}" placeholder="填写数字">
+        </div>
+        `;
+      }
       return `
-        <div class="${groupClass}">
+        <div class="dimension-row">
         ${fields.map(name => `
         <div>
           <label>${dimensionLabel(name)} *</label>
@@ -895,6 +902,8 @@
 
     function productHtml(product, index) {
       const canDelete = products.length > 1;
+      const productType = field("productType").value;
+      const mainGridClass = productType === "蛋糕" ? "grid product-main cake" : "grid product-main";
       return `
         <article class="product-card" data-product-id="${escapeAttr(product.id)}">
           <div class="product-card-header">
@@ -903,7 +912,7 @@
           </div>
 
           <div class="product-fields">
-            <div class="grid product-main">
+            <div class="${mainGridClass}">
             <div>
               <label>品名 *</label>
               <input data-product-field="productName" data-product-required autocomplete="off" required value="${escapeAttr(productValue(product, "productName"))}" placeholder="如：香蕉布朗尼千层蛋糕">
