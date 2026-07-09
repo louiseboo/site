@@ -4504,20 +4504,34 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       "其他": { mechanism: "其他", fields: ["参数", "时间"] }
     };
     const launchMilestoneTemplates = [
-      { key: "brief", label: "Brief", offsetDays: -90 },
-      { key: "formula", label: "初版配方确认", offsetDays: -70 },
-      { key: "consumer", label: "众测", offsetDays: -45 },
-      { key: "npc", label: "NPC", offsetDays: -35 },
-      { key: "pilot", label: "中试", offsetDays: -28 },
-      { key: "mass", label: "大生产", offsetDays: -14 },
-      { key: "sop", label: "烤程SOP", offsetDays: -7 },
-      { key: "launch", label: "上市", offsetDays: 0 }
+      { key: "research", label: "市场和消费者调研", shortLabel: "调研", offsetDays: -172, durationDays: 10, flowKeys: ["Brief"] },
+      { key: "charter", label: "Charter", shortLabel: "Charter", offsetDays: -165, durationDays: 4, flowKeys: ["Brief"] },
+      { key: "brief", label: "Brief需求到供应商", shortLabel: "Brief", offsetDays: -158, durationDays: 4, flowKeys: ["Brief"] },
+      { key: "prototype", label: "产品原型打造和测试", shortLabel: "原型", offsetDays: -95, durationDays: 60, flowKeys: ["初版配方确认", "稳定性测试", "众测"], actualKeys: ["formula", "sample"] },
+      { key: "consumer", label: "众测（含第一轮报价）", shortLabel: "众测", offsetDays: -88, durationDays: 4, flowKeys: ["V1报价", "众测"] },
+      { key: "npc", label: "产品委员会汇报", shortLabel: "NPC", offsetDays: -81, durationDays: 4, flowKeys: ["NPC"] },
+      { key: "optimization", label: "产品优化", shortLabel: "优化", offsetDays: -60, durationDays: 18, flowKeys: ["初版配方确认", "配方确认"] },
+      { key: "rdConfirm", label: "研发产品确认", shortLabel: "研发确认", offsetDays: -60, durationDays: 0, flowKeys: ["初版配方确认", "配方确认"], actualKeys: ["formula", "finalFormula"] },
+      { key: "thawing", label: "解冻测试确认", shortLabel: "解冻", offsetDays: -53, durationDays: 3, flowKeys: ["稳定性测试"] },
+      { key: "pilot", label: "中试确认", shortLabel: "中试", offsetDays: -46, durationDays: 0, flowKeys: ["中试", "中试验收"], actualKeys: ["pilot"] },
+      { key: "factoryTrial", label: "工厂试产", shortLabel: "试产", offsetDays: -46, durationDays: 11, flowKeys: ["中试跟产", "三方跟产", "中试"], actualKeys: ["pilotFollow", "thirdPartyFollow"] },
+      { key: "spec", label: "规格书制作与审核确认", shortLabel: "规格书", offsetDays: -46, durationDays: 10, flowKeys: ["规格书"] },
+      { key: "transport", label: "运输测试确认", shortLabel: "运输", offsetDays: -46, durationDays: 10, flowKeys: ["运输测试"] },
+      { key: "sop", label: "烤程制作、加热SOP、陈列指引", shortLabel: "烤程SOP", offsetDays: -46, durationDays: 4, flowKeys: ["烤程SOP"] },
+      { key: "mass", label: "大生产", shortLabel: "大生产", offsetDays: -36, durationDays: 2, flowKeys: ["大生产"] },
+      { key: "massConfirm", label: "大生产确认", shortLabel: "大生产确认", offsetDays: -25, durationDays: 11, flowKeys: ["大生产验收"], actualKeys: ["massAcceptance"] },
+      { key: "shelfLife", label: "保质期测试确认", shortLabel: "保质期", offsetDays: -25, durationDays: 31, flowKeys: ["稳定性测试"] },
+      { key: "warehouse", label: "产品到仓", shortLabel: "到仓", offsetDays: -18, durationDays: 4, flowKeys: ["大生产验收"] },
+      { key: "launchReady", label: "上市前准备完成", shortLabel: "上市准备", offsetDays: -15, durationDays: 0, flowKeys: ["烤程SOP"] },
+      { key: "launch", label: "上市", shortLabel: "上市", offsetDays: 0, durationDays: 0, flowKeys: [] },
+      { key: "postLaunch", label: "上市后跟踪", shortLabel: "上市后", offsetDays: 17, durationDays: 16, flowKeys: ["上市"] }
     ];
     const coffeeBarFlowItems = [
       "Brief", "初版配方确认", "V1报价", "稳定性测试", "众测", "NPC", "配方确认",
-      "产品名称确认", "中试跟产", "三方跟产", "中试", "中试验收", "factsheet初版稿件",
-      "factsheet提交审核", "审核Tony", "审核Dan", "factsheet发送", "规格书",
-      "大生产", "大生产验收", "运输测试", "烤程SOP"
+      "产品名称确认", "中试跟产", "三方跟产", "中试", "中试验收", "二次中试",
+      "二次中试验收", "三方跟产验收", "factsheet初版稿件", "factsheet提交审核",
+      "审核Tony", "审核Dan", "factsheet发送", "规格书", "大生产", "大生产验收",
+      "运输测试", "烤程SOP", "上市"
     ];
     function completedCoffeeBarFlow() {
       return Object.fromEntries(coffeeBarFlowItems.map(item => [item, true]));
@@ -4603,6 +4617,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         "三方跟产": Boolean(flags.thirdPartyFollow),
         "中试": Boolean(flags.pilot),
         "中试验收": Boolean(flags.pilotAcceptance),
+        "二次中试": Boolean(flags.secondPilot),
+        "二次中试验收": Boolean(flags.secondPilotAcceptance),
+        "三方跟产验收": Boolean(flags.thirdPartyAcceptance),
         "factsheet初版稿件": Boolean(flags.factsheetDraft),
         "factsheet提交审核": Boolean(flags.factsheetSubmit),
         "审核Tony": Boolean(flags.tony),
@@ -4612,7 +4629,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         "大生产": Boolean(flags.mass),
         "大生产验收": Boolean(flags.massAcceptance),
         "运输测试": Boolean(flags.transport),
-        "烤程SOP": Boolean(flags.sop)
+        "烤程SOP": Boolean(flags.sop),
+        "上市": Boolean(flags.launch)
       };
     }
     const feishuBakeRecords = [
@@ -5252,9 +5270,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         "规格书": ["规格书 / QA"],
         "烤程SOP": ["SOP / 烤程", "门店培训"],
         "大生产": [],
+        "大生产验收": [],
         "众测": [],
         "NPC": [],
-        "中试": []
+        "中试": [],
+        "中试验收": [],
+        "二次中试": [],
+        "二次中试验收": [],
+        "三方跟产验收": [],
+        "上市": []
       };
       const actualDates = { ...(project.actualDates || {}) };
       if (!actualDates.formula && actualDates.sample) actualDates.formula = actualDates.sample;
@@ -5498,7 +5522,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         const sources = uniqueClean(sortedItems.map(project => project.source));
         const actualDates = {};
         launchMilestoneTemplates.forEach(template => {
-          const dates = uniqueClean(sortedItems.map(project => project.actualDates?.[template.key]));
+          const dateKeys = [template.key, ...(template.actualKeys || [])].filter(Boolean);
+          const dates = uniqueClean(sortedItems.map(project => {
+            const actualDates = project.actualDates || {};
+            return dateKeys.map(key => actualDates[key]).find(Boolean) || "";
+          }));
           if (dates.length === 1) actualDates[template.key] = dates[0];
         });
         const checkedFlow = Object.fromEntries(coffeeBarFlowItems.map(item => [
@@ -5819,12 +5847,24 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       renderBakeRecords();
     }
 
+    function launchMilestoneActualDate(project, template) {
+      const actualDates = project?.actualDates || {};
+      const keys = [template?.key, ...(template?.actualKeys || [])].filter(Boolean);
+      return keys.map(key => actualDates[key]).find(Boolean) || "";
+    }
+
+    function launchMilestoneFlowDone(project, template) {
+      const checkedFlow = project?.checkedFlow || {};
+      const keys = [template?.label, template?.shortLabel, ...(template?.flowKeys || [])].filter(Boolean);
+      return keys.some(key => Boolean(checkedFlow[key]));
+    }
+
     function calculateLaunchMilestones(project) {
       const today = formatDateInput(new Date());
       return launchMilestoneTemplates.map(template => {
         const plannedDate = addDays(project.launchDate, template.offsetDays);
-        const actualDate = project.actualDates?.[template.key] || "";
-        const flowDone = Boolean(project.checkedFlow?.[template.label]);
+        const actualDate = launchMilestoneActualDate(project, template);
+        const flowDone = launchMilestoneFlowDone(project, template);
         const launchDatePassed = template.key === "launch" && project.launchDate && dayDiff(project.launchDate, today) <= 0;
         const completedByCalendar = Boolean(project.calendarCompleted);
         const displayActualDate = actualDate || ((flowDone || completedByCalendar || launchDatePassed) ? plannedDate : "");
@@ -6014,10 +6054,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const cursor = new Date(minTime);
       cursor.setDate(1);
       const items = [];
+      let index = 0;
       while (cursor.getTime() <= maxTime) {
         const value = formatDateInput(cursor);
-        items.push({ label: `${cursor.getMonth() + 1}月`, x: launchTimelinePosition(value, minTime, maxTime) });
+        const month = cursor.getMonth() + 1;
+        const label = index === 0 || month === 1 ? `${String(cursor.getFullYear()).slice(2)}年${month}月` : `${month}月`;
+        items.push({ label, x: launchTimelinePosition(value, minTime, maxTime) });
         cursor.setMonth(cursor.getMonth() + 1);
+        index += 1;
       }
       return items;
     }
@@ -6065,7 +6109,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             return `
               <div class="timeline-project-info ${tone} ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}">
                 <b>${escapeHtml(project.name || "未命名档期")}</b>
-                <span>${escapeHtml(project.category || "未分类")} · ${escapeHtml(current?.label || "暂无节点")} ${completion.done}/${completion.total}</span>
+                <span>${escapeHtml(project.category || "未分类")} · ${escapeHtml(launchMilestoneDisplayLabel(current) || "暂无节点")} · 完成 ${completion.done}/${completion.total}</span>
                 <small>${escapeHtml(productNames.length ? productNames.join("、") : (project.owner || ""))}</small>
                 <em>${escapeHtml(launchStatusText(project))} · 上市 ${escapeHtml(launchDateLabel(project.launchDate))} · ${escapeHtml(daysText)}</em>
               </div>
@@ -6092,10 +6136,21 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return diff > 0 ? `+${diff}d` : `提前 ${Math.abs(diff)}d`;
     }
 
+    function launchMilestoneDisplayLabel(milestone) {
+      return milestone?.shortLabel || milestone?.label || "";
+    }
+
     function launchOffsetText(milestone) {
       if (!milestone) return "";
-      if (milestone.offsetDays === 0) return "上市日";
+      if (milestone.offsetDays === 0) return "T0";
+      if (milestone.offsetDays > 0) return `T+${milestone.offsetDays}`;
       return `T-${Math.abs(milestone.offsetDays)}`;
+    }
+
+    function launchDurationText(milestone) {
+      const days = Number(milestone?.durationDays);
+      if (!Number.isFinite(days) || days <= 0) return "";
+      return `${days}天`;
     }
 
     function launchMilestoneChipClass(milestone, current) {
@@ -6108,6 +6163,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return [
         milestone?.label,
         launchOffsetText(milestone),
+        launchDurationText(milestone) ? `周期 ${launchDurationText(milestone)}` : "",
         milestone?.plannedDate ? `计划 ${milestone.plannedDate}` : "",
         milestone?.key !== "launch" && milestone?.actualDate ? `实际 ${milestone.actualDate}` : "",
         milestone?.status ? `状态 ${milestone.status}` : ""
@@ -6117,8 +6173,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function launchOffsetGuideHtml() {
       return `
         <div class="launch-offset-guide">
-          <b>默认倒推</b>
-          ${launchMilestoneTemplates.map(item => `<span>${escapeHtml(item.label)} ${escapeHtml(launchOffsetText(item))}</span>`).join("")}
+          <b>Feishu 倒排</b>
+          ${launchMilestoneTemplates.map(item => {
+            const duration = launchDurationText(item);
+            return `<span title="${escapeAttr(item.label)}">${escapeHtml(launchMilestoneDisplayLabel(item))} ${escapeHtml(launchOffsetText(item))}${duration ? ` / ${escapeHtml(duration)}` : ""}</span>`;
+          }).join("")}
         </div>
       `;
     }
@@ -6172,11 +6231,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
                   <div class="launch-mini-progress">
                     ${milestones.map(item => `<i class="${item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "current") : ""}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" title="${escapeAttr(launchMilestoneTitle(item))}"></i>`).join("")}
                   </div>
-                  <span>${completion.done}/${completion.total}</span>
+                  <span>完成 ${completion.done}/${completion.total}</span>
                   <div class="launch-node-chips">
                     ${milestones.map(item => `
                       <span class="launch-node-chip ${escapeAttr(launchMilestoneChipClass(item, current))}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" title="${escapeAttr(launchMilestoneTitle(item))}">
-                        <b>${escapeHtml(item.label)}</b>
+                        <b>${escapeHtml(launchMilestoneDisplayLabel(item))}</b>
                       </span>
                     `).join("")}
                   </div>
