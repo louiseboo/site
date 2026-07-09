@@ -893,10 +893,6 @@
       return `<div class="kv-item"><label>${escapeHtml(label)}</label>${fieldInput(field, value, placeholder, type)}</div>`;
     }
 
-    function uniqueOptions(values) {
-      return [...new Set(values.map(item => String(item || "").trim()).filter(Boolean))];
-    }
-
     function categoryLabData() {
       const raw = localStorage.getItem(CATEGORYLAB_STORAGE_KEY);
       if (!raw) return null;
@@ -907,12 +903,8 @@
       }
     }
 
-    function campaignOptions(current = "") {
-      const data = categoryLabData();
-      const launchNames = Array.isArray(data?.launchProjects)
-        ? data.launchProjects.map(project => project?.name)
-        : [];
-      return ["", ...uniqueOptions([...CAMPAIGN_OPTIONS, ...launchNames, current])];
+    function campaignOptions() {
+      return ["", ...CAMPAIGN_OPTIONS];
     }
 
     function isImportedToCategoryLab(row) {
