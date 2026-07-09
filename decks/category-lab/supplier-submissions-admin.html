@@ -409,12 +409,26 @@
       border-bottom: 1px solid var(--line);
       padding-bottom: 22px;
     }
-    .supplier-block > h3 {
+    .supplier-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       margin: 0 0 12px;
+    }
+    .supplier-head h3 {
+      margin: 0;
       font-family: var(--serif);
       font-size: 14px;
       font-weight: 700;
       line-height: 1.3;
+    }
+    .supplier-edit-toggle {
+      min-height: 30px;
+      padding: 5px 9px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
     }
     .supplier-facts {
       display: grid;
@@ -437,6 +451,11 @@
       font-size: 13px;
       font-weight: 600;
       overflow-wrap: anywhere;
+    }
+    .supplier-edit-panel {
+      margin-top: 18px;
+      border-top: 1px solid var(--line-soft);
+      padding-top: 18px;
     }
     .section-block h3,
     .edit-panel h3 {
@@ -754,6 +773,7 @@
     let profile = null;
     let activeRecordId = new URLSearchParams(location.search).get("id") || "";
     let statusFilter = "待处理";
+    let supplierEditOpen = false;
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
     function showMessage(text, type = "") {
@@ -1021,11 +1041,36 @@
       return `<div class="fact-item"><span>${escapeHtml(label)}</span><b>${escapeHtml(compactText(value))}</b></div>`;
     }
 
+    function renderSupplierEditPanel(row) {
+      if (!supplierEditOpen) return "";
+      return `
+        <div class="supplier-edit-panel">
+          <div class="edit-grid">
+            ${fieldBlock("供应商", fieldInput("supplier_name", row.supplier_name, "供应商"))}
+            ${fieldBlock("品名", fieldInput("product_name", row.product_name, "品名"))}
+            ${fieldBlock("版本", fieldInput("version_label", row.version_label, "V1 / V2 / V3"))}
+            ${fieldBlock("成品规格（克）", fieldInput("finished_spec", row.finished_spec, "如：165g/份"))}
+            ${fieldBlock("类型", fieldSelect("product_type", ["", "烘焙", "蛋糕", "三明治", "预包装食品"], row.product_type))}
+            ${fieldBlock("测试类别", fieldSelect("test_category", ["", "档期测试", "新品提案"], row.test_category))}
+            ${fieldBlock("送样时间", fieldInput("sample_date", row.sample_date, "YYYY-MM-DD", "date"))}
+            ${fieldBlock("本版调整点", fieldTextarea("version_change", row.version_change, "本版调整点", 3), "span-2")}
+            ${fieldBlock("产品结构", fieldTextarea("ingredients_structure", row.ingredients_structure, "产品结构", 3), "span-2")}
+            ${fieldBlock("核心原料及卖点", fieldTextarea("core_ingredients_selling_points", row.core_ingredients_selling_points, "核心原料及卖点", 3), "span-2")}
+          </div>
+        </div>
+      `;
+    }
+
     function renderSupplierBlock(row) {
       return `
         <section class="supplier-block">
-          <h3>供应商提交内容</h3>
+          <div class="supplier-head">
+            <h3>供应商提交内容</h3>
+            <button class="supplier-edit-toggle" data-toggle-supplier-edit type="button" ${roleCanEdit() ? "" : "disabled"}>${supplierEditOpen ? "收起校准" : "编辑供应商信息"}</button>
+          </div>
           <div class="supplier-facts">
+            ${factItem("供应商", row.supplier_name)}
+            ${factItem("品名", row.product_name)}
             ${factItem("版本", row.version_label)}
             ${factItem("成品规格（克）", row.finished_spec)}
             ${factItem("类型", row.product_type)}
@@ -1035,6 +1080,7 @@
           ${sectionHtml("本版调整点", row.version_change)}
           ${sectionHtml("产品结构", row.ingredients_structure)}
           ${sectionHtml("核心原料及卖点", row.core_ingredients_selling_points)}
+          ${renderSupplierEditPanel(row)}
         </section>
       `;
     }
@@ -1498,6 +1544,7 @@
       const item = event.target.closest("[data-record-id]");
       if (!item) return;
       activeRecordId = item.dataset.recordId;
+      supplierEditOpen = false;
       renderAll(activeRecordId);
     });
     appPanel.addEventListener("click", async event => {
@@ -1506,6 +1553,11 @@
         if (imageButton) {
           lightboxImage.src = imageButton.dataset.imageUrl;
           lightbox.classList.remove("hidden");
+          return;
+        }
+        if (event.target.closest("[data-toggle-supplier-edit]")) {
+          supplierEditOpen = !supplierEditOpen;
+          renderDetail();
           return;
         }
         if (event.target.closest("[data-save-active]")) {
