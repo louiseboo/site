@@ -1665,6 +1665,18 @@
       font-weight: 700;
       line-height: 1.35;
     }
+    .launch-subhead-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .launch-subhead-actions .btn.active {
+      background: #f7f0e4;
+      border-color: var(--accent);
+      color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(138, 90, 54, .18);
+    }
     .launch-timeline {
       display: grid;
       overflow: auto;
@@ -3269,6 +3281,9 @@
                     <div>
                       <h3>时间轴</h3>
                       <p>每行一个档期，关键节点落在计划线上，实际进度用第二条线标出。</p>
+                    </div>
+                    <div class="launch-subhead-actions">
+                      <button class="btn compact" data-toggle-launch-timeline-done type="button">隐藏已完成</button>
                     </div>
                   </div>
                   <div class="launch-timeline" id="launchTimelineBoard"></div>
@@ -4926,6 +4941,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     const VALIDATION_SALES_STORAGE_KEY = "categorylab-validation-sales-v1";
     const WORKSPACE_LIST_STORAGE_KEY = "categorylab-workspace-lists-v1";
     const PRODUCT_CALENDAR_MATRIX_STORAGE_KEY = "categorylab-product-calendar-sq-matrix-v1";
+    const LAUNCH_TIMELINE_HIDE_DONE_STORAGE_KEY = "categorylab-launch-timeline-hide-done-v1";
     const WORKSPACE_LIST_CLEANUP_KEY = "categorylab-workspace-lists-cleanup-v1";
     const WORKSPACE_LIST_CLEANUP_VERSION = "2026-06-16-clear-product-ideas";
     const ovenProfiles = {
@@ -5418,6 +5434,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let launchStatusFilter = "";
     let launchDoneCollapsed = true;
     let launchYearFilter = "FY26";
+    let launchTimelineHideDone = localStorage.getItem(LAUNCH_TIMELINE_HIDE_DONE_STORAGE_KEY) === "1";
     let productCalendarYear = "2026";
     let productCalendarGroupFilter = "";
     let productCalendarStatusFilter = "";
@@ -6719,6 +6736,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       });
     }
 
+    function syncLaunchTimelineDoneToggle(hiddenDoneCount = 0) {
+      document.querySelectorAll("[data-toggle-launch-timeline-done]").forEach(button => {
+        button.classList.toggle("active", launchTimelineHideDone);
+        button.textContent = launchTimelineHideDone ? "显示已完成" : "隐藏已完成";
+        button.title = launchTimelineHideDone && hiddenDoneCount ? `已隐藏 ${hiddenDoneCount} 个已完成档期` : "";
+      });
+    }
+
     function launchClampPercent(value) {
       return Math.max(0, Math.min(100, value));
     }
@@ -6781,11 +6806,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return formatDateInput(new Date());
     }
 
-    function renderLaunchTimeline(projects) {
+    function renderLaunchTimeline(projects, options = {}) {
       const host = document.querySelector("#launchTimelineBoard");
       if (!host) return;
       if (!projects.length) {
-        host.innerHTML = `<div class="empty">暂无匹配档期。<button class="btn compact primary" data-open-launch-empty type="button">新增档期</button></div>`;
+        host.innerHTML = options.hiddenDoneCount
+          ? `<div class="empty">已隐藏 ${escapeHtml(String(options.hiddenDoneCount))} 个已完成档期。<button class="btn compact" data-toggle-launch-timeline-done type="button">显示已完成</button></div>`
+          : `<div class="empty">暂无匹配档期。<button class="btn compact primary" data-open-launch-empty type="button">新增档期</button></div>`;
         return;
       }
       const { minTime, maxTime, today } = launchTimelineRange(projects);
@@ -7947,6 +7974,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       syncLaunchYearControls();
       renderLaunchFilterCounts(yearLaunchItems);
       const visibleProjects = filteredLaunchProjects(yearLaunchItems);
+      const hiddenDoneCount = visibleProjects.filter(project => launchProjectGroupKey(project) === "done").length;
+      const timelineProjects = launchTimelineHideDone
+        ? visibleProjects.filter(project => launchProjectGroupKey(project) !== "done")
+        : visibleProjects;
       if (visibleProjects.length && !visibleProjects.some(project => launchItemIsActive(project))) {
         activeLaunchProjectId = visibleProjects[0].products?.[0]?.id || visibleProjects[0].id;
         activeProject = ensureActiveLaunchProject();
@@ -7955,7 +7986,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         activeLaunchProjectId = yearLaunchItems[0].products?.[0]?.id || yearLaunchItems[0].id;
         activeProject = ensureActiveLaunchProject();
       }
-      renderLaunchTimeline(visibleProjects);
+      syncLaunchTimelineDoneToggle(hiddenDoneCount);
+      renderLaunchTimeline(timelineProjects, { hiddenDoneCount });
+      syncLaunchTimelineDoneToggle(hiddenDoneCount);
       renderLaunchGroupedList(visibleProjects);
       renderCoffeeBarChecklist(activeProject);
       renderProductCalendar();
@@ -12372,7 +12405,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const launchFilter = event.target.closest("[data-launch-filter]");
       if (launchFilter) {
         launchStatusFilter = launchFilter.dataset.launchFilter || "";
-        if (launchStatusFilter === "done") launchDoneCollapsed = false;
+        if (launchStatusFilter === "done") {
+          launchDoneCollapsed = false;
+          launchTimelineHideDone = false;
+          localStorage.setItem(LAUNCH_TIMELINE_HIDE_DONE_STORAGE_KEY, "0");
+        }
+        renderLaunchProjects();
+        return;
+      }
+      const toggleLaunchTimelineDone = event.target.closest("[data-toggle-launch-timeline-done]");
+      if (toggleLaunchTimelineDone) {
+        launchTimelineHideDone = !launchTimelineHideDone;
+        localStorage.setItem(LAUNCH_TIMELINE_HIDE_DONE_STORAGE_KEY, launchTimelineHideDone ? "1" : "0");
         renderLaunchProjects();
         return;
       }
