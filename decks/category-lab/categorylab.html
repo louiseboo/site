@@ -4940,11 +4940,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       ["FY27","12月：节日蛋糕","未开始","2027-12-08","2027-06-04","","2027-08-12","","2027-08-19","","2027-09-09","","2027-10-10","","2027-11-08"]
     ];
     const coffeeBarFlowItems = [
-      "Brief", "初版配方确认", "V1报价", "稳定性测试", "众测", "NPC", "配方确认",
-      "产品名称确认", "中试跟产", "三方跟产", "中试", "中试验收", "二次中试",
-      "二次中试验收", "三方跟产验收", "factsheet初版稿件", "factsheet提交审核",
+      "Brief", "初版配方确认", "初版报价", "稳定性测试", "众测", "NPC", "配方确认",
+      "产品名称确认", "中试跟产", "三方跟产", "中试", "运输测试", "中试验收", "二次中试",
+      "二次中试验收", "三方跟产验收", "ID 照", "factsheet初版稿件", "factsheet提交审核",
       "审核Tony", "审核Dan", "factsheet发送", "规格书", "大生产", "大生产验收",
-      "运输测试", "烤程SOP", "上市"
+      "烤程SOP", "Memo", "上市"
     ];
     function completedCoffeeBarFlow() {
       return Object.fromEntries(coffeeBarFlowItems.map(item => [item, true]));
@@ -5142,7 +5142,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return {
         "Brief": Boolean(flags.brief),
         "初版配方确认": Boolean(flags.formula),
-        "V1报价": Boolean(flags.quote),
+        "初版报价": Boolean(flags.quote),
         "稳定性测试": Boolean(flags.stability || flags.sample),
         "众测": Boolean(flags.consumer),
         "NPC": Boolean(flags.npc),
@@ -5155,6 +5155,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         "二次中试": Boolean(flags.secondPilot),
         "二次中试验收": Boolean(flags.secondPilotAcceptance),
         "三方跟产验收": Boolean(flags.thirdPartyAcceptance),
+        "ID 照": Boolean(flags.idPhoto),
         "factsheet初版稿件": Boolean(flags.factsheetDraft),
         "factsheet提交审核": Boolean(flags.factsheetSubmit),
         "审核Tony": Boolean(flags.tony),
@@ -5165,6 +5166,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         "大生产验收": Boolean(flags.massAcceptance),
         "运输测试": Boolean(flags.transport),
         "烤程SOP": Boolean(flags.sop),
+        "Memo": Boolean(flags.memo),
         "上市": Boolean(flags.launch)
       };
     }
@@ -5856,6 +5858,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const flowAliases = {
         "Brief": ["产品 Brief"],
         "初版配方确认": ["配方/BOM"],
+        "初版报价": ["V1报价", "V1 报价"],
         "稳定性测试": ["供应商试样"],
         "规格书": ["规格书 / QA"],
         "烤程SOP": ["SOP / 烤程", "门店培训"],
@@ -6545,7 +6548,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function launchProjectStatus(project) {
       const progress = launchCompletion(project);
-      return progress.total > 0 && progress.done >= progress.total && progress.flowDone >= progress.flowTotal ? "已完结" : "进行中";
+      return progress.total > 0 && progress.done >= progress.total ? "已完结" : "进行中";
     }
 
     function launchDateLabel(value) {
@@ -6564,8 +6567,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const nextMilestone = pending
         .slice()
         .sort((a, b) => dayDiff(a.plannedDate, b.plannedDate) || a.offsetDays - b.offsetDays)[0] || null;
-      const totalSteps = progress.total + progress.flowTotal;
-      const doneSteps = progress.done + progress.flowDone;
+      const totalSteps = progress.total;
+      const doneSteps = progress.done;
       const percent = totalSteps ? Math.round(doneSteps / totalSteps * 100) : 0;
       const daysToLaunch = project?.launchDate ? dayDiff(project.launchDate, formatDateInput(new Date())) : "";
       return { ...progress, overdue, upcoming, completed, pending, nextMilestone, percent, daysToLaunch };
