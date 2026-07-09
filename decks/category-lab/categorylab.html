@@ -1926,6 +1926,10 @@
     }
     .launch-list-group:last-child { border-bottom: 0; }
     .launch-group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       padding: 8px 16px;
       border-bottom: 1px solid var(--line);
       background: #fbf5e9;
@@ -1936,6 +1940,18 @@
     .launch-group-title.bad { color: var(--red); background: #fff7f4; }
     .launch-group-title.warn { color: var(--amber); background: #fffaf0; }
     .launch-group-title.done { color: var(--green); background: #f4fbf5; }
+    .launch-group-toggle {
+      min-width: 48px;
+      padding: 4px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--green);
+      font: inherit;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .launch-group-toggle:hover { border-color: var(--green); }
     .launch-list-row {
       display: grid;
       grid-template-columns: minmax(230px, 1.4fr) 142px minmax(140px, 1fr) 150px 86px 82px 86px;
@@ -4720,9 +4736,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       ["FY26","4月：栗子蛋糕升级","已完成","2026-04-14","2025-10-09","2025-11-04","2025-12-17","","2025-12-24","","2026-01-14","","2026-02-14","","2026-03-15"],
       ["FY26","5月：玫瑰荔枝蛋糕","已完成","2026-04-30","2025-10-25","2025-12-11","2026-01-02","2026-01-29","2026-01-09","2026-02-04","2026-01-30","","2026-03-02","","2026-03-31"],
       ["FY26","6月：云瑰葡萄千层蛋糕","已完成","2026-05-28","2025-11-22","2025-12-11","2026-01-30","","2026-02-06","2026-02-04","2026-02-27","2026-04-20","2026-03-30","","2026-04-28"],
-      ["FY26","7月：埃塞：莓果、青提、茉莉","进行中","2026-07-02","2025-12-27","2026-01-28","2026-03-06","2026-04-10","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
-      ["FY26","7月：烘焙换新","进行中","2026-07-02","2025-12-27","2026-01-26","2026-03-06","2026-03-26","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
-      ["FY26","7月：+4三明治换新","进行中","2026-07-02","2025-12-27","2026-01-28","2026-03-06","","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
+      ["FY26","7月：埃塞：莓果、青提、茉莉","已完成","2026-07-02","2025-12-27","2026-01-28","2026-03-06","2026-04-10","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
+      ["FY26","7月：烘焙换新","已完成","2026-07-02","2025-12-27","2026-01-26","2026-03-06","2026-03-26","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
+      ["FY26","7月：+4三明治换新","已完成","2026-07-02","2025-12-27","2026-01-28","2026-03-06","","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
       ["FY26","8月：核心品巧克力蛋糕","进行中","2026-08-06","2026-01-31","2026-03-31","2026-04-10","2026-05-21","2026-04-17","","2026-05-08","","2026-06-08","","2026-07-07"],
       ["FY26","8月：桂花档期","进行中","2026-08-06","2026-01-31","2026-01-28","2026-04-10","2026-05-22","2026-04-17","","2026-05-08","","2026-06-08","","2026-07-07"],
       ["FY26","10月：大航海家-秋日限定","进行中","2026-09-24","2026-03-21","2026-03-21","2026-05-29","","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
@@ -4847,28 +4863,40 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function feishuScheduleRecord(row) {
       const [year, name, status, launchDate, prototypePlan, prototypeActual, consumerPlan, consumerActual, npcPlan, npcActual, pilotPlan, pilotActual, massPlan, massActual, warehousePlan] = row;
+      const plannedDates = {
+        prototype: prototypePlan,
+        consumer: consumerPlan,
+        npc: npcPlan,
+        pilot: pilotPlan,
+        mass: massPlan,
+        warehouse: warehousePlan,
+        launch: launchDate
+      };
+      const launch = parseDateInput(launchDate);
+      const fy26JulyCutoff = parseDateInput("2026-07-31");
+      const completedByCutoff = year === "FY26" && launch && fy26JulyCutoff && launch <= fy26JulyCutoff;
+      const normalizedStatus = completedByCutoff ? "已完成" : status;
+      const actualDates = {
+        prototype: prototypeActual,
+        consumer: consumerActual,
+        npc: npcActual,
+        pilot: pilotActual,
+        mass: massActual,
+        warehouse: ""
+      };
+      if (normalizedStatus === "已完成") {
+        ["prototype", "consumer", "npc", "pilot", "mass", "warehouse"].forEach(key => {
+          if (!actualDates[key]) actualDates[key] = plannedDates[key] || "";
+        });
+      }
       return {
         year,
         name,
-        status,
+        status: normalizedStatus,
         launchDate,
         id: "",
-        plannedDates: {
-          prototype: prototypePlan,
-          consumer: consumerPlan,
-          npc: npcPlan,
-          pilot: pilotPlan,
-          mass: massPlan,
-          warehouse: warehousePlan,
-          launch: launchDate
-        },
-        actualDates: {
-          prototype: prototypeActual,
-          consumer: consumerActual,
-          npc: npcActual,
-          pilot: pilotActual,
-          mass: massActual
-        }
+        plannedDates,
+        actualDates
       };
     }
 
@@ -5161,6 +5189,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let activeLaunchProjectId = null;
     let activeLaunchMilestoneKey = "";
     let launchStatusFilter = "";
+    let launchDoneCollapsed = true;
     let launchYearFilter = "FY26";
     let productCalendarYear = "2026";
     let productCalendarGroupFilter = "";
@@ -5426,12 +5455,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         .map(project => {
           const required = requiredById.get(project.id);
           if (!required) return migrateLaunchProject(project);
+          const savedActualDates = Object.fromEntries(Object.entries(project.actualDates || {}).filter(([, value]) => Boolean(value)));
           return migrateLaunchProject({
             ...project,
             ...required,
             issueNote: project.issueNote || required.issueNote || "",
             checkedFlow: project.checkedFlow || required.checkedFlow,
-            actualDates: { ...(required.actualDates || {}), ...(project.actualDates || {}) }
+            actualDates: { ...(required.actualDates || {}), ...savedActualDates }
           });
         })
         .filter(project => !deleted.has(project.id))
@@ -6631,8 +6661,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       }
       host.innerHTML = `${launchOffsetGuideHtml()}${groups.map(group => `
         <div class="launch-list-group">
-          <div class="launch-group-title ${launchGroupTone(group.key)}">${escapeHtml(launchGroupLabel(group.key))} · ${group.items.length}</div>
-          ${group.items.map(project => {
+          <div class="launch-group-title ${launchGroupTone(group.key)}">
+            <span>${escapeHtml(launchGroupLabel(group.key))} · ${group.items.length}</span>
+            ${group.key === "done" ? `<button class="launch-group-toggle" data-toggle-launch-done type="button">${launchDoneCollapsed ? "展开" : "合并"}</button>` : ""}
+          </div>
+          ${group.key === "done" && launchDoneCollapsed ? "" : group.items.map(project => {
             const milestones = calculateLaunchMilestones(project);
             const current = launchSelectedMilestone(project, milestones) || milestones[0];
             const completion = launchCompletion(project);
@@ -11700,6 +11733,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const launchFilter = event.target.closest("[data-launch-filter]");
       if (launchFilter) {
         launchStatusFilter = launchFilter.dataset.launchFilter || "";
+        if (launchStatusFilter === "done") launchDoneCollapsed = false;
+        renderLaunchProjects();
+        return;
+      }
+      const toggleLaunchDone = event.target.closest("[data-toggle-launch-done]");
+      if (toggleLaunchDone) {
+        launchDoneCollapsed = !launchDoneCollapsed;
         renderLaunchProjects();
         return;
       }
