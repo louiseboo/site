@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CategoryLab 个人品类知识库</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
       /* Peet's 官方核心色：Peet's Black #31261D / Creative Coffee Spirit #B9975B / Peet's Cream #E8E5DE */
@@ -1458,6 +1459,7 @@
     }
     .status-dot.warn::before { background: var(--amber); }
     .status-dot.bad::before { background: var(--red); }
+    .status-dot.done::before { background: var(--green); }
     .list-form {
       display: grid;
       grid-template-columns: minmax(140px, 1fr) minmax(110px, 0.6fr) minmax(180px, 1.2fr) auto;
@@ -1636,6 +1638,289 @@
     }
     .reminder-row.bad { border-color: #ecc7bd; background: #fff7f4; }
     .reminder-row.warn { border-color: #ead4a6; background: #fffaf0; }
+    .launch-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr);
+      gap: 12px;
+      align-items: stretch;
+      margin-bottom: 12px;
+    }
+    .launch-detail-column {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+    .launch-board,
+    .launch-detail-panel,
+    .launch-flow-panel,
+    .launch-alert-panel,
+    .launch-table-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+      padding: 12px;
+    }
+    .launch-subhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .launch-subhead h3 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 780;
+      line-height: 1.2;
+    }
+    .launch-subhead p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    .launch-month-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 10px;
+    }
+    .launch-month-card {
+      min-height: 148px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #faf6ef;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+    .launch-month-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .launch-month-head b {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .launch-month-projects {
+      display: grid;
+      gap: 6px;
+    }
+    .launch-project-line {
+      width: 100%;
+      min-height: 48px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--text);
+      padding: 7px 8px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      text-align: left;
+      align-items: center;
+    }
+    .launch-project-line.active {
+      border-color: var(--gold);
+      background: #f7f0e4;
+      box-shadow: inset 3px 0 0 var(--gold);
+    }
+    .launch-project-line b,
+    .launch-project-chip span {
+      overflow-wrap: anywhere;
+    }
+    .launch-project-line b {
+      display: block;
+      font-size: 12px;
+      font-weight: 780;
+      line-height: 1.25;
+    }
+    .launch-project-line small {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+    .launch-project-line i {
+      min-width: 48px;
+      min-height: 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--muted);
+      font-size: 10px;
+      font-style: normal;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .launch-project-line i.bad { color: var(--red); border-color: #ecc7bd; background: #fff7f4; }
+    .launch-project-line i.warn { color: var(--amber); border-color: #ead4a6; background: #fffaf0; }
+    .launch-project-line i.done { color: var(--green); border-color: #b9dac8; background: #f2fbf5; }
+    .launch-detail-panel {
+      display: grid;
+      gap: 12px;
+    }
+    .launch-detail-hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 118px;
+      gap: 12px;
+      align-items: stretch;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #faf6ef;
+    }
+    .launch-detail-hero h3 {
+      margin: 7px 0 5px;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+    .launch-detail-hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+      line-height: 1.45;
+    }
+    .launch-date-block {
+      border-left: 1px solid var(--line);
+      padding-left: 12px;
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      text-align: right;
+    }
+    .launch-date-block span,
+    .launch-progress-label span,
+    .launch-stat span {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .launch-date-block b {
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+    .launch-date-block small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .launch-progress-wrap {
+      display: grid;
+      gap: 7px;
+    }
+    .launch-progress-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .launch-progress-track {
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      overflow: hidden;
+    }
+    .launch-progress-fill {
+      height: 100%;
+      width: var(--launch-progress, 0%);
+      border-radius: inherit;
+      background: var(--gold);
+    }
+    .launch-summary-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .launch-stat {
+      min-height: 58px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 8px;
+      display: grid;
+      gap: 4px;
+      align-content: center;
+    }
+    .launch-stat b {
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .launch-step-list {
+      display: grid;
+      gap: 6px;
+    }
+    .launch-step {
+      min-height: 40px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      padding: 7px 8px;
+      font-size: 12px;
+    }
+    .launch-step b {
+      font-weight: 780;
+      overflow-wrap: anywhere;
+    }
+    .launch-step small {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .launch-ops-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .launch-alert-panel .launch-project-selector,
+    .launch-alert-panel .launch-reminders {
+      margin: 0;
+    }
+    .launch-project-chip em {
+      color: var(--muted);
+      font-size: 11px;
+      font-style: normal;
+      font-weight: 800;
+    }
+    .launch-table-panel {
+      padding: 0;
+      overflow: hidden;
+    }
+    .launch-table-panel .launch-subhead {
+      margin: 0;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .launch-table-panel .table-wrap {
+      border: 0;
+      border-radius: 0;
+    }
     .score-input-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1677,9 +1962,10 @@
         scrollbar-width: none;
       }
       .nav::-webkit-scrollbar { display: none; }
-      .grid, .recipe-layout, .split, .form.three, .recipe-list-grid, .workspace-grid, .logic-grid, .list-form, .score-input-grid, .detail-grid, .import-strip, .tasting-process-grid, .tasting-decision-grid { grid-template-columns: 1fr; }
+      .grid, .recipe-layout, .split, .form.three, .recipe-list-grid, .workspace-grid, .logic-grid, .list-form, .score-input-grid, .detail-grid, .import-strip, .tasting-process-grid, .tasting-decision-grid, .launch-layout, .launch-ops-grid { grid-template-columns: 1fr; }
       .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .launch-dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .launch-summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .validation-kpis .kpi,
       .validation-kpis .kpi.total { grid-column: span 1; }
       .recipe-meta { grid-template-columns: 1fr; }
@@ -1695,6 +1981,14 @@
       .actions { justify-content: flex-start; }
       .kpis { grid-template-columns: 1fr; }
       .launch-dashboard { grid-template-columns: 1fr; }
+      .launch-detail-hero { grid-template-columns: 1fr; }
+      .launch-date-block {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+        padding: 10px 0 0;
+        text-align: left;
+      }
+      .launch-summary-strip { grid-template-columns: 1fr; }
       .detail-grid, .yield-stage-grid { grid-template-columns: 1fr; }
       .sensory-gallery,
       .competitor-item-gallery,
@@ -2005,18 +2299,62 @@
                   <input class="search" id="launchSearch" placeholder="搜索档期、品类、负责人、节点">
                   <select id="launchStatusFilter"><option value="">全部状态</option><option value="overdue">逾期</option><option value="upcoming">临近</option><option value="done">已完成</option></select>
                 </div>
-                <div class="launch-project-selector" id="launchProjectSelector"></div>
-                <div class="launch-reminders" id="launchReminders"></div>
-                <div class="table-wrap">
-                  <table class="compact-table record-list wide">
-                    <thead><tr><th>档期</th><th>上市日</th><th>品类</th><th>关键节点</th><th>计划日期</th><th>实际日期</th><th>预期天数</th><th>状态</th><th>操作</th></tr></thead>
-                    <tbody id="launchMilestonesTbody"></tbody>
-                  </table>
+                <div class="launch-layout">
+                  <div class="launch-board">
+                    <div class="launch-subhead">
+                      <div>
+                        <h3>档期矩阵</h3>
+                        <p>上市窗口、品类组合、节点风险。</p>
+                      </div>
+                    </div>
+                    <div class="launch-month-grid" id="launchCalendarBoard"></div>
+                  </div>
+                  <div class="launch-detail-column">
+                    <div class="launch-detail-panel" id="launchDetailPanel"></div>
+                    <div class="launch-flow-panel">
+                      <div class="launch-subhead">
+                        <div>
+                          <h3>Coffee Bar 全流程</h3>
+                          <p id="launchActiveProjectLabel"></p>
+                        </div>
+                      </div>
+                      <div class="checkbox-grid" id="coffeeBarChecklist"></div>
+                    </div>
+                  </div>
                 </div>
-                <div class="compact-block">
-                  <h3>Coffee Bar 全流程</h3>
-                  <p class="small" id="launchActiveProjectLabel"></p>
-                  <div class="checkbox-grid" id="coffeeBarChecklist"></div>
+                <div class="launch-ops-grid">
+                  <div class="launch-alert-panel">
+                    <div class="launch-subhead">
+                      <div>
+                        <h3>节点提醒</h3>
+                        <p>逾期与临近节点。</p>
+                      </div>
+                    </div>
+                    <div class="launch-reminders" id="launchReminders"></div>
+                  </div>
+                  <div class="launch-alert-panel">
+                    <div class="launch-subhead">
+                      <div>
+                        <h3>档期列表</h3>
+                        <p>全量档期项目。</p>
+                      </div>
+                    </div>
+                    <div class="launch-project-selector" id="launchProjectSelector"></div>
+                  </div>
+                </div>
+                <div class="launch-table-panel">
+                  <div class="launch-subhead">
+                    <div>
+                      <h3>节点明细</h3>
+                      <p>计划日期、实际日期、节点状态。</p>
+                    </div>
+                  </div>
+                  <div class="table-wrap">
+                    <table class="compact-table record-list wide">
+                      <thead><tr><th>档期</th><th>上市日</th><th>品类</th><th>关键节点</th><th>计划日期</th><th>实际日期</th><th>预期天数</th><th>状态</th><th>操作</th></tr></thead>
+                      <tbody id="launchMilestonesTbody"></tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -4596,6 +4934,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function launchStatusClass(status) {
       if (status === "逾期") return "bad";
       if (status === "临近") return "warn";
+      if (status === "已完成") return "done";
       return "";
     }
 
@@ -4609,6 +4948,135 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function launchProjectStatus(project) {
       const progress = launchCompletion(project);
       return progress.total > 0 && progress.done >= progress.total && progress.flowDone >= progress.flowTotal ? "已完结" : "进行中";
+    }
+
+    function launchMonthLabel(value) {
+      const date = parseDateInput(value);
+      if (!date) return "未定档";
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      return `${date.getFullYear()}.${month}`;
+    }
+
+    function launchDateLabel(value) {
+      const date = parseDateInput(value);
+      if (!date) return "未定上市日";
+      return `${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function launchMetrics(project) {
+      const progress = launchCompletion(project || {});
+      const milestones = progress.milestones || [];
+      const overdue = milestones.filter(item => item.status === "逾期").length;
+      const upcoming = milestones.filter(item => item.status === "临近").length;
+      const completed = milestones.filter(item => item.status === "已完成").length;
+      const pending = milestones.filter(item => item.status !== "已完成");
+      const nextMilestone = pending
+        .slice()
+        .sort((a, b) => dayDiff(a.plannedDate, b.plannedDate) || a.offsetDays - b.offsetDays)[0] || null;
+      const totalSteps = progress.total + progress.flowTotal;
+      const doneSteps = progress.done + progress.flowDone;
+      const percent = totalSteps ? Math.round(doneSteps / totalSteps * 100) : 0;
+      const daysToLaunch = project?.launchDate ? dayDiff(project.launchDate, formatDateInput(new Date())) : "";
+      return { ...progress, overdue, upcoming, completed, pending, nextMilestone, percent, daysToLaunch };
+    }
+
+    function launchTone(project) {
+      const metrics = launchMetrics(project);
+      if (launchProjectStatus(project) === "已完结") return "done";
+      if (metrics.overdue) return "bad";
+      if (metrics.upcoming || (Number.isFinite(metrics.daysToLaunch) && metrics.daysToLaunch <= 14)) return "warn";
+      return "";
+    }
+
+    function launchTimingText(daysToLaunch) {
+      if (!Number.isFinite(daysToLaunch)) return "未定时间";
+      if (daysToLaunch === 0) return "今日上市";
+      if (daysToLaunch > 0) return `${daysToLaunch} 天后上市`;
+      return `已上市 ${Math.abs(daysToLaunch)} 天`;
+    }
+
+    function renderLaunchCalendarBoard(projects = state.launchProjects || []) {
+      const host = document.querySelector("#launchCalendarBoard");
+      if (!host) return;
+      const active = ensureActiveLaunchProject();
+      const sorted = (projects || [])
+        .slice()
+        .sort((a, b) => launchDateCompare(a, b) || String(a.name || "").localeCompare(String(b.name || ""), "zh-CN"));
+      const groups = sorted.reduce((map, project) => {
+        const key = launchMonthLabel(project.launchDate);
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(project);
+        return map;
+      }, new Map());
+      host.innerHTML = [...groups.entries()].map(([month, items]) => {
+        const risky = items.filter(project => ["bad", "warn"].includes(launchTone(project))).length;
+        return `
+          <div class="launch-month-card">
+            <div class="launch-month-head"><span>${escapeHtml(month)}</span><b>${items.length} 个档期</b></div>
+            <div class="launch-month-projects">
+              ${items.map(project => {
+                const metrics = launchMetrics(project);
+                const tone = launchTone(project);
+                const next = metrics.nextMilestone ? `${metrics.nextMilestone.label} ${metrics.nextMilestone.plannedDate || ""}` : "节点已完成";
+                return `
+                  <button class="launch-project-line ${project.id === active?.id ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}" type="button">
+                    <span><b>${escapeHtml(project.name || "未命名档期")}</b><small>${escapeHtml(launchDateLabel(project.launchDate))} · ${escapeHtml(project.category || "未分类")} · ${escapeHtml(next)}</small></span>
+                    <i class="${tone}">${escapeHtml(tone === "bad" ? "逾期" : tone === "warn" ? "临近" : tone === "done" ? "完成" : "推进")}</i>
+                  </button>
+                `;
+              }).join("")}
+            </div>
+            <div class="launch-month-head"><span>${risky ? `${risky} 个需关注` : "暂无风险"}</span><span>${escapeHtml(items.map(project => project.category || "未分类").filter((value, index, arr) => arr.indexOf(value) === index).join(" / "))}</span></div>
+          </div>
+        `;
+      }).join("") || `<div class="empty">暂无档期项目，输入上市日期后会自动生成矩阵。</div>`;
+    }
+
+    function renderLaunchDetailPanel(project = activeLaunchProject()) {
+      const host = document.querySelector("#launchDetailPanel");
+      if (!host) return;
+      if (!project) {
+        host.innerHTML = `<div class="empty">先新增或选择一个档期项目。</div>`;
+        return;
+      }
+      const metrics = launchMetrics(project);
+      const tone = launchTone(project);
+      const nextItems = (metrics.pending.length ? metrics.pending : metrics.milestones)
+        .slice(0, 5);
+      host.innerHTML = `
+        <div class="launch-detail-hero">
+          <div>
+            <span class="pill">${escapeHtml(project.category || "未分类")}</span>
+            <h3>${escapeHtml(project.name || "未命名档期")}</h3>
+            <p>${escapeHtml(project.note || project.source || "暂无备注")}</p>
+          </div>
+          <div class="launch-date-block">
+            <span>上市日</span>
+            <b>${escapeHtml(project.launchDate || "-")}</b>
+            <small>${escapeHtml(launchTimingText(metrics.daysToLaunch))}</small>
+          </div>
+        </div>
+        <div class="launch-progress-wrap">
+          <div class="launch-progress-label"><span>整体进度</span><span>${metrics.percent}% · 节点 ${metrics.done}/${metrics.total} · 流程 ${metrics.flowDone}/${metrics.flowTotal}</span></div>
+          <div class="launch-progress-track"><div class="launch-progress-fill" style="--launch-progress:${metrics.percent}%"></div></div>
+        </div>
+        <div class="launch-summary-strip">
+          <div class="launch-stat"><span>状态</span><b>${escapeHtml(tone === "bad" ? "需处理" : tone === "warn" ? "临近窗口" : launchProjectStatus(project))}</b></div>
+          <div class="launch-stat"><span>逾期节点</span><b>${metrics.overdue}</b></div>
+          <div class="launch-stat"><span>7天内节点</span><b>${metrics.upcoming}</b></div>
+          <div class="launch-stat"><span>负责人</span><b>${escapeHtml(project.owner || "-")}</b></div>
+        </div>
+        <div class="launch-subhead">
+          <div>
+            <h3>倒排节点</h3>
+            <p>从 Brief 到上市的关键路径。</p>
+          </div>
+          <button class="btn compact" data-edit-launch="${escapeAttr(project.id)}" type="button">编辑</button>
+        </div>
+        <div class="launch-step-list">
+          ${nextItems.map(item => `<div class="launch-step ${launchStatusClass(item.status)}"><b>${escapeHtml(item.label)}</b><small>${escapeHtml(item.plannedDate || "-")} · ${escapeHtml(item.status)}</small></div>`).join("")}
+        </div>
+      `;
     }
 
     function renderLaunchDashboard() {
@@ -4653,14 +5121,17 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const host = document.querySelector("#launchProjectSelector");
       if (!host) return;
       const active = ensureActiveLaunchProject();
-      host.innerHTML = (projects || []).map(project => {
+      host.innerHTML = (projects || []).slice().sort((a, b) => launchDateCompare(a, b) || String(a.name || "").localeCompare(String(b.name || ""), "zh-CN")).map(project => {
         const progress = launchCompletion(project);
         const status = launchProjectStatus(project);
+        const metrics = launchMetrics(project);
         const checkedText = `${progress.flowDone}/${progress.flowTotal} 项`;
+        const nextText = metrics.nextMilestone ? `${metrics.nextMilestone.label} ${metrics.nextMilestone.plannedDate || ""}` : "节点已完成";
         return `
           <button class="launch-project-chip ${project.id === active?.id ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}" type="button">
             <span>${escapeHtml(project.name || "未命名档期")}</span>
             <small>${escapeHtml(project.category || "未分类")} · ${escapeHtml(project.launchDate || "未定上市日")} · ${escapeHtml(status)} · ${checkedText}</small>
+            <em>${escapeHtml(nextText)}</em>
           </button>
         `;
       }).join("");
@@ -4699,6 +5170,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const statusFilter = document.querySelector("#launchStatusFilter")?.value || "";
       const projects = state.launchProjects || [];
       const activeProject = ensureActiveLaunchProject();
+      renderLaunchCalendarBoard(projects);
+      renderLaunchDetailPanel(activeProject);
       renderLaunchProjectSelector(projects);
       const rows = (activeProject ? [activeProject] : []).flatMap(project => calculateLaunchMilestones(project).map(milestone => ({ project, milestone })))
         .filter(({ project, milestone }) => {
@@ -4721,7 +5194,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         </tr>
       `).join("") || `<tr><td class="empty" colspan="9">${projects.length ? "当前筛选下没有匹配节点，请切换状态或选择其他档期" : "暂无档期项目，输入上市日期后会自动倒排关键节点"}</td></tr>`;
       renderLaunchDashboard();
-      renderCoffeeBarChecklist();
+      renderCoffeeBarChecklist(activeProject);
     }
 
     function clearLaunchForm() {
