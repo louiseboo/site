@@ -2092,10 +2092,259 @@
       resize: vertical;
     }
     .product-calendar-grid {
+      display: grid;
+      gap: 12px;
+    }
+    .product-calendar-shell {
+      display: grid;
+      gap: 12px;
+    }
+    .product-calendar-toolbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .product-calendar-toolbar .search {
+      width: 100%;
+      min-width: 0;
+    }
+    .calendar-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      justify-content: flex-end;
+    }
+    .calendar-chip {
+      min-height: 30px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .calendar-chip.active {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: #fffdf8;
+    }
+    .product-calendar-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .calendar-stat {
+      min-height: 62px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+    }
+    .calendar-stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .calendar-stat b {
+      display: block;
+      margin-top: 7px;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      overflow-wrap: anywhere;
+    }
+    .calendar-stat.current b { color: var(--red); }
+    .calendar-stat.future b { color: var(--amber); }
+    .calendar-stat.done b { color: var(--green); }
+    .product-calendar-workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(300px, .85fr);
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #fffdf8;
       overflow: hidden;
+    }
+    .calendar-period-list {
+      max-height: 640px;
+      overflow: auto;
+      border-right: 1px solid var(--line);
+    }
+    .calendar-period-row {
+      display: grid;
+      grid-template-columns: 76px minmax(0, 1fr) 96px;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+      min-height: 82px;
+      padding: 13px 14px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: #fffdf8;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .calendar-period-row:hover,
+    .calendar-period-row.active {
+      background: #fffaf0;
+    }
+    .calendar-period-row.active {
+      box-shadow: inset 3px 0 0 var(--gold);
+    }
+    .calendar-period-row.done { opacity: .68; }
+    .calendar-period-row.current { background: #fff8f5; }
+    .calendar-date-stack {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      font-weight: 900;
+      text-align: right;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .calendar-period-main b {
+      display: block;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+    .calendar-period-main span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .calendar-product-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .calendar-product-tags i {
+      display: inline-flex;
+      max-width: 180px;
+      padding: 3px 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fbf6ec;
+      color: #6a5c4a;
+      font-style: normal;
+      font-size: 10px;
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .calendar-status-pill {
+      justify-self: end;
+      width: fit-content;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f1eadc;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .calendar-status-pill.current { background: #fff0e9; color: var(--red); }
+    .calendar-status-pill.future { background: #fff6df; color: var(--amber); }
+    .calendar-status-pill.done { background: #f4fbf5; color: var(--green); }
+    .calendar-detail-panel {
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      padding: 16px;
+      background: #fffdf8;
+    }
+    .calendar-detail-panel h3 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+    .calendar-detail-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+    .calendar-detail-meta div,
+    .calendar-sku-section {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffaf0;
+    }
+    .calendar-detail-meta span,
+    .calendar-sku-section span {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+    .calendar-detail-meta b {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .calendar-sku-stack {
+      display: grid;
+      gap: 8px;
+    }
+    .calendar-sku-section ul {
+      margin: 7px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 5px;
+    }
+    .calendar-sku-section li {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: #3d342b;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.35;
+    }
+    .calendar-sku-section small {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .calendar-detail-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .calendar-empty-action {
+      margin-top: 10px;
+    }
+    .calendar-matrix {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+      overflow: hidden;
+    }
+    .calendar-matrix summary {
+      padding: 12px 14px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      border-bottom: 1px solid var(--line);
     }
     .product-calendar-table-wrap {
       max-width: 100%;
@@ -2271,7 +2520,10 @@
       .grid, .recipe-layout, .split, .form.three, .recipe-list-grid, .workspace-grid, .logic-grid, .list-form, .score-input-grid, .detail-grid, .import-strip, .tasting-process-grid, .tasting-decision-grid { grid-template-columns: 1fr; }
       .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .launch-dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .product-calendar-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .product-calendar-toolbar,
+      .product-calendar-workspace { grid-template-columns: 1fr; }
+      .calendar-filter-row { justify-content: flex-start; }
+      .calendar-period-list { border-right: 0; border-bottom: 1px solid var(--line); }
       .launch-summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .validation-kpis .kpi,
       .validation-kpis .kpi.total { grid-column: span 1; }
@@ -2288,7 +2540,10 @@
       .actions { justify-content: flex-start; }
       .kpis { grid-template-columns: 1fr; }
       .launch-dashboard { grid-template-columns: 1fr; }
-      .product-calendar-grid { grid-template-columns: 1fr; }
+      .product-calendar-summary { grid-template-columns: 1fr 1fr; }
+      .calendar-period-row { grid-template-columns: 64px minmax(0, 1fr); }
+      .calendar-status-pill { justify-self: start; }
+      .calendar-detail-meta { grid-template-columns: 1fr; }
       .launch-page-head { flex-direction: column; gap: 14px; }
       .launch-actions { justify-content: flex-start; }
       .launch-list-head { display: none; }
@@ -4568,6 +4823,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let activeLaunchMilestoneKey = "";
     let launchStatusFilter = "";
     let productCalendarYear = "2026";
+    let productCalendarGroupFilter = "";
+    let productCalendarStatusFilter = "";
+    let productCalendarSearchQuery = "";
+    let productCalendarSelectedKey = "";
 
     const els = {
       pageTitle: document.querySelector("#pageTitle"),
@@ -6044,26 +6303,93 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       `;
     }
 
-    function renderProductCalendar() {
-      const host = document.querySelector("#productCalendarGrid");
-      if (!host) return;
-      document.querySelectorAll("[data-product-calendar-year]").forEach(button => {
-        button.classList.toggle("active", button.dataset.productCalendarYear === productCalendarYear);
+    function productCalendarPeriodKey(period, index) {
+      return `${productCalendarYear}-${calendarPeriodCode(period)}-${index}-${String(period.name || "").replace(/\s+/g, "-")}`;
+    }
+
+    function productCalendarStatus(period) {
+      const start = parseDateInput(productCalendarLaunchDate(period.start));
+      const end = parseDateInput(productCalendarLaunchDate(period.end));
+      const today = parseDateInput(formatDateInput(new Date()));
+      if (!start || !today) return "future";
+      if (today < start) return "future";
+      if (end && today > end) return "done";
+      return "current";
+    }
+
+    function productCalendarStatusLabel(status) {
+      return { current: "当前", future: "未来", done: "已完成" }[status] || "未来";
+    }
+
+    function productCalendarPeriodRange(period) {
+      return [period.start || "", period.end || ""].filter(Boolean).join(" - ") || "未定";
+    }
+
+    function productCalendarSkuEntries(period = {}, includeFallback = true) {
+      const entries = [];
+      Object.entries(period.sku || {}).forEach(([key, value]) => {
+        const row = productCalendarSkuRows.find(item => item.key === key);
+        String(value || "").split("\n").map(item => item.trim()).filter(Boolean).forEach(name => {
+          const group = row?.group || "未分类";
+          const category = group === "Sandwich&Meal" ? "三明治" : group === "Cake&Dessert" ? "蛋糕" : group === "Bakery" ? "烘焙" : "其他";
+          entries.push({ name, group, tier: row?.tier || "", category });
+        });
       });
-      const periods = productCalendarData[productCalendarYear] || productCalendarData["2026"];
-      const skuRows = productCalendarSkuRows.map((row, index) => {
-        const groupStart = index === 0 || productCalendarSkuRows[index - 1].group !== row.group;
-        return `
-          <tr>
-            <th class="calendar-sku-label calendar-sticky-1">${index === 0 ? "食品SKU" : ""}</th>
-            <th class="calendar-group calendar-sticky-2">${groupStart ? escapeHtml(row.group) : ""}</th>
-            <th class="calendar-tier calendar-sticky-3">${escapeHtml(row.tier)}</th>
-            ${periods.map(period => `<td>${productCalendarCell(period.sku?.[row.key] || "")}</td>`).join("")}
-          </tr>
-        `;
-      }).join("");
-      host.innerHTML = `
-        <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} 产品日历">
+      if (!entries.length && period.focus) {
+        String(period.focus).split("\n").map(item => item.trim()).filter(Boolean).forEach(name => {
+          entries.push({ name, group: "档期重点", tier: "Focus", category: "其他" });
+        });
+      }
+      if (!entries.length && includeFallback) entries.push({ name: "食品 SKU 待补", group: "未录入", tier: "待补", category: "其他" });
+      return entries;
+    }
+
+    function productCalendarDecoratedPeriods() {
+      return (productCalendarData[productCalendarYear] || [])
+        .filter(period => period.name && !String(period.name).startsWith("FY"))
+        .map((period, index) => {
+          const entries = productCalendarSkuEntries(period);
+          const status = productCalendarStatus(period);
+          return {
+            ...period,
+            key: productCalendarPeriodKey(period, index),
+            status,
+            statusLabel: productCalendarStatusLabel(status),
+            campaignName: `${calendarPeriodCode(period)} ${period.name}`,
+            skuEntries: entries
+          };
+        });
+    }
+
+    function productCalendarFilteredPeriods(periods) {
+      const query = productCalendarSearchQuery.trim().toLowerCase();
+      return periods.filter(period => {
+        const statusPass = !productCalendarStatusFilter || period.status === productCalendarStatusFilter;
+        const groupPass = !productCalendarGroupFilter || period.skuEntries.some(item => item.group === productCalendarGroupFilter);
+        const text = [
+          period.name, period.start, period.end, period.holiday, period.focus, period.element,
+          ...period.skuEntries.flatMap(item => [item.name, item.group, item.tier, item.category])
+        ].join(" ").toLowerCase();
+        return statusPass && groupPass && (!query || text.includes(query));
+      });
+    }
+
+    function productCalendarMatrixHtml(periods) {
+      const skuRows = productCalendarSkuRows
+        .filter(row => !productCalendarGroupFilter || row.group === productCalendarGroupFilter)
+        .map((row, index, rows) => {
+          const groupStart = index === 0 || rows[index - 1].group !== row.group;
+          return `
+            <tr>
+              <th class="calendar-sku-label calendar-sticky-1">${index === 0 ? "食品SKU" : ""}</th>
+              <th class="calendar-group calendar-sticky-2">${groupStart ? escapeHtml(row.group) : ""}</th>
+              <th class="calendar-tier calendar-sticky-3">${escapeHtml(row.tier)}</th>
+              ${periods.map(period => `<td>${productCalendarCell(period.sku?.[row.key] || "")}</td>`).join("")}
+            </tr>
+          `;
+        }).join("");
+      return `
+        <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} 产品日历 SKU 矩阵">
           <table class="product-calendar-table">
             <tbody>
               ${productCalendarMetaRow("档期名称", "name", periods, "calendar-period-head active-year")}
@@ -6077,6 +6403,137 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           </table>
         </div>
       `;
+    }
+
+    function productCalendarDetailHtml(period, hasActiveFilters = false) {
+      if (!period) {
+        return `
+          <aside class="calendar-detail-panel">
+            <div class="empty">
+              ${hasActiveFilters ? "当前筛选下没有匹配档期。" : "选择一个档期查看详情。"}
+              ${hasActiveFilters ? `<div class="calendar-empty-action"><button class="btn compact" data-product-calendar-clear type="button">清除筛选</button></div>` : ""}
+            </div>
+          </aside>
+        `;
+      }
+      const groups = new Map();
+      period.skuEntries.forEach(item => {
+        if (!groups.has(item.group)) groups.set(item.group, []);
+        groups.get(item.group).push(item);
+      });
+      return `
+        <aside class="calendar-detail-panel">
+          <span class="calendar-status-pill ${escapeAttr(period.status)}">${escapeHtml(period.statusLabel)}</span>
+          <h3>${escapeHtml(period.name)}</h3>
+          <div class="calendar-detail-meta">
+            <div><span>周期</span><b>${escapeHtml(productCalendarPeriodRange(period))}</b></div>
+            <div><span>档期编号</span><b>${escapeHtml(period.campaignName)}</b></div>
+            <div><span>重点节日</span><b>${productCalendarCell(period.holiday)}</b></div>
+            <div><span>档期元素</span><b>${productCalendarCell(period.element)}</b></div>
+          </div>
+          ${period.focus ? `<div class="calendar-sku-section"><span>食品重点产品</span><ul><li>${productCalendarCell(period.focus)}</li></ul></div>` : ""}
+          <div class="calendar-sku-stack">
+            ${Array.from(groups.entries()).map(([group, items]) => `
+              <section class="calendar-sku-section">
+                <span>${escapeHtml(group)}</span>
+                <ul>
+                  ${items.map(item => `<li>${escapeHtml(item.name)}<small>${escapeHtml(item.tier)}</small></li>`).join("")}
+                </ul>
+              </section>
+            `).join("")}
+          </div>
+          <div class="calendar-detail-actions">
+            <button class="btn compact primary" data-jump-product-calendar="${escapeAttr(period.key)}" type="button">查看档期管理</button>
+          </div>
+        </aside>
+      `;
+    }
+
+    function renderProductCalendar() {
+      const host = document.querySelector("#productCalendarGrid");
+      if (!host) return;
+      document.querySelectorAll("[data-product-calendar-year]").forEach(button => {
+        button.classList.toggle("active", button.dataset.productCalendarYear === productCalendarYear);
+      });
+      const periods = productCalendarDecoratedPeriods();
+      const filtered = productCalendarFilteredPeriods(periods);
+      const current = periods.find(period => period.status === "current") || null;
+      const visibleCurrent = filtered.find(period => period.status === "current") || null;
+      if (!filtered.some(period => period.key === productCalendarSelectedKey)) {
+        productCalendarSelectedKey = (visibleCurrent || filtered[0])?.key || "";
+      }
+      const selected = filtered.find(period => period.key === productCalendarSelectedKey)
+        || visibleCurrent
+        || filtered[0]
+        || null;
+      const visibleSkuCount = filtered.reduce((sum, period) => sum + productCalendarSkuEntries(period, false).length, 0);
+      const hasActiveFilters = Boolean(productCalendarStatusFilter || productCalendarGroupFilter || productCalendarSearchQuery.trim());
+      const statusFilters = [
+        ["", "全部"],
+        ["current", "当前"],
+        ["future", "未来"],
+        ["done", "已完成"]
+      ];
+      const groupFilters = [
+        ["", "全部 SKU"],
+        ...uniqueTextValues(productCalendarSkuRows.map(row => row.group)).map(group => [group, group])
+      ];
+      host.innerHTML = `
+        <div class="product-calendar-shell">
+          <div class="product-calendar-toolbar">
+            <input class="search" id="productCalendarSearch" placeholder="搜索档期、节日、食品 SKU" value="${escapeAttr(productCalendarSearchQuery)}">
+            <div class="calendar-filter-row">
+              ${statusFilters.map(([value, label]) => `<button class="calendar-chip ${value === productCalendarStatusFilter ? "active" : ""}" data-product-calendar-status="${escapeAttr(value)}" type="button">${escapeHtml(label)}</button>`).join("")}
+              ${groupFilters.map(([value, label]) => `<button class="calendar-chip ${value === productCalendarGroupFilter ? "active" : ""}" data-product-calendar-group="${escapeAttr(value)}" type="button">${escapeHtml(label)}</button>`).join("")}
+            </div>
+          </div>
+          <div class="product-calendar-summary">
+            <div class="calendar-stat"><span>全年档期</span><b>${periods.length}</b></div>
+            <div class="calendar-stat current"><span>当前档期</span><b>${escapeHtml(current?.name || "-")}</b></div>
+            <div class="calendar-stat future"><span>未来档期</span><b>${periods.filter(period => period.status === "future").length}</b></div>
+            <div class="calendar-stat done"><span>当前筛选 SKU</span><b>${visibleSkuCount}</b></div>
+          </div>
+          <div class="product-calendar-workspace">
+            <div class="calendar-period-list">
+              ${filtered.length ? filtered.map(period => `
+                <button class="calendar-period-row ${escapeAttr(period.status)} ${period.key === selected?.key ? "active" : ""}" data-product-calendar-period="${escapeAttr(period.key)}" type="button">
+                  <div class="calendar-date-stack">${escapeHtml(launchDateLabel(productCalendarLaunchDate(period.start)))}</div>
+                  <div class="calendar-period-main">
+                    <b>${escapeHtml(period.campaignName)}</b>
+                    <span>${escapeHtml(productCalendarPeriodRange(period))}${period.holiday ? ` · ${escapeHtml(String(period.holiday).replace(/\n/g, " / "))}` : ""}</span>
+                    <div class="calendar-product-tags">
+                      ${period.skuEntries.slice(0, 5).map(item => `<i>${escapeHtml(item.name)}</i>`).join("")}
+                      ${period.skuEntries.length > 5 ? `<i>+${period.skuEntries.length - 5}</i>` : ""}
+                    </div>
+                  </div>
+                  <span class="calendar-status-pill ${escapeAttr(period.status)}">${escapeHtml(period.statusLabel)}</span>
+                </button>
+              `).join("") : `<div class="empty">当前筛选下没有匹配档期。<div class="calendar-empty-action"><button class="btn compact" data-product-calendar-clear type="button">清除筛选</button></div></div>`}
+            </div>
+            ${productCalendarDetailHtml(selected, hasActiveFilters)}
+          </div>
+          <details class="calendar-matrix">
+            <summary>展开 SKU 矩阵</summary>
+            ${productCalendarMatrixHtml(filtered)}
+          </details>
+        </div>
+      `;
+    }
+
+    function jumpProductCalendarToLaunch(periodKey) {
+      const period = productCalendarDecoratedPeriods().find(item => item.key === periodKey);
+      if (!period) return;
+      const campaign = buildLaunchCampaigns(state.launchProjects || []).find(item =>
+        item.name === period.campaignName
+        || (item.launchDate === productCalendarLaunchDate(period.start) && String(item.name || "").includes(period.name))
+      );
+      if (campaign) {
+        activeLaunchProjectId = campaign.products?.[0]?.id || campaign.id;
+        activeLaunchMilestoneKey = launchSelectedMilestone(campaign)?.key || "";
+      }
+      document.querySelector('[data-launch-tab="calendar"]')?.click();
+      renderLaunchProjects();
+      document.querySelector("#launchGroupedList")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     function activeLaunchProject() {
@@ -10486,7 +10943,42 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const productCalendarButton = event.target.closest("[data-product-calendar-year]");
       if (productCalendarButton) {
         productCalendarYear = productCalendarButton.dataset.productCalendarYear || "2026";
+        productCalendarSelectedKey = "";
         renderProductCalendar();
+        return;
+      }
+      const productCalendarStatus = event.target.closest("[data-product-calendar-status]");
+      if (productCalendarStatus) {
+        productCalendarStatusFilter = productCalendarStatus.dataset.productCalendarStatus || "";
+        productCalendarSelectedKey = "";
+        renderProductCalendar();
+        return;
+      }
+      const productCalendarGroup = event.target.closest("[data-product-calendar-group]");
+      if (productCalendarGroup) {
+        productCalendarGroupFilter = productCalendarGroup.dataset.productCalendarGroup || "";
+        productCalendarSelectedKey = "";
+        renderProductCalendar();
+        return;
+      }
+      const productCalendarPeriod = event.target.closest("[data-product-calendar-period]");
+      if (productCalendarPeriod) {
+        productCalendarSelectedKey = productCalendarPeriod.dataset.productCalendarPeriod || "";
+        renderProductCalendar();
+        return;
+      }
+      const productCalendarClear = event.target.closest("[data-product-calendar-clear]");
+      if (productCalendarClear) {
+        productCalendarStatusFilter = "";
+        productCalendarGroupFilter = "";
+        productCalendarSearchQuery = "";
+        productCalendarSelectedKey = "";
+        renderProductCalendar();
+        return;
+      }
+      const jumpProductCalendar = event.target.closest("[data-jump-product-calendar]");
+      if (jumpProductCalendar) {
+        jumpProductCalendarToLaunch(jumpProductCalendar.dataset.jumpProductCalendar);
         return;
       }
       const openLaunchEmpty = event.target.closest("[data-open-launch-empty]");
@@ -11169,6 +11661,17 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     });
 
     document.body.addEventListener("input", event => {
+      if (event.target.matches("#productCalendarSearch")) {
+        productCalendarSearchQuery = event.target.value || "";
+        productCalendarSelectedKey = "";
+        renderProductCalendar();
+        const input = document.querySelector("#productCalendarSearch");
+        if (input) {
+          input.focus();
+          input.setSelectionRange(productCalendarSearchQuery.length, productCalendarSearchQuery.length);
+        }
+        return;
+      }
       if (event.target.matches("[data-launch-issue-note]")) {
         const project = (state.launchProjects || []).find(item => item.id === event.target.dataset.launchIssueNote);
         if (project) {
