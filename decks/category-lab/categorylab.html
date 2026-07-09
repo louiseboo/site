@@ -5451,17 +5451,29 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const requiredById = new Map(requiredProjects.map(project => [project.id, project]));
       const requiredKeys = new Set(requiredProjects.map(launchProjectIdentity));
       const deprecatedSeed = project => /^feishu-calendar-2026-/.test(project.id || "") || project.source === "Feishu · FY26 产品日历";
+      const nonEmptyObject = object => Object.fromEntries(Object.entries(object || {}).filter(([, value]) => Boolean(value)));
       const savedProjects = (projects || [])
         .map(project => {
           const required = requiredById.get(project.id);
           if (!required) return migrateLaunchProject(project);
-          const savedActualDates = Object.fromEntries(Object.entries(project.actualDates || {}).filter(([, value]) => Boolean(value)));
+          const sourceCompleted = Boolean(required.calendarCompleted) || required.feishuStatus === "已完成";
+          const plannedDates = { ...(required.plannedDates || {}), ...nonEmptyObject(project.plannedDates || {}) };
+          const actualDates = { ...(required.actualDates || {}), ...nonEmptyObject(project.actualDates || {}) };
+          if (sourceCompleted) {
+            ["prototype", "consumer", "npc", "pilot", "mass", "warehouse"].forEach(key => {
+              if (!actualDates[key]) actualDates[key] = plannedDates[key] || "";
+            });
+          }
           return migrateLaunchProject({
-            ...project,
             ...required,
+            ...project,
+            feishuStatus: required.feishuStatus || project.feishuStatus || "",
+            calendarCompleted: Boolean(required.calendarCompleted) || Boolean(project.calendarCompleted),
+            source: project.source || required.source || "",
             issueNote: project.issueNote || required.issueNote || "",
-            checkedFlow: project.checkedFlow || required.checkedFlow,
-            actualDates: { ...(required.actualDates || {}), ...savedActualDates }
+            checkedFlow: sourceCompleted ? completedCoffeeBarFlow() : (project.checkedFlow || required.checkedFlow),
+            plannedDates,
+            actualDates
           });
         })
         .filter(project => !deleted.has(project.id))
@@ -5673,7 +5685,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (!actualDates.sop && actualDates.training) actualDates.sop = actualDates.training;
       const categories = splitLaunchCategories(project.categories?.length ? project.categories : (project.category || "烘焙"));
       const requiredLaunchCampaign = defaultLaunchCampaignForProject(project);
-      const launchCampaign = requiredLaunchCampaign || project.launchCampaign || project.campaign || "";
+      const launchCampaign = project.launchCampaign || project.campaign || requiredLaunchCampaign || "";
       const feishuStatus = project.feishuStatus || "";
       return {
         ...project,
