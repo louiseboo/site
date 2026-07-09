@@ -218,10 +218,22 @@
       color: var(--faint);
       font-weight: 600;
     }
-    .sort-label {
+    .sort-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       color: var(--faint);
       font-size: 11px;
       white-space: nowrap;
+    }
+    .sort-control select {
+      width: auto;
+      min-height: 32px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 28px 4px 9px;
     }
     .message {
       display: none;
@@ -693,7 +705,13 @@
         <button class="filter-tab" data-status-filter="已导入" type="button">已导入 Category Lab <span id="importedCount">0</span></button>
         <button class="filter-tab" data-status-filter="" type="button">全部 <span id="allCount">0</span></button>
       </div>
-      <div class="sort-label">按提交时间排序 ↓</div>
+      <label class="sort-control">排序
+        <select id="sortSelect">
+          <option value="submitted">按提交时间 ↓</option>
+          <option value="category">按类型 / 类别</option>
+          <option value="campaign">按档期名称</option>
+        </select>
+      </label>
     </div>
     <div class="message" id="message"></div>
     <div class="workspace">
@@ -736,6 +754,7 @@
       "1105 迪克森少校 1",
       "1208 迪克森少校 2"
     ];
+    const PRODUCT_TYPE_ORDER = ["烘焙", "蛋糕", "三明治", "预包装食品"];
     const config = window.CATEGORYLAB_SUPABASE || {};
     const cloudbaseConfig = window.CATEGORYLAB_CLOUDBASE || {};
     const cloudbaseHost = /tcloudbase|cloudbase|tencent/i.test(location.hostname) || new URLSearchParams(location.search).get("backend") === "cloudbase";
@@ -751,6 +770,7 @@
     const unlockBtn = document.querySelector("#unlockBtn");
     const sessionLogoutBtn = document.querySelector("#sessionLogoutBtn");
     const searchInput = document.querySelector("#searchInput");
+    const sortSelect = document.querySelector("#sortSelect");
     const loadBtn = document.querySelector("#loadBtn");
     const exportBtn = document.querySelector("#exportBtn");
     const logoutBtn = document.querySelector("#logoutBtn");
@@ -773,6 +793,7 @@
     let profile = null;
     let activeRecordId = "";
     let statusFilter = "待处理";
+    let sortMode = "submitted";
     let supplierEditOpen = false;
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
@@ -913,9 +934,40 @@
       return devRecords.some(item => item.supplierSubmissionId === row.id || item.id === `supplier-${row.id}`);
     }
 
+    function createdTime(row) {
+      const time = new Date(row.created_at || 0).getTime();
+      return Number.isNaN(time) ? 0 : time;
+    }
+
+    function optionRank(options, value) {
+      const index = options.indexOf(String(value || "").trim());
+      return index >= 0 ? index : options.length + 1;
+    }
+
+    function compareSubmittedDesc(a, b) {
+      return createdTime(b) - createdTime(a);
+    }
+
+    function sortRecords(rows) {
+      const sorted = [...rows];
+      if (sortMode === "category") {
+        return sorted.sort((a, b) =>
+          optionRank(PRODUCT_TYPE_ORDER, a.product_type) - optionRank(PRODUCT_TYPE_ORDER, b.product_type) ||
+          compareSubmittedDesc(a, b)
+        );
+      }
+      if (sortMode === "campaign") {
+        return sorted.sort((a, b) =>
+          optionRank(CAMPAIGN_OPTIONS, a.campaign) - optionRank(CAMPAIGN_OPTIONS, b.campaign) ||
+          compareSubmittedDesc(a, b)
+        );
+      }
+      return sorted.sort(compareSubmittedDesc);
+    }
+
     function visibleRecords() {
       const q = searchInput.value.trim().toLowerCase();
-      return records.filter(row => {
+      const filtered = records.filter(row => {
         const statusOk = statusFilter === "已导入"
           ? isImportedToCategoryLab(row)
           : (!statusFilter || row.status === statusFilter);
@@ -936,6 +988,7 @@
         ].join(" ").toLowerCase();
         return statusOk && (!q || haystack.includes(q));
       });
+      return sortRecords(filtered);
     }
 
     function recordById(id) {
@@ -1525,6 +1578,10 @@
     loadBtn.addEventListener("click", loadRecords);
     exportBtn.addEventListener("click", exportCsv);
     searchInput.addEventListener("input", () => renderAll(""));
+    sortSelect.addEventListener("change", () => {
+      sortMode = sortSelect.value || "submitted";
+      renderAll(activeRecordId);
+    });
     document.querySelectorAll("[data-status-filter]").forEach(button => {
       button.addEventListener("click", () => {
         statusFilter = button.dataset.statusFilter;
