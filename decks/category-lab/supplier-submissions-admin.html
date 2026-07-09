@@ -1097,9 +1097,9 @@
             ${fieldBlock("品名", fieldInput("product_name", row.product_name, "品名"))}
             ${fieldBlock("版本", fieldInput("version_label", row.version_label, "V1 / V2 / V3"))}
             ${fieldBlock("产品规格", fieldInput("finished_spec", row.finished_spec, "如：165g/份、单个规格、包装规格"))}
-            ${fieldBlock("长度（mm）", fieldInput("length_mm", row.length_mm, "单位：mm"))}
-            ${fieldBlock("宽度（mm）", fieldInput("width_mm", row.width_mm, "单位：mm"))}
-            ${fieldBlock("高度（mm）", fieldInput("height_mm", row.height_mm, "单位：mm"))}
+            ${fieldBlock("长度（mm）", fieldInput("length_mm", row.length_mm, "填写数字"))}
+            ${fieldBlock("宽度（mm）", fieldInput("width_mm", row.width_mm, "填写数字"))}
+            ${fieldBlock("高度（mm）", fieldInput("height_mm", row.height_mm, "填写数字"))}
             ${fieldBlock("类型", fieldSelect("product_type", ["", "烘焙", "蛋糕", "三明治", "预包装食品"], row.product_type))}
             ${fieldBlock("测试类别", fieldSelect("test_category", ["", "档期测试", "新品提案"], row.test_category))}
             ${fieldBlock("送样时间", fieldInput("sample_date", row.sample_date, "YYYY-MM-DD", "date"))}

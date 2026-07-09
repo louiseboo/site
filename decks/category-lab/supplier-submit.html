@@ -194,7 +194,16 @@
       gap: 14px;
     }
     .grid.product-main {
-      grid-template-columns: minmax(240px, 1.65fr) minmax(118px, 0.7fr) minmax(150px, 0.82fr) minmax(170px, 1fr);
+      grid-template-columns: minmax(240px, 1.65fr) minmax(118px, 0.7fr) minmax(170px, 1fr);
+    }
+    .dimension-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+    .dimension-row.single {
+      max-width: 260px;
+      grid-template-columns: minmax(0, 1fr);
     }
     .grid.two.product-notes,
     .grid.two.feedback-pair {
@@ -411,8 +420,11 @@
       form { padding: 16px; }
       .grid, .grid.two { grid-template-columns: 1fr; }
       .grid.product-main,
+      .dimension-row,
+      .dimension-row.single,
       .grid.two.product-notes,
       .grid.two.feedback-pair { grid-template-columns: 1fr; }
+      .dimension-row.single { max-width: none; }
       .span-2, .span-3 { grid-column: auto; }
       .actions { justify-content: stretch; }
       button, .link-button { width: 100%; }
@@ -761,12 +773,18 @@
 
     function dimensionFieldsHtml(product) {
       const fields = dimensionFieldsForType(field("productType").value);
-      return fields.map(name => `
+      if (!fields.length) return "";
+      const groupClass = fields.length === 1 ? "dimension-row single" : "dimension-row";
+      return `
+        <div class="${groupClass}">
+        ${fields.map(name => `
         <div>
           <label>${dimensionLabel(name)} *</label>
-          <input data-product-field="${escapeAttr(name)}" data-product-required required inputmode="decimal" value="${escapeAttr(productValue(product, name))}" placeholder="单位：mm">
+          <input data-product-field="${escapeAttr(name)}" data-product-required required inputmode="decimal" value="${escapeAttr(productValue(product, name))}" placeholder="填写数字">
         </div>
-      `).join("");
+      `).join("")}
+        </div>
+      `;
     }
 
     function selectHtml(name, options, selected) {
