@@ -2668,6 +2668,130 @@
       color: #c0b4a2 !important;
       font-weight: 600 !important;
     }
+    .calendar-month-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .calendar-month-card {
+      display: grid;
+      align-content: space-between;
+      gap: 10px;
+      min-height: 126px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .calendar-month-card:hover,
+    .calendar-month-card.active {
+      background: #f1dfc8;
+      box-shadow: inset 0 0 0 2px rgba(138, 90, 54, .45);
+    }
+    .calendar-month-card.done { opacity: .7; }
+    .calendar-month-card.done.active { opacity: 1; }
+    .calendar-month-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .calendar-month-top b {
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .calendar-month-top span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .calendar-month-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .calendar-month-card em {
+      color: #3d342b;
+      font-style: normal;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.25;
+    }
+    .product-calendar-workspace.month-detail {
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+      gap: 12px;
+      border: 0;
+      background: transparent;
+      overflow: visible;
+    }
+    .product-calendar-workspace.month-detail .calendar-detail-panel,
+    .product-calendar-workspace.month-detail .calendar-menu-board {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .calendar-source-list {
+      display: grid;
+      gap: 6px;
+    }
+    .calendar-source-list i {
+      display: block;
+      color: #3d342b;
+      font-style: normal;
+      font-size: 12px;
+      font-weight: 850;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .calendar-matrix-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .calendar-matrix-head h3 {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.2;
+    }
+    .calendar-matrix-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .product-calendar-table.sq-matrix {
+      width: 100%;
+      min-width: 620px;
+    }
+    .product-calendar-table.sq-matrix th,
+    .product-calendar-table.sq-matrix td {
+      min-width: 140px;
+      max-width: none;
+      text-align: left;
+    }
+    .product-calendar-table.sq-matrix th:first-child {
+      min-width: 150px;
+      background: #f0e6d5;
+    }
+    .calendar-matrix-editable {
+      outline: 0;
+      border-radius: 5px;
+    }
+    .calendar-matrix-editable:focus {
+      box-shadow: inset 0 0 0 2px rgba(138, 90, 54, .42);
+      background: #fffaf0;
+    }
     .launch-delta {
       display: inline-flex;
       width: fit-content;
@@ -2749,6 +2873,7 @@
       .launch-dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .product-calendar-toolbar,
       .product-calendar-workspace { grid-template-columns: 1fr; }
+      .calendar-month-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .calendar-filter-row { justify-content: flex-start; }
       .calendar-period-list { border-right: 0; border-bottom: 1px solid var(--line); }
       .launch-summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -2769,6 +2894,7 @@
       .launch-dashboard { grid-template-columns: 1fr; }
       .product-calendar-summary { grid-template-columns: 1fr 1fr; }
       .calendar-menu-grid { grid-template-columns: 1fr; }
+      .calendar-month-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .calendar-period-row { grid-template-columns: 64px minmax(0, 1fr); }
       .calendar-status-pill { justify-self: start; }
       .calendar-detail-meta { grid-template-columns: 1fr; }
@@ -3148,7 +3274,7 @@
               <div class="launch-page-head">
                 <div class="launch-page-title">
                   <h2>产品日历</h2>
-                  <p>飞书产品日历 · 2025 / 2026 档期与食品。</p>
+                  <p>飞书产品日历 · 按月份查看档期、食品与菜单。</p>
                 </div>
                 <div class="launch-actions">
                   <button class="btn compact active" data-product-calendar-year="2026" type="button">2026</button>
@@ -4653,25 +4779,37 @@
       ],
       "2026": [
         { name: "FY26 菜单预览" },
-        { name: "新年", start: "2026/01/06", end: "2026/01/28", holiday: "1/1 元旦" },
-        { name: "马年CNY", start: "2026/01/29", end: "2026/02/25", holiday: "2/14 情人节\n2/17 春节" },
-        { name: "情人节（小档期）", start: "2026/02/12", end: "2026/02/25", holiday: "2/14 情人节" },
-        { name: "芝士分子周年庆", start: "2026/02/26", end: "2026/03/25", holiday: "3/3 元宵节\n3/8 妇女节", element: "芝士" },
-        { name: "创世巨星", start: "2026/03/26", end: "2026/04/29", holiday: "4/5 清明节" },
-        { name: "SOE：云南第一波", start: "2026/04/30", end: "2026/05/27", holiday: "5/1 劳动节\n5/4 青年节\n5/10 母亲节" },
-        { name: "SOE：云南第二波 Coffee People智囊团LTO", start: "2026/05/28", end: "2026/07/01", holiday: "6/1 儿童节\n6/19 端午节\n6/21 父亲节", focus: "Coffee People智囊团LTO" },
-        { name: "SOE：埃塞", start: "2026/07/02", end: "2026/08/05", sku: { bakeryPlus4: "高蛋白全麦贝果\n无花果乳酪包\n桑葚无花果恰巴塔", sandwichPlus4: "黑松露厚切鸡排贝果三明治\n经典厚切鸡排贝果三明治", cakeMid: "蓝莓芝士蛋糕" } },
-        { name: "桂花酒酿", start: "2026/08/06", end: "2026/09/23", sku: { cakeMid: "桂花酒酿蛋糕" } },
-        { name: "大航海家", start: "2026/09/24", end: "2026/11/04", holiday: "10/1 国庆节", sku: { bakeryPlus4: "Q4烘焙换新", sandwichPlus4: "Q4三明治换新" } },
-        { name: "万圣节 海盗宝藏（小档期）", start: "2026/10/15", end: "2026/11/17", holiday: "10/31 万圣节" },
-        { name: "迪克森少校冬日盛典I", start: "2026/11/05", end: "2026/12/07", holiday: "11/26 感恩节" },
-        { name: "迪克森少校冬日盛典II", start: "2026/12/08", end: "2027/01/07", holiday: "12/25 圣诞节", sku: { cakeMid: "12月：节日蛋糕" } }
+        { name: "CNY", start: "2026/01/01", end: "2026/01/31", holiday: "1/1 元旦", sku: { bakeryPlus4: "意式风味恰巴塔\n抹茶蔓越莓碱水贝果\n法式酥皮香肠卷", cakeMid: "马到福来慕斯蛋糕" } },
+        { name: "情人节", start: "2026/02/01", end: "2026/02/28", holiday: "2/14 情人节\n2/17 春节", sku: { cakeMid: "经典意式提拉米苏蛋糕\n皮爷经典千层蛋糕" } },
+        { name: "芝士分子周年庆", start: "2026/03/01", end: "2026/03/31", holiday: "3/3 元宵节\n3/8 妇女节", element: "芝士", sku: { cakeMid: "抹茶红豆千层蛋糕" } },
+        { name: "创世巨星", start: "2026/04/01", end: "2026/04/30", holiday: "4/5 清明节", sku: { bakeryPlus4: "葱香培根芝士恰巴塔\n芝香火腿丹麦酥", sandwichPlus4: "芝士培根太阳蛋帕尼尼\n泰式青芒卷\n罗望子芝士虾仁潜艇堡\n和风烧汁牛肉风味潜艇堡", cakeMid: "摘星芝士蛋糕" } },
+        { name: "云南1", start: "2026/05/01", end: "2026/05/31", holiday: "5/1 劳动节\n5/4 青年节\n5/10 母亲节", sku: { cakeMid: "重瓣红玫瑰荔枝蛋糕" } },
+        { name: "云南 2", start: "2026/06/01", end: "2026/06/30", holiday: "6/1 儿童节\n6/19 端午节\n6/21 父亲节", sku: { cakeMid: "云归葡萄千层蛋糕" } },
+        { name: "埃塞利姆古吉", start: "2026/07/01", end: "2026/07/31", sku: { bakeryPlus4: "无花果软心乳酪包\n桑葚无花果恰巴塔\n高蛋白全麦贝果", cakeMid: "蓝莓轻芝士慕斯蛋糕" } },
+        { name: "桂花1", start: "2026/08/01", end: "2026/08/31", sku: { cakeMid: "桂花酒酿蛋糕" } },
+        { name: "桂花2", start: "2026/09/01", end: "2026/09/30" },
+        { name: "大航海家", start: "2026/10/01", end: "2026/10/31", holiday: "10/1 国庆节", sku: { bakeryPlus4: "Q4烘焙换新", sandwichPlus4: "Q4三明治换新" } },
+        { name: "迪克森少校1", start: "2026/11/01", end: "2026/11/30", holiday: "11/26 感恩节" },
+        { name: "迪克森少校2", start: "2026/12/01", end: "2026/12/31", holiday: "12/25 圣诞节", sku: { cakeMid: "12月：节日蛋糕" } }
       ]
     };
     const productCalendarCoreMenuDefaults = [
       { name: "经典厚切鸡排贝果三明治", group: "Sandwich&Meal", category: "三明治" },
       { name: "核心品巧克力蛋糕", group: "Cake&Dessert", category: "蛋糕" }
     ];
+    const productCalendarMatrixDefaults = {
+      rows: [
+        { id: "bakery", label: "Bakery" },
+        { id: "sandwich-meal", label: "Sandwich&Meal" },
+        { id: "cake-dessert", label: "Cake&Dessert" },
+        { id: "packaged-food", label: "Packaged Food" }
+      ],
+      columns: [
+        { id: "add-1", label: "加 1" },
+        { id: "add-4", label: "加 4" }
+      ],
+      cells: {}
+    };
     const versionOptions = Array.from({ length: 20 }, (_, index) => `V${index + 1}`);
     const validationDimensionWeights = [
       { name: "购买意愿", weight: 20, role: "更接近商业转化，但需要避免把短期尝鲜放得过高。" },
@@ -4750,6 +4888,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     const VALIDATION_TEST_STORAGE_KEY = "categorylab-validation-tests-v1";
     const VALIDATION_SALES_STORAGE_KEY = "categorylab-validation-sales-v1";
     const WORKSPACE_LIST_STORAGE_KEY = "categorylab-workspace-lists-v1";
+    const PRODUCT_CALENDAR_MATRIX_STORAGE_KEY = "categorylab-product-calendar-sq-matrix-v1";
     const WORKSPACE_LIST_CLEANUP_KEY = "categorylab-workspace-lists-cleanup-v1";
     const WORKSPACE_LIST_CLEANUP_VERSION = "2026-06-16-clear-product-ideas";
     const ovenProfiles = {
@@ -4768,28 +4907,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     ];
     const feishuScheduleSource = "Feishu · 档期时间表&项目管理";
     const feishuScheduleRows = [
-      ["FY26","1-2月：CNY蛋糕","已完成","2026-01-06","2025-07-03","2025-09-19","2025-09-10","2025-11-11","2025-09-17","2025-11-12","2025-10-08","2025-12-03","2025-11-08","2025-12-27","2025-12-07"],
-      ["FY26","1月：烘焙换新","已完成","2026-01-06","2025-07-03","2025-09-24","2025-09-10","","2025-09-17","","2025-10-08","","2025-11-08","","2025-12-07"],
-      ["FY26","2月初：原味千层","已完成","2026-02-26","2025-08-23","2025-09-26","2025-10-31","2025-05-20","2025-11-07","2025-11-19","2025-11-28","2025-12-23","2025-12-29","2026-01-15","2026-01-27"],
-      ["FY26","情人节：提拉米苏","已完成","2026-02-12","2025-08-09","2025-12-08","2025-10-17","","2025-10-24","2025-12-17","2025-11-14","2025-12-30","2025-12-15","2026-01-21","2026-01-13"],
-      ["FY26","3月：芝士分子周年庆-抹茶蛋糕","已完成","2026-02-26","2025-08-23","2025-11-04","2025-10-31","2025-12-11","2025-11-07","2025-12-25","2025-11-28","2026-01-13","2025-12-29","2026-02-04","2026-01-27"],
-      ["FY26","4月：摘星芝士蛋糕回归","已完成","2026-03-26","2025-09-20","2025-11-04","2025-11-28","","2025-12-05","2025-12-25","2025-12-26","2026-01-08","2026-01-26","2026-02-02","2026-02-24"],
-      ["FY26","4月：三明治换新，3个品类","已完成","2026-03-26","2025-09-20","2025-11-04","2025-11-28","2025-12-18","2025-12-05","2026-01-14","2025-12-26","2026-01-27","2026-01-26","2026-03-10","2026-02-24"],
-      ["FY26","4月：烘焙换新","已完成","2026-03-26","2025-09-20","2025-12-04","2025-11-28","2025-12-25","2025-12-05","2026-01-07","2025-12-26","2026-01-20","2026-01-26","2026-03-02","2026-02-24"],
-      ["FY26","4月：栗子蛋糕升级","已完成","2026-04-14","2025-10-09","2025-11-04","2025-12-17","","2025-12-24","","2026-01-14","","2026-02-14","","2026-03-15"],
-      ["FY26","5月：玫瑰荔枝蛋糕","已完成","2026-04-30","2025-10-25","2025-12-11","2026-01-02","2026-01-29","2026-01-09","2026-02-04","2026-01-30","","2026-03-02","","2026-03-31"],
-      ["FY26","6月：云瑰葡萄千层蛋糕","已完成","2026-05-28","2025-11-22","2025-12-11","2026-01-30","","2026-02-06","2026-02-04","2026-02-27","2026-04-20","2026-03-30","","2026-04-28"],
-      ["FY26","7月：埃塞：莓果、青提、茉莉","已完成","2026-07-02","2025-12-27","2026-01-28","2026-03-06","2026-04-10","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
-      ["FY26","7月：烘焙换新","已完成","2026-07-02","2025-12-27","2026-01-26","2026-03-06","2026-03-26","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
-      ["FY26","7月：+4三明治换新","已完成","2026-07-02","2025-12-27","2026-01-28","2026-03-06","","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
-      ["FY26","8月：核心品巧克力蛋糕","进行中","2026-08-06","2026-01-31","2026-03-31","2026-04-10","2026-05-21","2026-04-17","","2026-05-08","","2026-06-08","","2026-07-07"],
-      ["FY26","8月：桂花档期","进行中","2026-08-06","2026-01-31","2026-01-28","2026-04-10","2026-05-22","2026-04-17","","2026-05-08","","2026-06-08","","2026-07-07"],
-      ["FY26","10月：大航海家-秋日限定","进行中","2026-09-24","2026-03-21","2026-03-21","2026-05-29","","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
-      ["FY26","10月：烘焙换新","进行中","2026-09-24","2026-03-21","2026-03-21","2026-05-29","","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
-      ["FY26","10月：+4/+9三明治换新","进行中","2026-09-24","2026-03-21","2026-03-21","2026-05-29","","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
-      ["FY26","10月：厚切鸡排新口味","进行中","2026-09-24","2026-03-21","2025-08-01","2026-05-29","2026-03-10","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
-      ["FY26","11月：迪克森-榛果巧克力千层","未开始","2026-11-05","2026-05-02","2026-05-11","2026-07-10","","2026-07-17","","2026-08-07","","2026-09-07","","2026-10-06"],
-      ["FY26","12月：节日蛋糕","未开始","2026-12-08","2026-06-04","2026-04-13","2026-08-12","","2026-08-19","","2026-09-09","","2026-10-10","","2026-11-08"],
+      ["FY26","1月：CNY","已完成","2026-01-06","2025-07-03","2025-09-19","2025-09-10","2025-11-11","2025-09-17","2025-11-12","2025-10-08","2025-12-03","2025-11-08","2025-12-27","2025-12-07"],
+      ["FY26","2月：情人节","已完成","2026-02-12","2025-08-09","2025-12-08","2025-10-17","","2025-10-24","2025-12-17","2025-11-14","2025-12-30","2025-12-15","2026-01-21","2026-01-13"],
+      ["FY26","3月：芝士分子周年庆","已完成","2026-02-26","2025-08-23","2025-11-04","2025-10-31","2025-12-11","2025-11-07","2025-12-25","2025-11-28","2026-01-13","2025-12-29","2026-02-04","2026-01-27"],
+      ["FY26","4月：创世巨星","已完成","2026-03-26","2025-09-20","2025-11-04","2025-11-28","2025-12-18","2025-12-05","2026-01-14","2025-12-26","2026-01-27","2026-01-26","2026-03-10","2026-02-24"],
+      ["FY26","5月：云南1","已完成","2026-04-30","2025-10-25","2025-12-11","2026-01-02","2026-01-29","2026-01-09","2026-02-04","2026-01-30","","2026-03-02","","2026-03-31"],
+      ["FY26","6月：云南 2","已完成","2026-05-28","2025-11-22","2025-12-11","2026-01-30","","2026-02-06","2026-02-04","2026-02-27","2026-04-20","2026-03-30","","2026-04-28"],
+      ["FY26","7月：埃塞利姆古吉","进行中","2026-07-02","2025-12-27","2026-01-28","2026-03-06","2026-04-10","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
+      ["FY26","8月：桂花1","进行中","2026-08-06","2026-01-31","2026-01-28","2026-04-10","2026-05-22","2026-04-17","","2026-05-08","","2026-06-08","","2026-07-07"],
+      ["FY26","9月：桂花2","未开始","2026-09-03","2026-02-28","","2026-05-08","","2026-05-15","","2026-06-05","","2026-07-06","","2026-08-04"],
+      ["FY26","10月：大航海家","进行中","2026-09-24","2026-03-21","2026-03-21","2026-05-29","","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
+      ["FY26","11月：迪克森少校1","未开始","2026-11-05","2026-05-02","2026-05-11","2026-07-10","","2026-07-17","","2026-08-07","","2026-09-07","","2026-10-06"],
+      ["FY26","12月：迪克森少校2","未开始","2026-12-08","2026-06-04","2026-04-13","2026-08-12","","2026-08-19","","2026-09-09","","2026-10-10","","2026-11-08"],
       ["FY27","1-2月：CNY蛋糕","未开始","2027-01-06","2026-07-03","","2026-09-10","","2026-09-17","","2026-10-08","","2026-11-08","","2026-12-07"],
       ["FY27","1月：烘焙换新","未开始","2027-01-06","2026-07-03","","2026-09-10","","2026-09-17","","2026-10-08","","2026-11-08","","2026-12-07"],
       ["FY27","1月：三明治换新","未开始","2027-01-06","2026-07-03","","2026-09-10","","2026-09-17","","2026-10-08","","2026-11-08","","2026-12-07"],
@@ -4846,38 +4975,54 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return entries;
     }
     const feishuScheduleProductMap = {
-      "7月：埃塞：莓果、青提、茉莉": [
-        { id: "feishu-coffee-bar-blueberry-cheesecake-20260702", name: "蓝莓芝士蛋糕", category: "蛋糕", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true } }
+      "1月：CNY": [
+        { id: "feishu-coffee-bar-cny-horse-mousse-cake-20260106", name: "马到福来慕斯蛋糕", category: "蛋糕" },
+        { id: "feishu-coffee-bar-italian-ciabatta-20260106", name: "意式风味恰巴塔", category: "烘焙" },
+        { id: "feishu-coffee-bar-matcha-cranberry-pretzel-bagel-20260106", name: "抹茶蔓越莓碱水贝果", category: "烘焙" },
+        { id: "feishu-coffee-bar-french-sausage-roll-20260106", name: "法式酥皮香肠卷", category: "烘焙" }
       ],
-      "7月：烘焙换新": [
-        { id: "feishu-coffee-bar-high-protein-bagel-20260702", name: "高蛋白全麦贝果", category: "烘焙", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true } },
-        { id: "feishu-coffee-bar-fig-cheese-bun-20260702", name: "无花果乳酪包", category: "烘焙", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true } },
-        { id: "feishu-coffee-bar-mulberry-fig-ciabatta-20260702", name: "桑葚无花果恰巴塔", category: "烘焙", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true } }
+      "2月：情人节": [
+        { id: "feishu-coffee-bar-classic-tiramisu-cake-20260212", name: "经典意式提拉米苏蛋糕", category: "蛋糕" },
+        { id: "feishu-coffee-bar-peets-classic-mille-crepe-20260212", name: "皮爷经典千层蛋糕", category: "蛋糕" }
       ],
-      "7月：+4三明治换新": [
-        { id: "feishu-coffee-bar-basil-pesto-panini-20260702", name: "罗勒青酱帕尼尼", category: "三明治", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true } },
-        { id: "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702", name: "黑松露厚切鸡排贝果三明治", category: "三明治", flow: { brief: true, formula: true, sample: true, consumer: true } },
-        { id: "feishu-coffee-bar-classic-chicken-bagel-sandwich-20260702", name: "经典厚切鸡排贝果三明治", category: "三明治", flow: { brief: true, formula: true, sample: true, consumer: true } }
+      "3月：芝士分子周年庆": [
+        { id: "feishu-coffee-bar-matcha-redbean-mille-crepe-20260226", name: "抹茶红豆千层蛋糕", category: "蛋糕" }
       ],
-      "8月：核心品巧克力蛋糕": [
-        { id: "feishu-coffee-bar-core-chocolate-cake-20260806", name: "核心品巧克力蛋糕", category: "蛋糕", flow: { brief: true, formula: true, sample: true, consumer: true } }
+      "4月：创世巨星": [
+        { id: "feishu-coffee-bar-star-cheese-cake-20260326", name: "摘星芝士蛋糕", category: "蛋糕" },
+        { id: "feishu-coffee-bar-scallion-bacon-cheese-ciabatta-20260326", name: "葱香培根芝士恰巴塔", category: "烘焙" },
+        { id: "feishu-coffee-bar-cheese-ham-danish-20260326", name: "芝香火腿丹麦酥", category: "烘焙" },
+        { id: "feishu-coffee-bar-bacon-egg-cheese-panini-20260326", name: "芝士培根太阳蛋帕尼尼", category: "三明治" },
+        { id: "feishu-coffee-bar-thai-green-mango-roll-20260326", name: "泰式青芒卷", category: "三明治" },
+        { id: "feishu-coffee-bar-tamarind-cheese-shrimp-sub-20260326", name: "罗望子芝士虾仁潜艇堡", category: "三明治" },
+        { id: "feishu-coffee-bar-japanese-beef-sub-20260326", name: "和风烧汁牛肉风味潜艇堡", category: "三明治" }
       ],
-      "8月：桂花档期": [
+      "5月：云南1": [
+        { id: "feishu-coffee-bar-rose-lychee-cake-20260430", name: "重瓣红玫瑰荔枝蛋糕", category: "蛋糕" }
+      ],
+      "6月：云南 2": [
+        { id: "feishu-coffee-bar-yungui-grape-mille-crepe-20260528", name: "云归葡萄千层蛋糕", category: "蛋糕" }
+      ],
+      "7月：埃塞利姆古吉": [
+        { id: "feishu-coffee-bar-blueberry-light-cheese-mousse-20260702", name: "蓝莓轻芝士慕斯蛋糕", category: "蛋糕", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true } },
+        { id: "feishu-coffee-bar-fig-soft-cheese-bun-20260702", name: "无花果软心乳酪包", category: "烘焙", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true } },
+        { id: "feishu-coffee-bar-mulberry-fig-ciabatta-20260702", name: "桑葚无花果恰巴塔", category: "烘焙", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true } },
+        { id: "feishu-coffee-bar-high-protein-whole-wheat-bagel-20260702", name: "高蛋白全麦贝果", category: "烘焙", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true } }
+      ],
+      "8月：桂花1": [
         { id: "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806", name: "桂花酒酿蛋糕", category: "蛋糕", flow: { brief: true, formula: true, sample: true, consumer: true } }
       ],
-      "10月：大航海家-秋日限定": [
-        { id: "feishu-coffee-bar-mango-pomelo-sago-cake-20260924", name: "杨枝甘露蛋糕", category: "蛋糕", flow: { brief: true, formula: true, sample: true, consumer: true } }
+      "9月：桂花2": [
+        { id: "feishu-coffee-bar-osmanthus-2-placeholder-20260903", name: "", category: "蛋糕", isPlaceholder: true }
       ],
-      "10月：烘焙换新": [
-        { id: "feishu-coffee-bar-q4-bakery-refresh-20260924", name: "Q4烘焙换新", category: "烘焙", flow: { brief: true } }
-      ],
-      "10月：+4/+9三明治换新": [
+      "10月：大航海家": [
+        { id: "feishu-coffee-bar-q4-bakery-refresh-20260924", name: "Q4烘焙换新", category: "烘焙", flow: { brief: true } },
         { id: "feishu-coffee-bar-q4-sandwich-refresh-20260924", name: "Q4三明治换新", category: "三明治", flow: { brief: true } }
       ],
-      "10月：厚切鸡排新口味": [
-        { id: "feishu-coffee-bar-thick-cut-chicken-new-flavor-20260924", name: "厚切鸡排新口味", category: "三明治", flow: { brief: true, formula: true, sample: true, consumer: true } }
+      "11月：迪克森少校1": [
+        { id: "feishu-coffee-bar-dickason-1-placeholder-20261105", name: "", category: "蛋糕", isPlaceholder: true }
       ],
-      "12月：节日蛋糕": [
+      "12月：迪克森少校2": [
         { id: "feishu-coffee-bar-holiday-cake-20261208", name: "12月：节日蛋糕", category: "蛋糕", flow: { brief: true } }
       ]
     };
@@ -4916,8 +5061,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         launch: launchDate
       };
       const launch = parseDateInput(launchDate);
-      const fy26JulyCutoff = parseDateInput("2026-07-31");
-      const completedByCutoff = year === "FY26" && launch && fy26JulyCutoff && launch <= fy26JulyCutoff;
+      const fy26DoneCutoff = parseDateInput("2026-06-30");
+      const completedByCutoff = year === "FY26" && launch && fy26DoneCutoff && launch <= fy26DoneCutoff;
       const normalizedStatus = completedByCutoff ? "已完成" : status;
       const actualDates = {
         prototype: prototypeActual,
@@ -5239,6 +5384,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let productCalendarStatusFilter = "";
     let productCalendarSearchQuery = "";
     let productCalendarSelectedKey = "";
+    let productCalendarMatrix = loadProductCalendarMatrix();
 
     const els = {
       pageTitle: document.querySelector("#pageTitle"),
@@ -5494,6 +5640,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const requiredById = new Map(requiredProjects.map(project => [project.id, project]));
       const requiredKeys = new Set(requiredProjects.map(launchProjectIdentity));
       const deprecatedSeed = project => /^feishu-calendar-2026-/.test(project.id || "") || project.source === "Feishu · FY26 产品日历";
+      const obsoleteFeishuSchedule = project => String(project.source || "").startsWith(feishuScheduleSource) && !requiredById.has(project.id);
       const nonEmptyObject = object => Object.fromEntries(Object.entries(object || {}).filter(([, value]) => Boolean(value)));
       const savedProjects = (projects || [])
         .map(project => {
@@ -5520,7 +5667,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           });
         })
         .filter(project => !deleted.has(project.id))
-        .filter(project => !deprecatedSeed(project) && (requiredById.has(project.id) || !requiredKeys.has(launchProjectIdentity(project))));
+        .filter(project => !deprecatedSeed(project) && !obsoleteFeishuSchedule(project) && (requiredById.has(project.id) || !requiredKeys.has(launchProjectIdentity(project))));
       const realCampaignKeys = new Set(savedProjects.filter(project => !launchProductIsPlaceholder(project)).map(launchCampaignStorageKey));
       const savedWithoutStalePlaceholders = savedProjects.filter(project => !launchProductIsPlaceholder(project) || !realCampaignKeys.has(launchCampaignStorageKey(project)));
       const savedIds = new Set(savedProjects.map(project => project.id));
@@ -6162,6 +6309,36 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function persistWorkspaceLists() {
       localStorage.setItem(WORKSPACE_LIST_STORAGE_KEY, JSON.stringify(workspaceLists));
+    }
+
+    function normalizeProductCalendarMatrix(saved = {}) {
+      const source = saved && typeof saved === "object" ? saved : {};
+      const rows = Array.isArray(source.rows) && source.rows.length ? source.rows : productCalendarMatrixDefaults.rows;
+      const columns = Array.isArray(source.columns) && source.columns.length ? source.columns : productCalendarMatrixDefaults.columns;
+      return {
+        rows: rows.map((row, index) => ({
+          id: row.id || `row-${index + 1}`,
+          label: String(row.label || `分类 ${index + 1}`).trim() || `分类 ${index + 1}`
+        })),
+        columns: columns.map((column, index) => ({
+          id: column.id || `column-${index + 1}`,
+          label: String(column.label || `加 ${index + 1}`).trim() || `加 ${index + 1}`
+        })),
+        cells: source.cells && typeof source.cells === "object" ? { ...source.cells } : {}
+      };
+    }
+
+    function loadProductCalendarMatrix() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(PRODUCT_CALENDAR_MATRIX_STORAGE_KEY));
+        return normalizeProductCalendarMatrix(saved || {});
+      } catch (error) {
+        return normalizeProductCalendarMatrix(productCalendarMatrixDefaults);
+      }
+    }
+
+    function persistProductCalendarMatrix() {
+      localStorage.setItem(PRODUCT_CALENDAR_MATRIX_STORAGE_KEY, JSON.stringify(productCalendarMatrix));
     }
 
     function navViewKey(view) {
@@ -6906,12 +7083,70 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function productCalendarPeriodKey(period, index) {
-      return `${productCalendarYear}-${calendarPeriodCode(period)}-${index}-${String(period.name || "").replace(/\s+/g, "-")}`;
+      return period.key || `${productCalendarYear}-${calendarPeriodCode(period)}-${index}-${String(period.name || "").replace(/\s+/g, "-")}`;
+    }
+
+    function productCalendarDateRange(period = {}) {
+      const start = productCalendarLaunchDate(period.start);
+      return {
+        start,
+        end: productCalendarLaunchDate(period.end) || start
+      };
+    }
+
+    function productCalendarMonthRange(year, monthIndex) {
+      const numericYear = Number(year) || new Date().getFullYear();
+      const start = new Date(numericYear, monthIndex, 1);
+      const end = new Date(numericYear, monthIndex + 1, 0);
+      return { start: formatDateInput(start), end: formatDateInput(end) };
+    }
+
+    function productCalendarMonthLabel(monthIndex) {
+      return `${monthIndex + 1}月`;
+    }
+
+    function productCalendarOverlapDays(startValue, endValue, rangeStartValue, rangeEndValue) {
+      const start = parseDateInput(startValue);
+      const end = parseDateInput(endValue) || start;
+      const rangeStart = parseDateInput(rangeStartValue);
+      const rangeEnd = parseDateInput(rangeEndValue) || rangeStart;
+      if (!start || !end || !rangeStart || !rangeEnd) return 0;
+      const from = Math.max(start.getTime(), rangeStart.getTime());
+      const to = Math.min(end.getTime(), rangeEnd.getTime());
+      if (to < from) return 0;
+      return Math.floor((to - from) / 86400000) + 1;
+    }
+
+    function productCalendarPrimaryMonth(period = {}, year = productCalendarYear, index = 0) {
+      const { start, end } = productCalendarDateRange(period);
+      const startDate = parseDateInput(start);
+      let fallback = startDate && startDate.getFullYear() === Number(year) ? startDate.getMonth() : index % 12;
+      let bestMonth = fallback;
+      let bestDays = -1;
+      for (let month = 0; month < 12; month += 1) {
+        const range = productCalendarMonthRange(year, month);
+        const days = productCalendarOverlapDays(start, end, range.start, range.end);
+        if (days > bestDays || (days === bestDays && startDate && startDate.getMonth() === month)) {
+          bestDays = days;
+          bestMonth = month;
+        }
+      }
+      return bestDays > 0 ? bestMonth : fallback;
+    }
+
+    function productCalendarRelevantMonths(period = {}, year = productCalendarYear, index = 0) {
+      const { start, end } = productCalendarDateRange(period);
+      const months = [];
+      for (let month = 0; month < 12; month += 1) {
+        const range = productCalendarMonthRange(year, month);
+        if (productCalendarOverlapDays(start, end, range.start, range.end) > 0) months.push(month);
+      }
+      return months.length ? months : [productCalendarPrimaryMonth(period, year, index)];
     }
 
     function productCalendarStatus(period) {
-      const start = parseDateInput(productCalendarLaunchDate(period.start));
-      const end = parseDateInput(productCalendarLaunchDate(period.end));
+      const start = parseDateInput(productCalendarLaunchDate(period.start) || period.start);
+      const end = parseDateInput(productCalendarLaunchDate(period.end) || period.end);
       const today = parseDateInput(formatDateInput(new Date()));
       if (!start || !today) return "future";
       if (today < start) return "future";
@@ -6924,7 +7159,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function productCalendarPeriodRange(period) {
-      return [period.start || "", period.end || ""].filter(Boolean).join(" - ") || "未定";
+      if (period?.monthLabel && period?.year) return `${period.year} / ${period.monthLabel}`;
+      const range = productCalendarDateRange(period);
+      return [range.start, range.end].filter(Boolean).join(" - ") || "未定";
+    }
+
+    function productCalendarSourceRange(period = {}) {
+      const range = productCalendarDateRange(period);
+      return [range.start, range.end].filter(Boolean).join(" - ") || productCalendarPeriodRange(period);
     }
 
     function productCalendarSkuEntries(period = {}, includeFallback = true) {
@@ -6937,67 +7179,179 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           entries.push({ name, group, tier: row?.tier || "", category });
         });
       });
-      if (!entries.length && period.focus) {
+      if (includeFallback && !entries.length && period.focus) {
         String(period.focus).split("\n").map(item => item.trim()).filter(Boolean).forEach(name => {
-          entries.push({ name, group: "档期重点", tier: "Focus", category: "其他" });
+          entries.push({ name, group: "Seasonal", tier: "Focus", category: "其他" });
         });
       }
       return entries;
     }
 
+    function productCalendarMergeSku(target = {}, source = {}) {
+      Object.entries(source || {}).forEach(([key, value]) => {
+        const current = String(target[key] || "").split("\n").map(item => item.trim()).filter(Boolean);
+        const incoming = String(value || "").split("\n").map(item => item.trim()).filter(Boolean);
+        const merged = uniqueTextValues([...current, ...incoming]);
+        if (merged.length) target[key] = merged.join("\n");
+      });
+      return target;
+    }
+
     function productCalendarDecoratedPeriods() {
-      return (productCalendarData[productCalendarYear] || [])
+      const year = productCalendarYear;
+      const buckets = Array.from({ length: 12 }, (_, monthIndex) => {
+        const range = productCalendarMonthRange(year, monthIndex);
+        const status = productCalendarStatus(range);
+        return {
+          key: `${year}-${String(monthIndex + 1).padStart(2, "0")}`,
+          year,
+          monthIndex,
+          monthLabel: productCalendarMonthLabel(monthIndex),
+          name: productCalendarMonthLabel(monthIndex),
+          campaignName: productCalendarMonthLabel(monthIndex),
+          start: range.start,
+          end: range.end,
+          status,
+          statusLabel: productCalendarStatusLabel(status),
+          sourcePeriods: [],
+          sourceNames: [],
+          holiday: "",
+          element: "",
+          focus: "",
+          sku: {},
+          skuEntries: []
+        };
+      });
+      (productCalendarData[year] || [])
         .filter(period => period.name && !String(period.name).startsWith("FY"))
-        .map((period, index) => {
-          const entries = productCalendarSkuEntries(period);
-          const status = productCalendarStatus(period);
-          return {
-            ...period,
-            key: productCalendarPeriodKey(period, index),
-            status,
-            statusLabel: productCalendarStatusLabel(status),
-            campaignName: `${calendarPeriodCode(period)} ${period.name}`,
-            skuEntries: entries
-          };
+        .forEach((period, index) => {
+          productCalendarRelevantMonths(period, year, index).forEach(monthIndex => {
+            const bucket = buckets[monthIndex] || buckets[index % 12];
+            bucket.sourcePeriods.push(period);
+            bucket.sourceNames = uniqueTextValues([...bucket.sourceNames, period.name]);
+            bucket.holiday = uniqueTextValues([bucket.holiday, period.holiday].join("\n").split("\n")).join("\n");
+            bucket.element = uniqueTextValues([bucket.element, period.element].join("\n").split(/[\/\n]+/)).join(" / ");
+            bucket.focus = uniqueTextValues([bucket.focus, period.focus].join("\n").split("\n")).join("\n");
+            productCalendarMergeSku(bucket.sku, period.sku || {});
+          });
         });
+      return buckets.map(period => ({
+        ...period,
+        skuEntries: productCalendarSkuEntries(period)
+      }));
     }
 
     function productCalendarFilteredPeriods(periods) {
       const query = productCalendarSearchQuery.trim().toLowerCase();
+      if (!query) return periods;
       return periods.filter(period => {
-        const statusPass = !productCalendarStatusFilter || period.status === productCalendarStatusFilter;
-        const groupPass = !productCalendarGroupFilter || period.skuEntries.some(item => item.group === productCalendarGroupFilter);
         const text = [
-          period.name, period.start, period.end, period.holiday, period.focus, period.element,
+          period.name, period.monthLabel, period.holiday, period.focus, period.element,
+          ...(period.sourceNames || []),
           ...period.skuEntries.flatMap(item => [item.name, item.group, item.tier, item.category])
         ].join(" ").toLowerCase();
-        return statusPass && groupPass && (!query || text.includes(query));
+        return text.includes(query);
       });
     }
 
-    function productCalendarMatrixHtml(periods) {
-      const skuRows = productCalendarSkuRows
-        .filter(row => !productCalendarGroupFilter || row.group === productCalendarGroupFilter)
-        .map((row, index, rows) => {
-          const groupStart = index === 0 || rows[index - 1].group !== row.group;
-          return `
-            <tr>
-              <th class="calendar-sku-label calendar-sticky-1">${index === 0 ? "食品" : ""}</th>
-              <th class="calendar-group calendar-sticky-2">${groupStart ? escapeHtml(row.group) : ""}</th>
-              <th class="calendar-tier calendar-sticky-3">${escapeHtml(row.tier)}</th>
-              ${periods.map(period => `<td>${productCalendarCell(period.sku?.[row.key] || "")}</td>`).join("")}
-            </tr>
-          `;
-        }).join("");
+    function productCalendarMatrixCellKey(period, rowId, columnId) {
+      return `${productCalendarYear}__${period?.key || "all"}__${rowId}__${columnId}`;
+    }
+
+    function productCalendarNormalizeToken(value = "") {
+      return String(value || "").toLowerCase().replace(/[+\s元]/g, "").replace(/加/g, "").replace(/[&/]/g, "-");
+    }
+
+    function productCalendarTierMatches(tier = "", columnLabel = "") {
+      const normalizedTier = productCalendarNormalizeToken(tier);
+      const normalizedColumn = productCalendarNormalizeToken(columnLabel);
+      if (!normalizedColumn) return false;
+      if (/^\d+$/.test(normalizedColumn)) return normalizedTier.includes(normalizedColumn);
+      return normalizedTier.includes(normalizedColumn) || normalizedColumn.includes(normalizedTier);
+    }
+
+    function productCalendarMatrixAutoValue(period, row, column) {
+      const entries = productCalendarSkuEntries(period || {}, false).filter(item =>
+        String(item.group || "") === String(row.label || "") && productCalendarTierMatches(item.tier, column.label)
+      );
+      return uniqueTextValues(entries.map(item => item.name)).join("\n");
+    }
+
+    function productCalendarMatrixHtml(period) {
+      const rows = productCalendarMatrix.rows || [];
+      const columns = productCalendarMatrix.columns || [];
       return `
-        <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} 产品日历 SKU 矩阵">
-          <table class="product-calendar-table">
-            <tbody>
-              ${skuRows}
-            </tbody>
-          </table>
-        </div>
+        <section class="calendar-matrix">
+          <div class="calendar-matrix-head">
+            <h3>SQ 矩阵 · ${escapeHtml(period?.monthLabel || "-")}</h3>
+            <div class="calendar-matrix-actions">
+              <button class="btn compact" data-product-calendar-add-row type="button">新增分类</button>
+              <button class="btn compact" data-product-calendar-add-column type="button">新增列</button>
+              <button class="btn compact" data-product-calendar-reset-matrix type="button">重置</button>
+            </div>
+          </div>
+          <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} ${escapeAttr(period?.monthLabel || "")} SQ 矩阵">
+            <table class="product-calendar-table sq-matrix">
+              <thead>
+                <tr>
+                  <th>分类</th>
+                  ${columns.map(column => `<th class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-column="${escapeAttr(column.id)}">${escapeHtml(column.label)}</th>`).join("")}
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map(row => `
+                  <tr>
+                    <th class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-row="${escapeAttr(row.id)}">${escapeHtml(row.label)}</th>
+                    ${columns.map(column => {
+                      const cellKey = productCalendarMatrixCellKey(period, row.id, column.id);
+                      const value = Object.prototype.hasOwnProperty.call(productCalendarMatrix.cells || {}, cellKey)
+                        ? productCalendarMatrix.cells[cellKey]
+                        : productCalendarMatrixAutoValue(period, row, column);
+                      return `<td class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-cell="${escapeAttr(cellKey)}">${escapeHtml(value).replaceAll("\n", "<br>")}</td>`;
+                    }).join("")}
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </section>
       `;
+    }
+
+    function productCalendarMatrixNewId(prefix, label) {
+      const base = String(label || prefix).toLowerCase().replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-").replace(/^-|-$/g, "").slice(0, 32) || prefix;
+      return `${prefix}-${base}-${Date.now().toString(36)}`;
+    }
+
+    function addProductCalendarMatrixRow() {
+      const label = prompt("新增分类名称", "Seasonal");
+      if (!label || !label.trim()) return;
+      productCalendarMatrix.rows.push({ id: productCalendarMatrixNewId("row", label), label: label.trim() });
+      persistProductCalendarMatrix();
+      renderProductCalendar();
+    }
+
+    function addProductCalendarMatrixColumn() {
+      const label = prompt("新增列名称", "加 9");
+      if (!label || !label.trim()) return;
+      productCalendarMatrix.columns.push({ id: productCalendarMatrixNewId("column", label), label: label.trim() });
+      persistProductCalendarMatrix();
+      renderProductCalendar();
+    }
+
+    function resetProductCalendarMatrix() {
+      openActionDialog({
+        title: "重置 SQ 矩阵",
+        body: "会恢复默认分类和列，并清空手动改过的单元格。",
+        okText: "重置",
+        cancelText: "取消",
+        okClass: "btn danger",
+        onOk: () => {
+          productCalendarMatrix = normalizeProductCalendarMatrix(productCalendarMatrixDefaults);
+          persistProductCalendarMatrix();
+          renderProductCalendar();
+        }
+      });
     }
 
     function productCalendarDetailHtml(period, hasActiveFilters = false) {
@@ -7016,14 +7370,22 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         if (!groups.has(item.group)) groups.set(item.group, []);
         groups.get(item.group).push(item);
       });
+      const sources = period.sourceNames || [];
       return `
         <aside class="calendar-detail-panel">
           <span class="calendar-status-pill ${escapeAttr(period.status)}">${escapeHtml(period.statusLabel)}</span>
           <h3>${escapeHtml(period.name)}</h3>
           <div class="calendar-detail-meta">
-            <div><span>周期</span><b>${escapeHtml(productCalendarPeriodRange(period))}</b></div>
+            <div><span>月份</span><b>${escapeHtml(productCalendarPeriodRange(period))}</b></div>
+            <div><span>档期数量</span><b>${sources.length || 0}</b></div>
             <div><span>重点节日</span><b>${productCalendarCell(period.holiday)}</b></div>
             <div><span>档期元素</span><b>${productCalendarCell(period.element)}</b></div>
+          </div>
+          <div class="calendar-sku-section">
+            <span>当月档期</span>
+            <div class="calendar-source-list">
+              ${sources.length ? sources.map(name => `<i>${escapeHtml(name)}</i>`).join("") : `<i>暂无明确档期</i>`}
+            </div>
           </div>
           ${period.focus ? `<div class="calendar-sku-section"><span>食品重点产品</span><ul><li>${productCalendarCell(period.focus)}</li></ul></div>` : ""}
           <div class="calendar-sku-stack">
@@ -7071,12 +7433,12 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function productCalendarMenuBoardHtml(periods = [], selected = null) {
-      const activePeriods = selected ? periods.filter(period => productCalendarRangesOverlap(period, selected)) : [];
+      const activePeriods = selected?.sourcePeriods?.length ? selected.sourcePeriods : (selected ? [selected] : []);
       const linkedEntries = activePeriods.flatMap(period =>
-        productCalendarSkuEntries(period, false).map(item => ({
+        productCalendarSkuEntries(period, true).map(item => ({
           ...item,
           periodName: period.name,
-          window: productCalendarPeriodRange(period)
+          window: productCalendarSourceRange(period)
         }))
       );
       const core = productCalendarUniqueMenuItems([
@@ -7094,8 +7456,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         <section class="calendar-menu-board">
           <div class="calendar-menu-head">
             <div>
-              <h3>菜单联动</h3>
-              <p>${escapeHtml(selected ? `${selected.name} · ${productCalendarPeriodRange(selected)}` : "选择一个周期查看当月菜单")}</p>
+              <h3>当月菜单</h3>
+              <p>${escapeHtml(selected ? `${selected.year} / ${selected.monthLabel}` : "选择月份查看菜单")}</p>
             </div>
           </div>
           <div class="calendar-menu-grid">
@@ -7107,7 +7469,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
                     <div class="calendar-menu-item ${escapeAttr(tone)}">
                       <b>${escapeHtml(item.name)}</b>
                       <span>${escapeHtml([item.group, item.tier].filter(Boolean).join(" · "))}</span>
-                      ${item.window ? `<span>上/下市：${escapeHtml(item.window)}</span>` : ""}
+                      ${tone === "lto" && item.window ? `<span>上/下市：${escapeHtml(item.window)}</span>` : ""}
                     </div>
                   `).join("") : `<div class="empty">${escapeHtml(note)}</div>`}
                 </div>
@@ -7135,57 +7497,33 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         || visibleCurrent
         || filtered[0]
         || null;
-      const visibleSkuCount = filtered.reduce((sum, period) => sum + productCalendarSkuEntries(period, false).length, 0);
+      const visibleSkuCount = selected?.skuEntries?.length || 0;
       const hasActiveFilters = Boolean(productCalendarStatusFilter || productCalendarGroupFilter || productCalendarSearchQuery.trim());
-      const statusFilters = [
-        ["", "全部"],
-        ["current", "当前"],
-        ["future", "未来"],
-        ["done", "已完成"]
-      ];
-      const groupFilters = [
-        ["", "全部 SKU"],
-        ...uniqueTextValues(productCalendarSkuRows.map(row => row.group)).map(group => [group, group])
-      ];
       host.innerHTML = `
         <div class="product-calendar-shell">
-          <div class="product-calendar-toolbar">
-            <input class="search" id="productCalendarSearch" placeholder="搜索档期、节日、食品" value="${escapeAttr(productCalendarSearchQuery)}">
-            <div class="calendar-filter-row">
-              ${statusFilters.map(([value, label]) => `<button class="calendar-chip ${value === productCalendarStatusFilter ? "active" : ""}" data-product-calendar-status="${escapeAttr(value)}" type="button">${escapeHtml(label)}</button>`).join("")}
-              ${groupFilters.map(([value, label]) => `<button class="calendar-chip ${value === productCalendarGroupFilter ? "active" : ""}" data-product-calendar-group="${escapeAttr(value)}" type="button">${escapeHtml(label)}</button>`).join("")}
-            </div>
-          </div>
           <div class="product-calendar-summary">
-            <div class="calendar-stat"><span>全年档期</span><b>${periods.length}</b></div>
-            <div class="calendar-stat current"><span>当前档期</span><b>${escapeHtml(current?.name || "-")}</b></div>
-            <div class="calendar-stat future"><span>未来档期</span><b>${periods.filter(period => period.status === "future").length}</b></div>
-            <div class="calendar-stat done"><span>当前筛选 SKU</span><b>${visibleSkuCount}</b></div>
+            <div class="calendar-stat"><span>全年月份</span><b>12</b></div>
+            <div class="calendar-stat current"><span>当前月份</span><b>${escapeHtml(current?.monthLabel || "-")}</b></div>
+            <div class="calendar-stat future"><span>当月档期</span><b>${escapeHtml(String(selected?.sourceNames?.length || 0))}</b></div>
+            <div class="calendar-stat done"><span>当月食品</span><b>${visibleSkuCount}</b></div>
           </div>
-          <div class="product-calendar-workspace">
-            <div class="calendar-period-list">
-              ${filtered.length ? filtered.map(period => `
-                <button class="calendar-period-row ${escapeAttr(period.status)} ${period.key === selected?.key ? "active" : ""}" data-product-calendar-period="${escapeAttr(period.key)}" type="button">
-                  <div class="calendar-date-stack">${escapeHtml(launchDateLabel(productCalendarLaunchDate(period.start)))}</div>
-                  <div class="calendar-period-main">
-                    <b>${escapeHtml(period.campaignName)}</b>
-                    <span>${escapeHtml(productCalendarPeriodRange(period))}${period.holiday ? ` · ${escapeHtml(String(period.holiday).replace(/\n/g, " / "))}` : ""}</span>
-                    <div class="calendar-product-tags">
-                      ${period.skuEntries.slice(0, 5).map(item => `<i>${escapeHtml(item.name)}</i>`).join("")}
-                      ${period.skuEntries.length > 5 ? `<i>+${period.skuEntries.length - 5}</i>` : ""}
-                    </div>
-                  </div>
-                  <span class="calendar-status-pill ${escapeAttr(period.status)}">${escapeHtml(period.statusLabel)}</span>
-                </button>
-              `).join("") : `<div class="empty">当前筛选下没有匹配档期。<div class="calendar-empty-action"><button class="btn compact" data-product-calendar-clear type="button">清除筛选</button></div></div>`}
-            </div>
+          <div class="calendar-month-grid">
+            ${filtered.map(period => `
+              <button class="calendar-month-card ${escapeAttr(period.status)} ${period.key === selected?.key ? "active" : ""}" data-product-calendar-period="${escapeAttr(period.key)}" type="button">
+                <div class="calendar-month-top">
+                  <b>${escapeHtml(period.monthLabel)}</b>
+                  <span>${escapeHtml(period.statusLabel)}</span>
+                </div>
+                <em>${escapeHtml(period.sourceNames.slice(0, 2).join(" / ") || "月度菜单维护")}</em>
+                <p>${period.sourceNames.length ? `${period.sourceNames.length} 个档期` : "暂无活动档期"} · ${period.skuEntries.length} 个食品</p>
+              </button>
+            `).join("")}
+          </div>
+          <div class="product-calendar-workspace month-detail">
             ${productCalendarDetailHtml(selected, hasActiveFilters)}
+            ${productCalendarMenuBoardHtml(periods, selected)}
           </div>
-          ${productCalendarMenuBoardHtml(periods, selected)}
-          <details class="calendar-matrix">
-            <summary>SKU 矩阵</summary>
-            ${productCalendarMatrixHtml(filtered)}
-          </details>
+          ${productCalendarMatrixHtml(selected)}
         </div>
       `;
     }
@@ -7193,9 +7531,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function jumpProductCalendarToLaunch(periodKey) {
       const period = productCalendarDecoratedPeriods().find(item => item.key === periodKey);
       if (!period) return;
+      const sourcePeriod = period.sourcePeriods?.find(item => productCalendarSkuEntries(item, true).length)
+        || period.sourcePeriods?.[0]
+        || period;
+      const sourceName = sourcePeriod.name || period.name || "";
+      const sourceStart = productCalendarDateRange(sourcePeriod).start || period.start;
       const campaign = buildLaunchCampaigns(state.launchProjects || []).find(item =>
-        item.name === period.campaignName
-        || (item.launchDate === productCalendarLaunchDate(period.start) && String(item.name || "").includes(period.name))
+        item.name === sourceName
+        || (item.launchDate === sourceStart && String(item.name || "").includes(sourceName))
       );
       if (campaign) {
         activeLaunchProjectId = campaign.products?.[0]?.id || campaign.id;
@@ -11846,6 +12189,21 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         renderProductCalendar();
         return;
       }
+      const addCalendarMatrixRow = event.target.closest("[data-product-calendar-add-row]");
+      if (addCalendarMatrixRow) {
+        addProductCalendarMatrixRow();
+        return;
+      }
+      const addCalendarMatrixColumn = event.target.closest("[data-product-calendar-add-column]");
+      if (addCalendarMatrixColumn) {
+        addProductCalendarMatrixColumn();
+        return;
+      }
+      const resetCalendarMatrix = event.target.closest("[data-product-calendar-reset-matrix]");
+      if (resetCalendarMatrix) {
+        resetProductCalendarMatrix();
+        return;
+      }
       const jumpProductCalendar = event.target.closest("[data-jump-product-calendar]");
       if (jumpProductCalendar) {
         jumpProductCalendarToLaunch(jumpProductCalendar.dataset.jumpProductCalendar);
@@ -12619,6 +12977,37 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           return;
         }
         markRecipeDirty(); renderRecipe();
+      }
+    });
+
+    document.body.addEventListener("focusout", event => {
+      const matrixCell = event.target.closest("[data-product-calendar-matrix-cell]");
+      if (matrixCell) {
+        const key = matrixCell.dataset.productCalendarMatrixCell;
+        if (key) {
+          productCalendarMatrix.cells[key] = matrixCell.innerText.trim();
+          persistProductCalendarMatrix();
+        }
+        return;
+      }
+      const matrixRow = event.target.closest("[data-product-calendar-matrix-row]");
+      if (matrixRow) {
+        const row = productCalendarMatrix.rows.find(item => item.id === matrixRow.dataset.productCalendarMatrixRow);
+        if (row) {
+          row.label = matrixRow.innerText.trim() || row.label;
+          persistProductCalendarMatrix();
+          renderProductCalendar();
+        }
+        return;
+      }
+      const matrixColumn = event.target.closest("[data-product-calendar-matrix-column]");
+      if (matrixColumn) {
+        const column = productCalendarMatrix.columns.find(item => item.id === matrixColumn.dataset.productCalendarMatrixColumn);
+        if (column) {
+          column.label = matrixColumn.innerText.trim() || column.label;
+          persistProductCalendarMatrix();
+          renderProductCalendar();
+        }
       }
     });
 
