@@ -1588,72 +1588,69 @@
     .launch-metric.bad b { color: var(--red); }
     .launch-metric.warn b { color: var(--amber); }
     .launch-metric.done b { color: var(--green); }
-    .launch-project-selector {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .launch-project-chip {
-      min-height: 54px;
-      padding: 8px 10px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--text);
-      display: grid;
-      gap: 3px;
-      text-align: left;
-    }
-    .launch-project-chip.active {
-      border-color: var(--gold);
-      background: #f7f0e4;
-      box-shadow: inset 3px 0 0 var(--gold);
-    }
-    .launch-project-chip span {
-      font-size: 13px;
-      font-weight: 760;
-      line-height: 1.25;
-    }
-    .launch-project-chip small {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 650;
-      line-height: 1.2;
-    }
-    .launch-reminders {
-      display: grid;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-    .reminder-row {
+    .launch-page-head {
       display: flex;
       justify-content: space-between;
-      gap: 10px;
-      padding: 8px 10px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #fff;
-      font-size: 12px;
-    }
-    .reminder-row.bad { border-color: #ecc7bd; background: #fff7f4; }
-    .reminder-row.warn { border-color: #ead4a6; background: #fffaf0; }
-    .launch-layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.08fr) minmax(360px, .92fr);
-      gap: 12px;
-      align-items: stretch;
+      align-items: flex-start;
+      gap: 32px;
       margin-bottom: 12px;
     }
-    .launch-detail-column {
-      display: grid;
-      gap: 12px;
-      align-content: start;
+    .launch-page-title h2 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+    .launch-page-title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    .launch-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .launch-filter-group {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fffdf8;
+    }
+    .launch-filter-group button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+    }
+    .launch-filter-group button {
+      min-height: 34px;
+      padding: 6px 12px;
+      border-right: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .launch-filter-group button:last-child { border-right: 0; }
+    .launch-filter-group button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+    .launch-search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .launch-search-row .search {
+      max-width: 360px;
     }
     .launch-board,
-    .launch-detail-panel,
+    .launch-list-panel,
     .launch-flow-panel,
-    .launch-alert-panel,
     .launch-table-panel {
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -1680,233 +1677,331 @@
       font-weight: 700;
       line-height: 1.35;
     }
-    .launch-month-grid {
+    .launch-timeline {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-      gap: 10px;
-    }
-    .launch-month-card {
-      min-height: 148px;
+      overflow: auto;
       border: 1px solid var(--line);
       border-radius: 8px;
-      background: #faf6ef;
-      padding: 10px;
-      display: grid;
-      gap: 8px;
-      align-content: start;
+      background: #fffaf2;
     }
-    .launch-month-head {
+    .launch-timeline-grid {
+      min-width: 920px;
+      display: grid;
+      grid-template-columns: 250px minmax(620px, 1fr);
+    }
+    .timeline-left-head,
+    .timeline-months {
+      min-height: 38px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 8px;
+      border-bottom: 1px solid var(--line);
+      background: #f3ead9;
       color: var(--muted);
       font-size: 11px;
       font-weight: 800;
     }
-    .launch-month-head b {
-      color: var(--text);
-      font-size: 13px;
-      font-weight: 800;
+    .timeline-left-head {
+      padding: 0 16px;
+      border-right: 1px solid var(--line);
     }
-    .launch-month-projects {
-      display: grid;
-      gap: 6px;
+    .timeline-months {
+      position: relative;
     }
-    .launch-project-line {
-      width: 100%;
-      min-height: 48px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #fff;
-      color: var(--text);
-      padding: 7px 8px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      text-align: left;
+    .timeline-month {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      display: flex;
       align-items: center;
+      padding-left: 12px;
+      border-left: 1px solid rgba(221, 213, 197, .72);
+      color: var(--muted);
     }
-    .launch-project-line.active {
-      border-color: var(--gold);
-      background: #f7f0e4;
-      box-shadow: inset 3px 0 0 var(--gold);
+    .timeline-project-info,
+    .timeline-track-cell {
+      min-height: 86px;
+      border-bottom: 1px solid var(--line);
     }
-    .launch-project-line b,
-    .launch-project-chip span {
+    .timeline-project-info {
+      padding: 14px 16px;
+      border-right: 1px solid var(--line);
+      border-left: 3px solid transparent;
+      background: #fffdf8;
+      cursor: pointer;
+    }
+    .timeline-project-info.bad { border-left-color: var(--red); background: #fff8f5; }
+    .timeline-project-info.warn { border-left-color: var(--amber); background: #fffaf0; }
+    .timeline-project-info.done { border-left-color: var(--green); opacity: .68; }
+    .timeline-project-info b {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.25;
       overflow-wrap: anywhere;
     }
-    .launch-project-line b {
+    .timeline-project-info span,
+    .timeline-project-info small {
       display: block;
-      font-size: 12px;
-      font-weight: 780;
-      line-height: 1.25;
-    }
-    .launch-project-line small {
-      display: block;
-      margin-top: 3px;
       color: var(--muted);
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
-      line-height: 1.25;
+      line-height: 1.35;
     }
-    .launch-project-line i {
-      min-width: 48px;
-      min-height: 24px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: #fffdf8;
-      color: var(--muted);
-      font-size: 10px;
+    .timeline-project-info em {
+      display: block;
+      margin-top: 5px;
+      color: var(--text);
+      font-size: 11px;
       font-style: normal;
+      font-weight: 800;
+    }
+    .timeline-project-info.bad em { color: var(--red); }
+    .timeline-project-info.warn em { color: var(--amber); }
+    .timeline-track-cell {
+      position: relative;
+      cursor: pointer;
+      background:
+        linear-gradient(90deg, rgba(221, 213, 197, .54) 1px, transparent 1px) 0 0 / 25% 100%,
+        #fffdf8;
+    }
+    .timeline-project-info.done + .timeline-track-cell { opacity: .68; }
+    .timeline-plan-bar,
+    .timeline-actual-bar {
+      position: absolute;
+      left: var(--start);
+      top: 36px;
+      height: 8px;
+      width: calc(var(--end) - var(--start));
+      border-radius: 999px;
+    }
+    .timeline-plan-bar {
+      background: #eadfc9;
+    }
+    .timeline-actual-bar {
+      top: 50px;
+      background: #c7b99d;
+    }
+    .timeline-actual-bar.bad { background: var(--red); }
+    .timeline-actual-bar.warn { background: var(--amber); }
+    .timeline-actual-bar.done { background: #9bc1a7; }
+    .timeline-dot {
+      position: absolute;
+      top: 31px;
+      left: var(--x);
+      width: 11px;
+      height: 11px;
+      border: 2px solid #2f281f;
+      border-radius: 50%;
+      background: #2f281f;
+      transform: translateX(-50%);
+    }
+    .timeline-dot.pending {
+      border-color: #8a806f;
+      background: #fffdf8;
+    }
+    .timeline-dot.bad { border-color: var(--red); background: #fffdf8; }
+    .timeline-dot.warn { border-color: var(--amber); background: var(--amber); }
+    .timeline-dot.done { border-color: #91b99b; background: #91b99b; }
+    .timeline-dot.launch {
+      border-radius: 2px;
+      background: #2f281f;
+    }
+    .timeline-date-label {
+      position: absolute;
+      top: 55px;
+      left: var(--x);
+      transform: translateX(6px);
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 11px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+    .timeline-date-label.bad { color: var(--red); }
+    .timeline-date-label.warn { color: var(--amber); }
+    .timeline-date-label.end {
+      transform: translateX(-100%);
+    }
+    .timeline-today {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: var(--today);
+      width: 1px;
+      background: var(--red);
+      opacity: .45;
+    }
+    .timeline-today::after {
+      content: "今天";
+      position: absolute;
+      top: 8px;
+      left: 5px;
+      color: var(--red);
+      font-size: 10px;
       font-weight: 800;
       white-space: nowrap;
     }
-    .launch-project-line i.bad { color: var(--red); border-color: #ecc7bd; background: #fff7f4; }
-    .launch-project-line i.warn { color: var(--amber); border-color: #ead4a6; background: #fffaf0; }
-    .launch-project-line i.done { color: var(--green); border-color: #b9dac8; background: #f2fbf5; }
-    .launch-detail-panel {
-      display: grid;
-      gap: 12px;
+    .timeline-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
     }
-    .launch-detail-hero {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 118px;
-      gap: 12px;
-      align-items: stretch;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #faf6ef;
+    .timeline-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    .launch-detail-hero h3 {
-      margin: 7px 0 5px;
-      font-size: 18px;
+    .timeline-legend i {
+      width: 18px;
+      height: 6px;
+      border-radius: 999px;
+      background: #eadfc9;
+    }
+    .timeline-legend i.actual { background: #c7b99d; }
+    .timeline-legend i.today {
+      width: 1px;
+      height: 14px;
+      background: var(--red);
+    }
+    .launch-list-panel {
+      margin-top: 12px;
+      padding: 0;
+      overflow: hidden;
+    }
+    .launch-list-head {
+      display: grid;
+      grid-template-columns: minmax(170px, 1.15fr) 86px minmax(140px, 1fr) 160px 86px 82px 76px;
+      gap: 12px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f3ead9;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      align-items: center;
+    }
+    .launch-list-group {
+      border-bottom: 1px solid var(--line);
+    }
+    .launch-list-group:last-child { border-bottom: 0; }
+    .launch-group-title {
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fbf5e9;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .launch-group-title.bad { color: var(--red); background: #fff7f4; }
+    .launch-group-title.warn { color: var(--amber); background: #fffaf0; }
+    .launch-group-title.done { color: var(--green); background: #f4fbf5; }
+    .launch-list-row {
+      display: grid;
+      grid-template-columns: minmax(170px, 1.15fr) 86px minmax(140px, 1fr) 160px 86px 82px 76px;
+      gap: 12px;
+      align-items: center;
+      min-height: 72px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fffdf8;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+    }
+    .launch-list-row:last-child { border-bottom: 0; }
+    .timeline-project-info.active,
+    .timeline-track-cell.active,
+    .launch-list-row.active {
+      box-shadow: inset 0 0 0 1px var(--gold);
+    }
+    .launch-list-row.bad { border-left-color: var(--red); background: #fff8f5; }
+    .launch-list-row.warn { border-left-color: var(--amber); background: #fffaf0; }
+    .launch-list-row.done { border-left-color: var(--green); opacity: .65; }
+    .launch-row-title b {
+      display: block;
+      font-size: 14px;
       font-weight: 800;
       line-height: 1.25;
       overflow-wrap: anywhere;
     }
-    .launch-detail-hero p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 650;
-      line-height: 1.45;
-    }
-    .launch-date-block {
-      border-left: 1px solid var(--line);
-      padding-left: 12px;
-      display: grid;
-      align-content: center;
-      gap: 4px;
-      text-align: right;
-    }
-    .launch-date-block span,
-    .launch-progress-label span,
-    .launch-stat span {
+    .launch-row-title span,
+    .launch-plan-actual span,
+    .launch-node-cell span {
+      display: block;
+      margin-top: 4px;
       color: var(--muted);
       font-size: 11px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+    .launch-date-num,
+    .launch-days-num {
+      text-align: right;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .launch-list-row.bad .launch-date-num,
+    .launch-list-row.bad .launch-days-num { color: var(--red); }
+    .launch-list-row.warn .launch-date-num,
+    .launch-list-row.warn .launch-days-num { color: var(--amber); }
+    .launch-node-cell b {
+      font-size: 13px;
       font-weight: 800;
       line-height: 1.2;
     }
-    .launch-date-block b {
-      color: var(--text);
-      font-size: 18px;
-      font-weight: 800;
-      line-height: 1.1;
-      white-space: nowrap;
-    }
-    .launch-date-block small {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .launch-progress-wrap {
-      display: grid;
-      gap: 7px;
-    }
-    .launch-progress-label {
+    .launch-mini-progress {
       display: flex;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .launch-progress-track {
-      height: 8px;
-      border-radius: 999px;
-      background: var(--accent-soft);
-      overflow: hidden;
-    }
-    .launch-progress-fill {
-      height: 100%;
-      width: var(--launch-progress, 0%);
-      border-radius: inherit;
-      background: var(--gold);
-    }
-    .launch-summary-strip {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-    }
-    .launch-stat {
-      min-height: 58px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      padding: 8px;
-      display: grid;
       gap: 4px;
-      align-content: center;
+      margin-top: 7px;
     }
-    .launch-stat b {
-      color: var(--text);
-      font-size: 16px;
-      font-weight: 800;
-      line-height: 1.1;
+    .launch-mini-progress i {
+      width: 22px;
+      height: 4px;
+      border-radius: 999px;
+      background: #e4dac9;
     }
-    .launch-step-list {
+    .launch-mini-progress i.done { background: #2f281f; }
+    .launch-mini-progress i.current { background: var(--amber); }
+    .launch-mini-progress i.bad { background: var(--red); }
+    .launch-plan-actual {
       display: grid;
-      gap: 6px;
+      gap: 5px;
     }
-    .launch-step {
-      min-height: 40px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #fff;
-      padding: 7px 8px;
+    .launch-plan-actual b {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       font-size: 12px;
-    }
-    .launch-step b {
-      font-weight: 780;
-      overflow-wrap: anywhere;
-    }
-    .launch-step small {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    .launch-ops-grid {
-      display: grid;
-      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    .launch-alert-panel .launch-project-selector,
-    .launch-alert-panel .launch-reminders {
-      margin: 0;
-    }
-    .launch-project-chip em {
-      color: var(--muted);
-      font-size: 11px;
-      font-style: normal;
       font-weight: 800;
+    }
+    .launch-plan-actual input {
+      height: 30px;
+      max-width: 132px;
+      font-size: 11px;
+    }
+    .launch-delta {
+      display: inline-flex;
+      width: fit-content;
+      margin-top: 4px;
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .launch-delta.bad { color: var(--red); border-color: #ecc7bd; background: #fff7f4; }
+    .launch-delta.good { color: var(--green); border-color: #b9dac8; background: #f4fbf5; }
+    .launch-row-action {
+      text-align: right;
+    }
+    .launch-flow-panel {
+      margin-top: 12px;
     }
     .launch-table-panel {
       padding: 0;
@@ -1962,7 +2057,7 @@
         scrollbar-width: none;
       }
       .nav::-webkit-scrollbar { display: none; }
-      .grid, .recipe-layout, .split, .form.three, .recipe-list-grid, .workspace-grid, .logic-grid, .list-form, .score-input-grid, .detail-grid, .import-strip, .tasting-process-grid, .tasting-decision-grid, .launch-layout, .launch-ops-grid { grid-template-columns: 1fr; }
+      .grid, .recipe-layout, .split, .form.three, .recipe-list-grid, .workspace-grid, .logic-grid, .list-form, .score-input-grid, .detail-grid, .import-strip, .tasting-process-grid, .tasting-decision-grid { grid-template-columns: 1fr; }
       .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .launch-dashboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .launch-summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1981,14 +2076,16 @@
       .actions { justify-content: flex-start; }
       .kpis { grid-template-columns: 1fr; }
       .launch-dashboard { grid-template-columns: 1fr; }
-      .launch-detail-hero { grid-template-columns: 1fr; }
-      .launch-date-block {
-        border-left: 0;
-        border-top: 1px solid var(--line);
-        padding: 10px 0 0;
-        text-align: left;
+      .launch-page-head { flex-direction: column; gap: 14px; }
+      .launch-actions { justify-content: flex-start; }
+      .launch-list-head { display: none; }
+      .launch-list-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
       }
-      .launch-summary-strip { grid-template-columns: 1fr; }
+      .launch-date-num,
+      .launch-days-num,
+      .launch-row-action { text-align: left; }
       .detail-grid, .yield-stage-grid { grid-template-columns: 1fr; }
       .sensory-gallery,
       .competitor-item-gallery,
@@ -2287,74 +2384,61 @@
           <button class="tab-btn active" data-launch-tab="calendar" type="button">档期管理</button>
         </div>
         <div class="launch-tab-panel" data-launch-panel="calendar">
-          <div class="launch-dashboard" id="launchDashboard"></div>
           <div class="launch-workspace">
             <div class="panel">
-              <div class="panel-head">
-                <h2>关键节点与 Coffee Bar 全流程</h2>
-                <div class="actions"><span class="pill" id="launchProjectsCount">0 个档期</span><button class="btn compact primary" id="openLaunchProjectModalBtn" type="button">新增档期</button></div>
-              </div>
               <div class="panel-body">
-                <div class="toolbar">
+                <div class="launch-page-head">
+                  <div class="launch-page-title">
+                    <h2>档期管理</h2>
+                    <p>关键节点与 Coffee Bar 全流程 · <span id="launchProjectsCount">0 个档期</span></p>
+                  </div>
+                  <div class="launch-actions">
+                    <div class="launch-filter-group" id="launchStatusFilters" aria-label="档期筛选">
+                      <button class="active" data-launch-filter="" type="button">全部 <span data-launch-count="all">0</span></button>
+                      <button data-launch-filter="overdue" type="button">逾期 <span data-launch-count="overdue">0</span></button>
+                      <button data-launch-filter="upcoming" type="button">临近 <span data-launch-count="upcoming">0</span></button>
+                      <button data-launch-filter="done" type="button">已完成 <span data-launch-count="done">0</span></button>
+                    </div>
+                    <button class="btn compact primary" id="openLaunchProjectModalBtn" type="button">新增档期</button>
+                  </div>
+                </div>
+                <div class="launch-search-row">
                   <input class="search" id="launchSearch" placeholder="搜索档期、品类、负责人、节点">
-                  <select id="launchStatusFilter"><option value="">全部状态</option><option value="overdue">逾期</option><option value="upcoming">临近</option><option value="done">已完成</option></select>
                 </div>
-                <div class="launch-layout">
-                  <div class="launch-board">
-                    <div class="launch-subhead">
-                      <div>
-                        <h3>档期矩阵</h3>
-                        <p>上市窗口、品类组合、节点风险。</p>
-                      </div>
-                    </div>
-                    <div class="launch-month-grid" id="launchCalendarBoard"></div>
-                  </div>
-                  <div class="launch-detail-column">
-                    <div class="launch-detail-panel" id="launchDetailPanel"></div>
-                    <div class="launch-flow-panel">
-                      <div class="launch-subhead">
-                        <div>
-                          <h3>Coffee Bar 全流程</h3>
-                          <p id="launchActiveProjectLabel"></p>
-                        </div>
-                      </div>
-                      <div class="checkbox-grid" id="coffeeBarChecklist"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="launch-ops-grid">
-                  <div class="launch-alert-panel">
-                    <div class="launch-subhead">
-                      <div>
-                        <h3>节点提醒</h3>
-                        <p>逾期与临近节点。</p>
-                      </div>
-                    </div>
-                    <div class="launch-reminders" id="launchReminders"></div>
-                  </div>
-                  <div class="launch-alert-panel">
-                    <div class="launch-subhead">
-                      <div>
-                        <h3>档期列表</h3>
-                        <p>全量档期项目。</p>
-                      </div>
-                    </div>
-                    <div class="launch-project-selector" id="launchProjectSelector"></div>
-                  </div>
-                </div>
-                <div class="launch-table-panel">
+                <div class="launch-board">
                   <div class="launch-subhead">
                     <div>
-                      <h3>节点明细</h3>
-                      <p>计划日期、实际日期、节点状态。</p>
+                      <h3>时间轴</h3>
+                      <p>每行一个档期，关键节点落在计划线上，实际进度用第二条线标出。</p>
                     </div>
                   </div>
-                  <div class="table-wrap">
-                    <table class="compact-table record-list wide">
-                      <thead><tr><th>档期</th><th>上市日</th><th>品类</th><th>关键节点</th><th>计划日期</th><th>实际日期</th><th>预期天数</th><th>状态</th><th>操作</th></tr></thead>
-                      <tbody id="launchMilestonesTbody"></tbody>
-                    </table>
+                  <div class="launch-timeline" id="launchTimelineBoard"></div>
+                  <div class="timeline-legend">
+                    <span><i></i>计划</span>
+                    <span><i class="actual"></i>实际进度</span>
+                    <span><i class="today"></i>今天</span>
                   </div>
+                </div>
+                <div class="launch-list-panel">
+                  <div class="launch-list-head">
+                    <span>档期 / 品类</span>
+                    <span>上市日</span>
+                    <span>当前关键节点</span>
+                    <span>计划 / 实际</span>
+                    <span>预期天数</span>
+                    <span>状态</span>
+                    <span>操作</span>
+                  </div>
+                  <div id="launchGroupedList"></div>
+                </div>
+                <div class="launch-flow-panel">
+                  <div class="launch-subhead">
+                    <div>
+                      <h3>Coffee Bar 全流程</h3>
+                      <p id="launchActiveProjectLabel"></p>
+                    </div>
+                  </div>
+                  <div class="checkbox-grid" id="coffeeBarChecklist"></div>
                 </div>
               </div>
             </div>
@@ -3851,18 +3935,20 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       "其他": { mechanism: "其他", fields: ["参数", "时间"] }
     };
     const launchMilestoneTemplates = [
-      { key: "brief", label: "Brief / 立项", offsetDays: -90 },
-      { key: "sample", label: "打样确认", offsetDays: -70 },
+      { key: "brief", label: "Brief", offsetDays: -90 },
+      { key: "formula", label: "初版配方确认", offsetDays: -70 },
       { key: "consumer", label: "众测", offsetDays: -45 },
       { key: "npc", label: "NPC", offsetDays: -35 },
       { key: "pilot", label: "中试", offsetDays: -28 },
       { key: "mass", label: "大生产", offsetDays: -14 },
-      { key: "training", label: "门店培训 / SOP", offsetDays: -7 },
+      { key: "sop", label: "烤程SOP", offsetDays: -7 },
       { key: "launch", label: "上市", offsetDays: 0 }
     ];
     const coffeeBarFlowItems = [
-      "产品 Brief", "配方/BOM", "供应商试样", "众测", "NPC", "中试", "大生产",
-      "规格书 / QA", "SOP / 烤程", "门店培训", "陈列物料", "上市复盘"
+      "Brief", "初版配方确认", "V1报价", "稳定性测试", "众测", "NPC", "配方确认",
+      "产品名称确认", "中试跟产", "三方跟产", "中试", "中试验收", "factsheet初版稿件",
+      "factsheet提交审核", "审核Tony", "审核Dan", "factsheet发送", "规格书",
+      "大生产", "大生产验收", "运输测试", "烤程SOP", "历史问题"
     ];
     const feishuCoffeeBarLaunchProjects = [
       { id: "feishu-coffee-bar-blueberry-cheesecake-20260702", name: "蓝莓芝士蛋糕", launchDate: "2026-07-02", category: "烘焙", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true }) },
@@ -3880,18 +3966,29 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     ];
     function feishuCoffeeBarFlow(flags = {}) {
       return {
-        "产品 Brief": Boolean(flags.brief),
-        "配方/BOM": Boolean(flags.formula),
-        "供应商试样": Boolean(flags.sample),
+        "Brief": Boolean(flags.brief),
+        "初版配方确认": Boolean(flags.formula),
+        "V1报价": Boolean(flags.quote),
+        "稳定性测试": Boolean(flags.stability || flags.sample),
         "众测": Boolean(flags.consumer),
         "NPC": Boolean(flags.npc),
+        "配方确认": Boolean(flags.finalFormula),
+        "产品名称确认": Boolean(flags.name),
+        "中试跟产": Boolean(flags.pilotFollow),
+        "三方跟产": Boolean(flags.thirdPartyFollow),
         "中试": Boolean(flags.pilot),
+        "中试验收": Boolean(flags.pilotAcceptance),
+        "factsheet初版稿件": Boolean(flags.factsheetDraft),
+        "factsheet提交审核": Boolean(flags.factsheetSubmit),
+        "审核Tony": Boolean(flags.tony),
+        "审核Dan": Boolean(flags.dan),
+        "factsheet发送": Boolean(flags.factsheetSent),
+        "规格书": Boolean(flags.spec),
         "大生产": Boolean(flags.mass),
-        "规格书 / QA": Boolean(flags.spec),
-        "SOP / 烤程": Boolean(flags.sop),
-        "门店培训": Boolean(flags.training),
-        "陈列物料": Boolean(flags.display),
-        "上市复盘": Boolean(flags.review)
+        "大生产验收": Boolean(flags.massAcceptance),
+        "运输测试": Boolean(flags.transport),
+        "烤程SOP": Boolean(flags.sop),
+        "历史问题": Boolean(flags.history)
       };
     }
     const feishuBakeRecords = [
@@ -4100,6 +4197,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let editingBakeRecordId = null;
     let editingLaunchProjectId = null;
     let activeLaunchProjectId = null;
+    let launchStatusFilter = "";
 
     const els = {
       pageTitle: document.querySelector("#pageTitle"),
@@ -4434,6 +4532,20 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function migrateLaunchProject(project) {
       const checkedFlow = project.checkedFlow || {};
+      const flowAliases = {
+        "Brief": ["产品 Brief"],
+        "初版配方确认": ["配方/BOM"],
+        "稳定性测试": ["供应商试样"],
+        "规格书": ["规格书 / QA"],
+        "烤程SOP": ["SOP / 烤程", "门店培训"],
+        "大生产": [],
+        "众测": [],
+        "NPC": [],
+        "中试": []
+      };
+      const actualDates = { ...(project.actualDates || {}) };
+      if (!actualDates.formula && actualDates.sample) actualDates.formula = actualDates.sample;
+      if (!actualDates.sop && actualDates.training) actualDates.sop = actualDates.training;
       return {
         ...project,
         id: project.id || crypto.randomUUID(),
@@ -4441,8 +4553,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         launchDate: project.launchDate || "",
         category: project.category || "烘焙",
         owner: project.owner || "",
-        actualDates: project.actualDates || {},
-        checkedFlow: Object.fromEntries(coffeeBarFlowItems.map(item => [item, Boolean(checkedFlow[item])]))
+        actualDates,
+        checkedFlow: Object.fromEntries(coffeeBarFlowItems.map(item => [
+          item,
+          Boolean(checkedFlow[item]) || (flowAliases[item] || []).some(alias => Boolean(checkedFlow[alias]))
+        ]))
       };
     }
 
@@ -4923,11 +5038,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return launchMilestoneTemplates.map(template => {
         const plannedDate = addDays(project.launchDate, template.offsetDays);
         const actualDate = project.actualDates?.[template.key] || "";
+        const flowDone = Boolean(project.checkedFlow?.[template.label]);
+        const displayActualDate = actualDate || (flowDone ? plannedDate : "");
         const expectedDays = Math.abs(template.offsetDays);
         const daysFromToday = plannedDate ? dayDiff(plannedDate, formatDateInput(new Date())) : "";
-        const done = Boolean(actualDate);
+        const done = Boolean(actualDate) || flowDone;
         const status = done ? "已完成" : (Number.isFinite(daysFromToday) && daysFromToday < 0 ? "逾期" : (Number.isFinite(daysFromToday) && daysFromToday <= 7 ? "临近" : "待完成"));
-        return { ...template, plannedDate, actualDate, expectedDays, status };
+        return { ...template, plannedDate, actualDate, displayActualDate, expectedDays, done, status };
       });
     }
 
@@ -4940,7 +5057,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function launchCompletion(project) {
       const milestones = calculateLaunchMilestones(project);
-      const done = milestones.filter(item => item.actualDate).length;
+      const done = milestones.filter(item => item.done).length;
       const flowDone = Object.values(project.checkedFlow || {}).filter(Boolean).length;
       return { milestones, done, total: milestones.length, flowDone, flowTotal: coffeeBarFlowItems.length };
     }
@@ -4948,13 +5065,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function launchProjectStatus(project) {
       const progress = launchCompletion(project);
       return progress.total > 0 && progress.done >= progress.total && progress.flowDone >= progress.flowTotal ? "已完结" : "进行中";
-    }
-
-    function launchMonthLabel(value) {
-      const date = parseDateInput(value);
-      if (!date) return "未定档";
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      return `${date.getFullYear()}.${month}`;
     }
 
     function launchDateLabel(value) {
@@ -4995,114 +5105,239 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return `已上市 ${Math.abs(daysToLaunch)} 天`;
     }
 
-    function renderLaunchCalendarBoard(projects = state.launchProjects || []) {
-      const host = document.querySelector("#launchCalendarBoard");
-      if (!host) return;
-      const active = ensureActiveLaunchProject();
-      const sorted = (projects || [])
-        .slice()
-        .sort((a, b) => launchDateCompare(a, b) || String(a.name || "").localeCompare(String(b.name || ""), "zh-CN"));
-      const groups = sorted.reduce((map, project) => {
-        const key = launchMonthLabel(project.launchDate);
-        if (!map.has(key)) map.set(key, []);
-        map.get(key).push(project);
-        return map;
-      }, new Map());
-      host.innerHTML = [...groups.entries()].map(([month, items]) => {
-        const risky = items.filter(project => ["bad", "warn"].includes(launchTone(project))).length;
-        return `
-          <div class="launch-month-card">
-            <div class="launch-month-head"><span>${escapeHtml(month)}</span><b>${items.length} 个档期</b></div>
-            <div class="launch-month-projects">
-              ${items.map(project => {
-                const metrics = launchMetrics(project);
-                const tone = launchTone(project);
-                const next = metrics.nextMilestone ? `${metrics.nextMilestone.label} ${metrics.nextMilestone.plannedDate || ""}` : "节点已完成";
-                return `
-                  <button class="launch-project-line ${project.id === active?.id ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}" type="button">
-                    <span><b>${escapeHtml(project.name || "未命名档期")}</b><small>${escapeHtml(launchDateLabel(project.launchDate))} · ${escapeHtml(project.category || "未分类")} · ${escapeHtml(next)}</small></span>
-                    <i class="${tone}">${escapeHtml(tone === "bad" ? "逾期" : tone === "warn" ? "临近" : tone === "done" ? "完成" : "推进")}</i>
-                  </button>
-                `;
-              }).join("")}
-            </div>
-            <div class="launch-month-head"><span>${risky ? `${risky} 个需关注` : "暂无风险"}</span><span>${escapeHtml(items.map(project => project.category || "未分类").filter((value, index, arr) => arr.indexOf(value) === index).join(" / "))}</span></div>
-          </div>
-        `;
-      }).join("") || `<div class="empty">暂无档期项目，输入上市日期后会自动生成矩阵。</div>`;
+    function launchProjectGroupKey(project) {
+      const metrics = launchMetrics(project);
+      if (launchProjectStatus(project) === "已完结") return "done";
+      if (metrics.overdue) return "overdue";
+      if (metrics.upcoming || (Number.isFinite(metrics.daysToLaunch) && metrics.daysToLaunch <= 7)) return "upcoming";
+      return "ongoing";
     }
 
-    function renderLaunchDetailPanel(project = activeLaunchProject()) {
-      const host = document.querySelector("#launchDetailPanel");
+    function launchGroupTone(key) {
+      if (key === "overdue") return "bad";
+      if (key === "upcoming") return "warn";
+      if (key === "done") return "done";
+      return "";
+    }
+
+    function launchGroupLabel(key) {
+      return { overdue: "逾期", upcoming: "临近（7 天内）", ongoing: "进行中", done: "已完成" }[key] || "进行中";
+    }
+
+    function launchStatusText(project) {
+      const key = launchProjectGroupKey(project);
+      return { overdue: "逾期", upcoming: "临近", ongoing: "进行中", done: "已完成" }[key] || "进行中";
+    }
+
+    function launchCurrentMilestone(project) {
+      const metrics = launchMetrics(project);
+      const pending = metrics.pending
+        .slice()
+        .sort((a, b) => dayDiff(a.plannedDate, b.plannedDate) || a.offsetDays - b.offsetDays);
+      return pending[0] || metrics.milestones[metrics.milestones.length - 1] || null;
+    }
+
+    function launchProjectSearchText(project) {
+      const milestones = calculateLaunchMilestones(project).map(item => [item.label, item.status, item.plannedDate, item.actualDate].join(" "));
+      return [project.name, project.category, project.owner, project.source, project.note, launchStatusText(project), ...milestones].join(" ").toLowerCase();
+    }
+
+    function filteredLaunchProjects(projects = state.launchProjects || []) {
+      const query = (document.querySelector("#launchSearch")?.value || "").trim().toLowerCase();
+      return (projects || [])
+        .filter(project => (!launchStatusFilter || launchProjectGroupKey(project) === launchStatusFilter) && (!query || launchProjectSearchText(project).includes(query)))
+        .sort((a, b) => {
+          const order = { overdue: 0, upcoming: 1, ongoing: 2, done: 3 };
+          return (order[launchProjectGroupKey(a)] ?? 9) - (order[launchProjectGroupKey(b)] ?? 9)
+            || launchDateCompare(a, b)
+            || String(a.name || "").localeCompare(String(b.name || ""), "zh-CN");
+        });
+    }
+
+    function renderLaunchFilterCounts(projects = state.launchProjects || []) {
+      const counts = { all: projects.length, overdue: 0, upcoming: 0, done: 0 };
+      projects.forEach(project => {
+        const key = launchProjectGroupKey(project);
+        if (key === "overdue") counts.overdue += 1;
+        if (key === "upcoming") counts.upcoming += 1;
+        if (key === "done") counts.done += 1;
+      });
+      Object.entries(counts).forEach(([key, value]) => {
+        const target = document.querySelector(`[data-launch-count="${key}"]`);
+        if (target) target.textContent = value;
+      });
+      document.querySelectorAll("[data-launch-filter]").forEach(button => {
+        button.classList.toggle("active", (button.dataset.launchFilter || "") === launchStatusFilter);
+      });
+    }
+
+    function launchClampPercent(value) {
+      return Math.max(0, Math.min(100, value));
+    }
+
+    function launchTimelinePosition(value, minTime, maxTime) {
+      const date = parseDateInput(value);
+      if (!date || maxTime <= minTime) return 0;
+      return launchClampPercent((date.getTime() - minTime) / (maxTime - minTime) * 100);
+    }
+
+    function launchTimelineRange(projects) {
+      const today = parseDateInput(formatDateInput(new Date()));
+      const dates = [today];
+      (projects || []).forEach(project => {
+        calculateLaunchMilestones(project).forEach(item => {
+          const planned = parseDateInput(item.plannedDate);
+          const actual = parseDateInput(item.actualDate);
+          if (planned) dates.push(planned);
+          if (actual) dates.push(actual);
+        });
+      });
+      const minDate = new Date(Math.min(...dates.map(date => date.getTime())));
+      const maxDate = new Date(Math.max(...dates.map(date => date.getTime())));
+      minDate.setDate(1);
+      maxDate.setMonth(maxDate.getMonth() + 1, 0);
+      let minTime = minDate.getTime();
+      let maxTime = maxDate.getTime();
+      if (maxTime - minTime < 90 * 86400000) maxTime = minTime + 90 * 86400000;
+      return { minTime, maxTime, today: formatDateInput(today) };
+    }
+
+    function launchTimelineMonths(minTime, maxTime) {
+      const cursor = new Date(minTime);
+      cursor.setDate(1);
+      const items = [];
+      while (cursor.getTime() <= maxTime) {
+        const value = formatDateInput(cursor);
+        items.push({ label: `${cursor.getMonth() + 1}月`, x: launchTimelinePosition(value, minTime, maxTime) });
+        cursor.setMonth(cursor.getMonth() + 1);
+      }
+      return items;
+    }
+
+    function launchActualProgressEnd(project, milestones) {
+      const actualDates = milestones.map(item => item.displayActualDate).filter(Boolean);
+      if (actualDates.length) {
+        return actualDates.sort((a, b) => normalizeLaunchDate(a).localeCompare(normalizeLaunchDate(b))).at(-1);
+      }
+      return formatDateInput(new Date());
+    }
+
+    function renderLaunchTimeline(projects) {
+      const host = document.querySelector("#launchTimelineBoard");
       if (!host) return;
-      if (!project) {
-        host.innerHTML = `<div class="empty">先新增或选择一个档期项目。</div>`;
+      if (!projects.length) {
+        host.innerHTML = `<div class="empty">暂无匹配档期。<button class="btn compact primary" data-open-launch-empty type="button">新增档期</button></div>`;
         return;
       }
-      const metrics = launchMetrics(project);
-      const tone = launchTone(project);
-      const nextItems = (metrics.pending.length ? metrics.pending : metrics.milestones)
-        .slice(0, 5);
+      const { minTime, maxTime, today } = launchTimelineRange(projects);
+      const todayX = launchTimelinePosition(today, minTime, maxTime);
+      const months = launchTimelineMonths(minTime, maxTime);
       host.innerHTML = `
-        <div class="launch-detail-hero">
-          <div>
-            <span class="pill">${escapeHtml(project.category || "未分类")}</span>
-            <h3>${escapeHtml(project.name || "未命名档期")}</h3>
-            <p>${escapeHtml(project.note || project.source || "暂无备注")}</p>
+        <div class="launch-timeline-grid">
+          <div class="timeline-left-head">档期 / 品类</div>
+          <div class="timeline-months">
+            ${months.map(item => `<span class="timeline-month" style="left:${item.x}%">${escapeHtml(item.label)}</span>`).join("")}
+            <span class="timeline-today" style="--today:${todayX}%"></span>
           </div>
-          <div class="launch-date-block">
-            <span>上市日</span>
-            <b>${escapeHtml(project.launchDate || "-")}</b>
-            <small>${escapeHtml(launchTimingText(metrics.daysToLaunch))}</small>
-          </div>
-        </div>
-        <div class="launch-progress-wrap">
-          <div class="launch-progress-label"><span>整体进度</span><span>${metrics.percent}% · 节点 ${metrics.done}/${metrics.total} · 流程 ${metrics.flowDone}/${metrics.flowTotal}</span></div>
-          <div class="launch-progress-track"><div class="launch-progress-fill" style="--launch-progress:${metrics.percent}%"></div></div>
-        </div>
-        <div class="launch-summary-strip">
-          <div class="launch-stat"><span>状态</span><b>${escapeHtml(tone === "bad" ? "需处理" : tone === "warn" ? "临近窗口" : launchProjectStatus(project))}</b></div>
-          <div class="launch-stat"><span>逾期节点</span><b>${metrics.overdue}</b></div>
-          <div class="launch-stat"><span>7天内节点</span><b>${metrics.upcoming}</b></div>
-          <div class="launch-stat"><span>负责人</span><b>${escapeHtml(project.owner || "-")}</b></div>
-        </div>
-        <div class="launch-subhead">
-          <div>
-            <h3>倒排节点</h3>
-            <p>从 Brief 到上市的关键路径。</p>
-          </div>
-          <button class="btn compact" data-edit-launch="${escapeAttr(project.id)}" type="button">编辑</button>
-        </div>
-        <div class="launch-step-list">
-          ${nextItems.map(item => `<div class="launch-step ${launchStatusClass(item.status)}"><b>${escapeHtml(item.label)}</b><small>${escapeHtml(item.plannedDate || "-")} · ${escapeHtml(item.status)}</small></div>`).join("")}
+          ${projects.map(project => {
+            const milestones = calculateLaunchMilestones(project);
+            const current = launchCurrentMilestone(project);
+            const tone = launchGroupTone(launchProjectGroupKey(project));
+            const start = milestones[0]?.plannedDate || project.launchDate;
+            const end = project.launchDate || milestones.at(-1)?.plannedDate || start;
+            const startX = launchTimelinePosition(start, minTime, maxTime);
+            const endX = Math.max(startX + 1, launchTimelinePosition(end, minTime, maxTime));
+            const actualEnd = launchActualProgressEnd(project, milestones);
+            const actualEndX = Math.max(startX + 1, launchTimelinePosition(actualEnd, minTime, maxTime));
+            const daysText = launchTimingText(launchMetrics(project).daysToLaunch);
+            const labelEndClass = endX > 88 ? " end" : "";
+            return `
+              <div class="timeline-project-info ${tone} ${project.id === activeLaunchProjectId ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}">
+                <b>${escapeHtml(project.name || "未命名档期")}</b>
+                <span>${escapeHtml(project.category || "未分类")} · ${escapeHtml(current?.label || "暂无节点")} ${launchCompletion(project).done}/${launchCompletion(project).total}</span>
+                <small>${escapeHtml(project.source || project.owner || "")}</small>
+                <em>${escapeHtml(launchStatusText(project))} · 上市 ${escapeHtml(launchDateLabel(project.launchDate))} · ${escapeHtml(daysText)}</em>
+              </div>
+              <div class="timeline-track-cell ${project.id === activeLaunchProjectId ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}">
+                <span class="timeline-plan-bar" style="--start:${startX}%;--end:${endX}%"></span>
+                <span class="timeline-actual-bar ${tone}" style="--start:${startX}%;--end:${actualEndX}%"></span>
+                ${milestones.map(item => {
+                  const dotTone = item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "pending") : "pending";
+                  return `<span class="timeline-dot ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" title="${escapeAttr(item.label)} ${escapeAttr(item.plannedDate || "")}" style="--x:${launchTimelinePosition(item.plannedDate, minTime, maxTime)}%"></span>`;
+                }).join("")}
+                <span class="timeline-date-label ${tone}${labelEndClass}" style="--x:${endX}%">上市 ${escapeHtml(launchDateLabel(project.launchDate))}</span>
+                <span class="timeline-today" style="--today:${todayX}%"></span>
+              </div>
+            `;
+          }).join("")}
         </div>
       `;
     }
 
-    function renderLaunchDashboard() {
-      const host = document.querySelector("#launchDashboard");
+    function launchDeltaText(milestone) {
+      if (!milestone?.actualDate || !milestone?.plannedDate) return "";
+      const diff = dayDiff(milestone.actualDate, milestone.plannedDate);
+      if (!Number.isFinite(diff) || diff === 0) return "准时";
+      return diff > 0 ? `+${diff}d` : `提前 ${Math.abs(diff)}d`;
+    }
+
+    function launchUrgencyText(project, milestone) {
+      if (launchProjectStatus(project) === "已完结") return "已完成";
+      const days = dayDiff(milestone?.plannedDate, formatDateInput(new Date()));
+      if (!Number.isFinite(days)) return "未定";
+      if (days < 0) return `逾 ${Math.abs(days)} 天`;
+      if (days === 0) return "今天";
+      return `剩 ${days} 天`;
+    }
+
+    function renderLaunchGroupedList(projects) {
+      const host = document.querySelector("#launchGroupedList");
       if (!host) return;
-      const projects = state.launchProjects || [];
-      const allMilestones = projects.flatMap(project => calculateLaunchMilestones(project).map(item => ({ ...item, project })));
-      const overdue = allMilestones.filter(item => item.status === "逾期").length;
-      const upcoming = allMilestones.filter(item => item.status === "临近").length;
-      const completedProjects = projects.filter(project => launchProjectStatus(project) === "已完结").length;
-      const activeProjects = projects.length - completedProjects;
-      host.innerHTML = [
-        { label: "档期项目数总体", value: projects.length },
-        { label: "已完结", value: completedProjects, tone: completedProjects ? "done" : "" },
-        { label: "进行中", value: activeProjects, tone: activeProjects ? "warn" : "" },
-        { label: "逾期节点", value: overdue, tone: overdue ? "bad" : "" },
-        { label: "7天内节点", value: upcoming, tone: upcoming ? "warn" : "" }
-      ].map(item => `<div class="launch-metric ${item.tone || ""}"><span>${escapeHtml(item.label)}</span><b>${item.value}</b></div>`).join("");
-      const reminders = document.querySelector("#launchReminders");
-      if (reminders) {
-        reminders.innerHTML = allMilestones
-          .filter(item => item.status === "逾期" || item.status === "临近")
-          .slice(0, 6)
-          .map(item => `<div class="reminder-row ${launchStatusClass(item.status)}"><span>${escapeHtml(item.project.name || "未命名档期")} · ${escapeHtml(item.label)}</span><b>${escapeHtml(item.plannedDate || "-")} · ${escapeHtml(item.status)}</b></div>`)
-          .join("") || `<div class="reminder-row"><span>暂无临近或逾期节点</span><b>OK</b></div>`;
+      const groupOrder = ["overdue", "upcoming", "ongoing", "done"];
+      const groups = groupOrder.map(key => ({
+        key,
+        items: projects.filter(project => launchProjectGroupKey(project) === key)
+      })).filter(group => group.items.length);
+      if (!groups.length) {
+        host.innerHTML = `<div class="empty">当前筛选下没有匹配档期。<button class="btn compact primary" data-open-launch-empty type="button">新增档期</button></div>`;
+        return;
       }
+      host.innerHTML = groups.map(group => `
+        <div class="launch-list-group">
+          <div class="launch-group-title ${launchGroupTone(group.key)}">${escapeHtml(launchGroupLabel(group.key))} · ${group.items.length}</div>
+          ${group.items.map(project => {
+            const milestones = calculateLaunchMilestones(project);
+            const current = launchCurrentMilestone(project) || milestones[0];
+            const completion = launchCompletion(project);
+            const tone = launchGroupTone(group.key);
+            const delta = launchDeltaText(current);
+            return `
+              <div class="launch-list-row ${tone} ${project.id === activeLaunchProjectId ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}">
+                <div class="launch-row-title">
+                  <b>${escapeHtml(project.name || "未命名档期")}</b>
+                  <span>${escapeHtml(project.category || "未分类")}${project.source ? ` · ${escapeHtml(project.source)}` : ""}</span>
+                </div>
+                <div class="launch-date-num">${escapeHtml(launchDateLabel(project.launchDate))}</div>
+                <div class="launch-node-cell">
+                  <b>${escapeHtml(current?.label || "-")}</b>
+                  <div class="launch-mini-progress">
+                    ${milestones.map(item => `<i class="${item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "current") : ""}"></i>`).join("")}
+                  </div>
+                  <span>${completion.done}/${completion.total}</span>
+                </div>
+                <div class="launch-plan-actual">
+                  <b>计 ${escapeHtml(launchDateLabel(current?.plannedDate))}</b>
+                  <input class="small-input" type="date" value="${escapeAttr(current?.actualDate || "")}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(current?.key || "")}">
+                  ${delta ? `<span class="launch-delta ${delta.startsWith("+") ? "bad" : "good"}">${escapeHtml(delta)}</span>` : ""}
+                </div>
+                <div class="launch-days-num">${escapeHtml(launchUrgencyText(project, current))}</div>
+                <div><span class="status-dot ${tone}">${escapeHtml(launchStatusText(project))}</span></div>
+                <div class="launch-row-action"><button class="btn compact" data-edit-launch="${escapeAttr(project.id)}" type="button">详情</button></div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      `).join("");
     }
 
     function ensureActiveLaunchProject() {
@@ -5115,26 +5350,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         activeLaunchProjectId = projects[0].id;
       }
       return projects.find(project => project.id === activeLaunchProjectId) || projects[0];
-    }
-
-    function renderLaunchProjectSelector(projects = state.launchProjects || []) {
-      const host = document.querySelector("#launchProjectSelector");
-      if (!host) return;
-      const active = ensureActiveLaunchProject();
-      host.innerHTML = (projects || []).slice().sort((a, b) => launchDateCompare(a, b) || String(a.name || "").localeCompare(String(b.name || ""), "zh-CN")).map(project => {
-        const progress = launchCompletion(project);
-        const status = launchProjectStatus(project);
-        const metrics = launchMetrics(project);
-        const checkedText = `${progress.flowDone}/${progress.flowTotal} 项`;
-        const nextText = metrics.nextMilestone ? `${metrics.nextMilestone.label} ${metrics.nextMilestone.plannedDate || ""}` : "节点已完成";
-        return `
-          <button class="launch-project-chip ${project.id === active?.id ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}" type="button">
-            <span>${escapeHtml(project.name || "未命名档期")}</span>
-            <small>${escapeHtml(project.category || "未分类")} · ${escapeHtml(project.launchDate || "未定上市日")} · ${escapeHtml(status)} · ${checkedText}</small>
-            <em>${escapeHtml(nextText)}</em>
-          </button>
-        `;
-      }).join("");
     }
 
     function selectLaunchProject(id) {
@@ -5163,37 +5378,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function renderLaunchProjects() {
-      const tbody = document.querySelector("#launchMilestonesTbody");
       const countEl = document.querySelector("#launchProjectsCount");
-      if (!tbody) return;
-      const query = (document.querySelector("#launchSearch")?.value || "").trim().toLowerCase();
-      const statusFilter = document.querySelector("#launchStatusFilter")?.value || "";
       const projects = state.launchProjects || [];
-      const activeProject = ensureActiveLaunchProject();
-      renderLaunchCalendarBoard(projects);
-      renderLaunchDetailPanel(activeProject);
-      renderLaunchProjectSelector(projects);
-      const rows = (activeProject ? [activeProject] : []).flatMap(project => calculateLaunchMilestones(project).map(milestone => ({ project, milestone })))
-        .filter(({ project, milestone }) => {
-          const text = [project.name, project.category, project.owner, project.source, project.note, milestone.label, milestone.status].join(" ").toLowerCase();
-          const statusKey = milestone.status === "逾期" ? "overdue" : milestone.status === "临近" ? "upcoming" : milestone.status === "已完成" ? "done" : "";
-          return (!query || text.includes(query)) && (!statusFilter || statusKey === statusFilter);
-        });
+      let activeProject = ensureActiveLaunchProject();
       if (countEl) countEl.textContent = `${projects.length} 个档期`;
-      tbody.innerHTML = rows.map(({ project, milestone }) => `
-        <tr class="${launchStatusClass(milestone.status)}">
-          <td><b>${escapeHtml(project.name || "未命名档期")}</b>${project.source ? `<div class="gs-sub">${escapeHtml(project.source)}</div>` : ""}</td>
-          <td>${escapeHtml(project.launchDate || "")}</td>
-          <td>${escapeHtml(project.category || "")}</td>
-          <td>${escapeHtml(milestone.label)}</td>
-          <td>${escapeHtml(milestone.plannedDate || "")}</td>
-          <td><input class="small-input" type="date" value="${escapeAttr(milestone.actualDate || "")}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}"></td>
-          <td>${milestone.offsetDays === 0 ? "上市日" : `T${milestone.offsetDays}`}</td>
-          <td><span class="status-dot ${launchStatusClass(milestone.status)}">${escapeHtml(milestone.status)}</span></td>
-          <td><button class="btn compact" data-edit-launch="${escapeAttr(project.id)}" type="button">编辑</button></td>
-        </tr>
-      `).join("") || `<tr><td class="empty" colspan="9">${projects.length ? "当前筛选下没有匹配节点，请切换状态或选择其他档期" : "暂无档期项目，输入上市日期后会自动倒排关键节点"}</td></tr>`;
-      renderLaunchDashboard();
+      renderLaunchFilterCounts(projects);
+      const visibleProjects = filteredLaunchProjects(projects);
+      if (visibleProjects.length && !visibleProjects.some(project => project.id === activeLaunchProjectId)) {
+        activeLaunchProjectId = visibleProjects[0].id;
+        activeProject = visibleProjects[0];
+      }
+      renderLaunchTimeline(visibleProjects);
+      renderLaunchGroupedList(visibleProjects);
       renderCoffeeBarChecklist(activeProject);
     }
 
@@ -5240,7 +5436,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#launchNote").value = project.note || "";
       const title = document.querySelector("#launchProjectModalTitle");
       if (title) title.textContent = "编辑档期";
-      renderLaunchProjectSelector();
       renderCoffeeBarChecklist(project);
     }
 
@@ -9209,7 +9404,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         home: ["Home 首页", "把灵感、测评、销售结果都沉淀在一处，越用越厚——这是我的品类第二大脑。"],
         opportunity: ["Opportunity Pool 机会池", "把测评记录沉淀成我自己的灵感库，以后随手能翻出来复用。"],
         development: ["Product Development 产品开发", "我的原料库和配方库"],
-        launch: ["Launch Calendar 档期产品开发", "输入上市日期后自动倒排众测、NPC、中试和大生产节点，并跟踪 Coffee Bar 全流程完成状态。"],
+        launch: ["档期管理", "关键节点与 Coffee Bar 全流程，按逾期、临近、进行中和已完成跟踪。"],
         validation: ["Product Validation 产品验证", "用我自己固定的口径（评分维度、适配权重）沉淀可比较、可回看的产品结论。"],
         execution: ["Product Execution 产品落地", "把陈列、烤程和门店反馈里观察到的经验沉下来，变成下次的检查清单。"],
         knowledge: ["Knowledge Base 知识库", "沉淀踩过的坑和有效做法，目前只保留经验法则。"],
@@ -9489,10 +9684,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     document.querySelector("#launchProjectForm")?.addEventListener("submit", saveLaunchProject);
     document.querySelector("#clearLaunchFormBtn")?.addEventListener("click", () => { clearLaunchForm(); renderCoffeeBarChecklist(); });
     document.querySelector("#openLaunchProjectModalBtn")?.addEventListener("click", () => openLaunchProjectModal());
-    ["launchSearch", "launchStatusFilter"].forEach(id => {
-      document.querySelector(`#${id}`)?.addEventListener("input", renderLaunchProjects);
-      document.querySelector(`#${id}`)?.addEventListener("change", renderLaunchProjects);
-    });
+    document.querySelector("#launchSearch")?.addEventListener("input", renderLaunchProjects);
     ["opportunityIdeas", "competitorTests", "oemRecords"].forEach(key => {
       document.querySelector(`#${key}Search`)?.addEventListener("input", () => {
         opportunityPages[key] = 0;
@@ -9561,14 +9753,25 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         openBakeRecordModal(editBakeRecord.dataset.editBakeRecord);
         return;
       }
-      const selectLaunch = event.target.closest("[data-select-launch]");
-      if (selectLaunch) {
-        selectLaunchProject(selectLaunch.dataset.selectLaunch);
+      const launchFilter = event.target.closest("[data-launch-filter]");
+      if (launchFilter) {
+        launchStatusFilter = launchFilter.dataset.launchFilter || "";
+        renderLaunchProjects();
+        return;
+      }
+      const openLaunchEmpty = event.target.closest("[data-open-launch-empty]");
+      if (openLaunchEmpty) {
+        openLaunchProjectModal();
         return;
       }
       const editLaunch = event.target.closest("[data-edit-launch]");
       if (editLaunch) {
         openLaunchProjectModal(editLaunch.dataset.editLaunch);
+        return;
+      }
+      const selectLaunch = event.target.closest("[data-select-launch]");
+      if (selectLaunch) {
+        selectLaunchProject(selectLaunch.dataset.selectLaunch);
         return;
       }
       const openOpportunityList = event.target.closest("[data-open-opportunity-list-modal]");
@@ -10287,8 +10490,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           project.checkedFlow = project.checkedFlow || {};
           project.checkedFlow[event.target.dataset.flowCheck] = event.target.checked;
           persist();
-          renderLaunchProjectSelector();
-          renderLaunchDashboard();
+          renderLaunchProjects();
         }
         return;
       }
