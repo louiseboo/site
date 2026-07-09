@@ -2742,6 +2742,16 @@
       display: grid;
       gap: 6px;
     }
+    .calendar-source-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 8px;
+      border: 1px solid rgba(221, 213, 197, .72);
+      border-radius: 7px;
+      background: #fffaf0;
+    }
     .calendar-source-list i {
       display: block;
       color: #3d342b;
@@ -2750,6 +2760,22 @@
       font-weight: 850;
       line-height: 1.35;
       overflow-wrap: anywhere;
+    }
+    .calendar-inline-actions,
+    .calendar-menu-item-actions,
+    .calendar-matrix-label-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .calendar-inline-actions .btn,
+    .calendar-menu-item-actions .btn,
+    .calendar-matrix-label-actions .btn {
+      padding: 4px 7px;
+      font-size: 10px;
+      line-height: 1.1;
     }
     .calendar-matrix-head {
       display: flex;
@@ -2783,6 +2809,17 @@
     .product-calendar-table.sq-matrix th:first-child {
       min-width: 150px;
       background: #f0e6d5;
+    }
+    .calendar-matrix-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .calendar-matrix-label span {
+      min-width: 0;
+      flex: 1;
+      outline: 0;
     }
     .calendar-matrix-editable {
       outline: 0;
@@ -7089,6 +7126,52 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return period.key || `${productCalendarYear}-${calendarPeriodCode(period)}-${index}-${String(period.name || "").replace(/\s+/g, "-")}`;
     }
 
+    function productCalendarFiscalYear(year = productCalendarYear) {
+      return `FY${String(year || "").slice(-2)}`;
+    }
+
+    function productCalendarCampaignMonthIndex(campaign = {}, fallbackIndex = 0) {
+      const name = String(campaign.name || campaign.launchCampaign || "");
+      const nameMonth = name.match(/(?:^|[^\d])(1[0-2]|[1-9])\s*月/);
+      if (nameMonth) return Number(nameMonth[1]) - 1;
+      const launchDate = parseDateInput(campaign.launchDate || "");
+      if (launchDate && launchDate.getFullYear() === Number(productCalendarYear)) return launchDate.getMonth();
+      return fallbackIndex % 12;
+    }
+
+    function productCalendarGroupForCategory(category = "") {
+      const text = String(category || "");
+      if (/三明治|Sandwich/i.test(text)) return "Sandwich&Meal";
+      if (/蛋糕|甜品|Cake|Dessert/i.test(text)) return "Cake&Dessert";
+      if (/烘焙|面包|贝果|恰巴塔|丹麦|Bakery/i.test(text)) return "Bakery";
+      if (/CPG|包装|酸奶|糖|饼干|巧克力|Packaged/i.test(text)) return "CPG";
+      return "Other";
+    }
+
+    function productCalendarCategoryForGroup(group = "") {
+      if (group === "Sandwich&Meal") return "三明治";
+      if (group === "Cake&Dessert") return "蛋糕";
+      if (group === "Bakery") return "烘焙";
+      if (group === "CPG" || group === "Packaged Food") return "CPG";
+      return "其他";
+    }
+
+    function productCalendarMenuSectionLabel(group = "") {
+      return {
+        Bakery: "烘焙",
+        "Sandwich&Meal": "三明治",
+        "Cake&Dessert": "蛋糕",
+        CPG: "CPG",
+        "Packaged Food": "CPG",
+        Other: "其他"
+      }[group] || group || "其他";
+    }
+
+    function productCalendarMenuSectionOrder(group = "") {
+      const order = { Bakery: 0, "Sandwich&Meal": 1, "Cake&Dessert": 2, CPG: 3, "Packaged Food": 3, Other: 4 };
+      return order[group] ?? 9;
+    }
+
     function productCalendarDateRange(period = {}) {
       const start = productCalendarLaunchDate(period.start);
       return {
@@ -7173,12 +7256,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function productCalendarSkuEntries(period = {}, includeFallback = true) {
+      if (Array.isArray(period.menuItems) && period.menuItems.length) return period.menuItems.filter(item => item.name);
       const entries = [];
       Object.entries(period.sku || {}).forEach(([key, value]) => {
         const row = productCalendarSkuRows.find(item => item.key === key);
         String(value || "").split("\n").map(item => item.trim()).filter(Boolean).forEach(name => {
           const group = row?.group || "未分类";
-          const category = group === "Sandwich&Meal" ? "三明治" : group === "Cake&Dessert" ? "蛋糕" : group === "Bakery" ? "烘焙" : "其他";
+          const category = productCalendarCategoryForGroup(group);
           entries.push({ name, group, tier: row?.tier || "", category });
         });
       });
@@ -7200,8 +7284,77 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return target;
     }
 
+    function productCalendarStaticSkuIndex(year = productCalendarYear) {
+      const map = new Map();
+      (productCalendarData[year] || [])
+        .filter(period => period.name && !String(period.name).startsWith("FY"))
+        .forEach(period => {
+          productCalendarSkuEntries(period, false).forEach(item => {
+            if (item.name && !map.has(item.name)) map.set(item.name, item);
+          });
+        });
+      return map;
+    }
+
+    function productCalendarLaunchPeriods(year = productCalendarYear) {
+      const fy = productCalendarFiscalYear(year);
+      const staticIndex = productCalendarStaticSkuIndex(year);
+      return buildLaunchCampaigns(state.launchProjects || [])
+        .filter(campaign => launchYearValue(campaign) === fy)
+        .map((campaign, index) => {
+          const monthIndex = productCalendarCampaignMonthIndex(campaign, index);
+          const range = productCalendarMonthRange(year, monthIndex);
+          const products = visibleLaunchProducts(campaign.products || []);
+          const menuItems = products.map(product => {
+            const indexed = staticIndex.get(product.name || "") || {};
+            const group = indexed.group || productCalendarGroupForCategory(product.category || campaign.category);
+            const category = indexed.category || productCalendarCategoryForGroup(group);
+            const tier = indexed.tier || "";
+            return {
+              id: product.id,
+              productId: product.id,
+              campaignId: campaign.id,
+              name: product.name || "",
+              group,
+              category,
+              tier,
+              menuType: "lto",
+              periodName: campaign.name,
+              launchDate: campaign.launchDate,
+              window: campaign.launchDate ? `上新 ${launchDateLabel(campaign.launchDate)}` : productCalendarPeriodRange(campaign)
+            };
+          }).filter(item => item.name);
+          return {
+            key: campaign.id,
+            campaignId: campaign.id,
+            campaignName: campaign.name,
+            name: campaign.name,
+            year,
+            monthIndex,
+            monthLabel: productCalendarMonthLabel(monthIndex),
+            start: range.start,
+            end: range.end,
+            launchDate: campaign.launchDate,
+            status: productCalendarStatus(range),
+            statusLabel: productCalendarStatusLabel(productCalendarStatus(range)),
+            sourcePeriods: [],
+            sourceNames: [campaign.name],
+            holiday: "",
+            element: "",
+            focus: "",
+            sku: {},
+            menuItems,
+            skuEntries: menuItems
+          };
+        });
+    }
+
     function productCalendarDecoratedPeriods() {
       const year = productCalendarYear;
+      const launchPeriods = productCalendarLaunchPeriods(year);
+      const sourcePeriods = launchPeriods.length
+        ? launchPeriods
+        : (productCalendarData[year] || []).filter(period => period.name && !String(period.name).startsWith("FY"));
       const buckets = Array.from({ length: 12 }, (_, monthIndex) => {
         const range = productCalendarMonthRange(year, monthIndex);
         const status = productCalendarStatus(range);
@@ -7222,13 +7375,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           element: "",
           focus: "",
           sku: {},
+          menuItems: [],
           skuEntries: []
         };
       });
-      (productCalendarData[year] || [])
-        .filter(period => period.name && !String(period.name).startsWith("FY"))
-        .forEach((period, index) => {
-          productCalendarRelevantMonths(period, year, index).forEach(monthIndex => {
+      sourcePeriods.forEach((period, index) => {
+          const months = Number.isInteger(period.monthIndex)
+            ? [period.monthIndex]
+            : productCalendarRelevantMonths(period, year, index);
+          months.forEach(monthIndex => {
             const bucket = buckets[monthIndex] || buckets[index % 12];
             bucket.sourcePeriods.push(period);
             bucket.sourceNames = uniqueTextValues([...bucket.sourceNames, period.name]);
@@ -7236,11 +7391,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             bucket.element = uniqueTextValues([bucket.element, period.element].join("\n").split(/[\/\n]+/)).join(" / ");
             bucket.focus = uniqueTextValues([bucket.focus, period.focus].join("\n").split("\n")).join("\n");
             productCalendarMergeSku(bucket.sku, period.sku || {});
+            bucket.menuItems.push(...(period.menuItems || []));
           });
         });
       return buckets.map(period => ({
         ...period,
-        skuEntries: productCalendarSkuEntries(period)
+        skuEntries: productCalendarUniqueMenuItems([
+          ...(period.menuItems || []),
+          ...productCalendarSkuEntries({ sku: period.sku, focus: period.focus }, true)
+        ])
       }));
     }
 
@@ -7258,7 +7417,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function productCalendarMatrixCellKey(period, rowId, columnId) {
-      return `${productCalendarYear}__${period?.key || "all"}__${rowId}__${columnId}`;
+      return `${productCalendarYear}__year__${rowId}__${columnId}`;
     }
 
     function productCalendarNormalizeToken(value = "") {
@@ -7273,8 +7432,12 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return normalizedTier.includes(normalizedColumn) || normalizedColumn.includes(normalizedTier);
     }
 
+    function productCalendarYearMatrixEntries() {
+      return productCalendarUniqueMenuItems(productCalendarDecoratedPeriods().flatMap(period => period.skuEntries || []));
+    }
+
     function productCalendarMatrixAutoValue(period, row, column) {
-      const entries = productCalendarSkuEntries(period || {}, false).filter(item =>
+      const entries = productCalendarYearMatrixEntries().filter(item =>
         String(item.group || "") === String(row.label || "") && productCalendarTierMatches(item.tier, column.label)
       );
       return uniqueTextValues(entries.map(item => item.name)).join("\n");
@@ -7286,25 +7449,41 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return `
         <section class="calendar-matrix">
           <div class="calendar-matrix-head">
-            <h3>SQ 矩阵 · ${escapeHtml(period?.monthLabel || "-")}</h3>
+            <h3>SQ 矩阵 · ${escapeHtml(productCalendarYear)} 全年</h3>
             <div class="calendar-matrix-actions">
               <button class="btn compact" data-product-calendar-add-row type="button">新增分类</button>
               <button class="btn compact" data-product-calendar-add-column type="button">新增列</button>
               <button class="btn compact" data-product-calendar-reset-matrix type="button">重置</button>
             </div>
           </div>
-          <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} ${escapeAttr(period?.monthLabel || "")} SQ 矩阵">
+          <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} 全年 SQ 矩阵">
             <table class="product-calendar-table sq-matrix">
               <thead>
                 <tr>
                   <th>分类</th>
-                  ${columns.map(column => `<th class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-column="${escapeAttr(column.id)}">${escapeHtml(column.label)}</th>`).join("")}
+                  ${columns.map(column => `
+                    <th>
+                      <div class="calendar-matrix-label">
+                        <span class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-column="${escapeAttr(column.id)}">${escapeHtml(column.label)}</span>
+                        <div class="calendar-matrix-label-actions">
+                          <button class="btn compact danger" data-product-calendar-delete-column="${escapeAttr(column.id)}" type="button">删除</button>
+                        </div>
+                      </div>
+                    </th>
+                  `).join("")}
                 </tr>
               </thead>
               <tbody>
                 ${rows.map(row => `
                   <tr>
-                    <th class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-row="${escapeAttr(row.id)}">${escapeHtml(row.label)}</th>
+                    <th>
+                      <div class="calendar-matrix-label">
+                        <span class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-row="${escapeAttr(row.id)}">${escapeHtml(row.label)}</span>
+                        <div class="calendar-matrix-label-actions">
+                          <button class="btn compact danger" data-product-calendar-delete-row="${escapeAttr(row.id)}" type="button">删除</button>
+                        </div>
+                      </div>
+                    </th>
                     ${columns.map(column => {
                       const cellKey = productCalendarMatrixCellKey(period, row.id, column.id);
                       const value = Object.prototype.hasOwnProperty.call(productCalendarMatrix.cells || {}, cellKey)
@@ -7342,6 +7521,32 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       renderProductCalendar();
     }
 
+    function deleteProductCalendarMatrixRow(rowId = "") {
+      const row = productCalendarMatrix.rows.find(item => item.id === rowId);
+      if (!row) return;
+      askDeleteConfirm(`确认删除分类「${row.label}」？`, () => {
+        productCalendarMatrix.rows = productCalendarMatrix.rows.filter(item => item.id !== rowId);
+        Object.keys(productCalendarMatrix.cells || {}).forEach(key => {
+          if (key.includes(`__${rowId}__`)) delete productCalendarMatrix.cells[key];
+        });
+        persistProductCalendarMatrix();
+        renderProductCalendar();
+      });
+    }
+
+    function deleteProductCalendarMatrixColumn(columnId = "") {
+      const column = productCalendarMatrix.columns.find(item => item.id === columnId);
+      if (!column) return;
+      askDeleteConfirm(`确认删除列「${column.label}」？`, () => {
+        productCalendarMatrix.columns = productCalendarMatrix.columns.filter(item => item.id !== columnId);
+        Object.keys(productCalendarMatrix.cells || {}).forEach(key => {
+          if (key.endsWith(`__${columnId}`)) delete productCalendarMatrix.cells[key];
+        });
+        persistProductCalendarMatrix();
+        renderProductCalendar();
+      });
+    }
+
     function resetProductCalendarMatrix() {
       openActionDialog({
         title: "重置 SQ 矩阵",
@@ -7374,6 +7579,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         groups.get(item.group).push(item);
       });
       const sources = period.sourceNames || [];
+      const sourcePeriods = period.sourcePeriods || [];
       return `
         <aside class="calendar-detail-panel">
           <span class="calendar-status-pill ${escapeAttr(period.status)}">${escapeHtml(period.statusLabel)}</span>
@@ -7387,7 +7593,17 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           <div class="calendar-sku-section">
             <span>当月档期</span>
             <div class="calendar-source-list">
-              ${sources.length ? sources.map(name => `<i>${escapeHtml(name)}</i>`).join("") : `<i>暂无明确档期</i>`}
+              ${sourcePeriods.length ? sourcePeriods.map(source => `
+                <div class="calendar-source-item">
+                  <i>${escapeHtml(source.name || source.campaignName || "未命名档期")}</i>
+                  ${source.campaignId ? `
+                    <div class="calendar-inline-actions">
+                      <button class="btn compact" data-edit-launch="${escapeAttr(source.campaignId)}" type="button">编辑</button>
+                      <button class="btn compact danger" data-delete-launch-campaign="${escapeAttr(source.campaignId)}" type="button">删除</button>
+                    </div>
+                  ` : ""}
+                </div>
+              `).join("") : (sources.length ? sources.map(name => `<i>${escapeHtml(name)}</i>`).join("") : `<i>暂无明确档期</i>`)}
             </div>
           </div>
           ${period.focus ? `<div class="calendar-sku-section"><span>食品重点产品</span><ul><li>${productCalendarCell(period.focus)}</li></ul></div>` : ""}
@@ -7435,26 +7651,39 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       });
     }
 
+    function productCalendarMenuTypeLabel(type = "") {
+      return { core: "Core", seasonal: "Seasonal Core", lto: "LTO" }[type] || "LTO";
+    }
+
     function productCalendarMenuBoardHtml(periods = [], selected = null) {
-      const activePeriods = selected?.sourcePeriods?.length ? selected.sourcePeriods : (selected ? [selected] : []);
-      const linkedEntries = activePeriods.flatMap(period =>
-        productCalendarSkuEntries(period, true).map(item => ({
+      const linkedEntries = selected?.skuEntries || [];
+      const coreDefaults = productCalendarCoreMenuDefaults.map(item => ({
+        ...item,
+        group: item.group || productCalendarGroupForCategory(item.category),
+        category: item.category || productCalendarCategoryForGroup(item.group),
+        menuType: "core",
+        window: "固定菜单"
+      }));
+      const menuItems = productCalendarUniqueMenuItems([
+        ...linkedEntries.map(item => ({
           ...item,
-          periodName: period.name,
-          window: productCalendarSourceRange(period)
-        }))
+          group: item.group || productCalendarGroupForCategory(item.category),
+          category: item.category || productCalendarCategoryForGroup(item.group),
+          menuType: item.menuType || productCalendarMenuTier(item),
+          window: item.window || (item.launchDate ? `上新 ${launchDateLabel(item.launchDate)}` : "")
+        })),
+        ...coreDefaults
+      ]).sort((a, b) =>
+        productCalendarMenuSectionOrder(a.group) - productCalendarMenuSectionOrder(b.group)
+        || String(a.name || "").localeCompare(String(b.name || ""), "zh-CN")
       );
-      const core = productCalendarUniqueMenuItems([
-        ...productCalendarCoreMenuDefaults,
-        ...linkedEntries.filter(item => productCalendarMenuTier(item) === "core")
-      ]);
-      const seasonal = productCalendarUniqueMenuItems(linkedEntries.filter(item => productCalendarMenuTier(item) === "seasonal"));
-      const lto = productCalendarUniqueMenuItems(linkedEntries.filter(item => productCalendarMenuTier(item) === "lto"));
-      const lanes = [
-        ["Core", core, "长期菜单，默认每月保留。", ""],
-        ["Seasonal Core", seasonal, "季节核心，跟随阶段保留。", ""],
-        ["LTO", lto, "跟随档期上下市。", "lto"]
-      ];
+      const sections = ["Bakery", "Sandwich&Meal", "Cake&Dessert", "CPG"].map(group => ({
+        group,
+        label: productCalendarMenuSectionLabel(group),
+        items: menuItems.filter(item => item.group === group || (group === "CPG" && item.group === "Packaged Food"))
+      }));
+      const otherItems = menuItems.filter(item => !sections.some(section => section.items.includes(item)));
+      if (otherItems.length) sections.push({ group: "Other", label: "其他", items: otherItems });
       return `
         <section class="calendar-menu-board">
           <div class="calendar-menu-head">
@@ -7464,17 +7693,22 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             </div>
           </div>
           <div class="calendar-menu-grid">
-            ${lanes.map(([title, items, note, tone]) => `
+            ${sections.map(section => `
               <section class="calendar-menu-lane">
-                <h4>${escapeHtml(title)}</h4>
+                <h4>${escapeHtml(section.label)}</h4>
                 <div class="calendar-menu-items">
-                  ${items.length ? items.map(item => `
-                    <div class="calendar-menu-item ${escapeAttr(tone)}">
+                  ${section.items.length ? section.items.map(item => `
+                    <div class="calendar-menu-item ${escapeAttr(item.menuType === "lto" ? "lto" : "")}">
                       <b>${escapeHtml(item.name)}</b>
-                      <span>${escapeHtml([item.group, item.tier].filter(Boolean).join(" · "))}</span>
-                      ${tone === "lto" && item.window ? `<span>上/下市：${escapeHtml(item.window)}</span>` : ""}
+                      <span>${escapeHtml([productCalendarMenuTypeLabel(item.menuType), item.tier, item.window].filter(Boolean).join(" · "))}</span>
+                      ${item.productId ? `
+                        <div class="calendar-menu-item-actions">
+                          <button class="btn compact" data-edit-launch-product="${escapeAttr(item.productId)}" type="button">编辑</button>
+                          <button class="btn compact danger" data-delete-launch-product="${escapeAttr(item.productId)}" type="button">删除</button>
+                        </div>
+                      ` : ""}
                     </div>
-                  `).join("") : `<div class="empty">${escapeHtml(note)}</div>`}
+                  `).join("") : `<div class="empty">当月暂无${escapeHtml(section.label)}上新。</div>`}
                 </div>
               </section>
             `).join("")}
@@ -12200,6 +12434,16 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const addCalendarMatrixColumn = event.target.closest("[data-product-calendar-add-column]");
       if (addCalendarMatrixColumn) {
         addProductCalendarMatrixColumn();
+        return;
+      }
+      const deleteCalendarMatrixRow = event.target.closest("[data-product-calendar-delete-row]");
+      if (deleteCalendarMatrixRow) {
+        deleteProductCalendarMatrixRow(deleteCalendarMatrixRow.dataset.productCalendarDeleteRow);
+        return;
+      }
+      const deleteCalendarMatrixColumn = event.target.closest("[data-product-calendar-delete-column]");
+      if (deleteCalendarMatrixColumn) {
+        deleteProductCalendarMatrixColumn(deleteCalendarMatrixColumn.dataset.productCalendarDeleteColumn);
         return;
       }
       const resetCalendarMatrix = event.target.closest("[data-product-calendar-reset-matrix]");
