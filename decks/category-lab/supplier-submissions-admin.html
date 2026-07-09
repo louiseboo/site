@@ -771,7 +771,7 @@
 
     let records = [];
     let profile = null;
-    let activeRecordId = new URLSearchParams(location.search).get("id") || "";
+    let activeRecordId = "";
     let statusFilter = "待处理";
     let supplierEditOpen = false;
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
@@ -948,8 +948,7 @@
 
     function syncUrl() {
       const url = new URL(location.href);
-      if (activeRecordId) url.searchParams.set("id", activeRecordId);
-      else url.searchParams.delete("id");
+      url.searchParams.delete("id");
       history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
     }
 
