@@ -1946,6 +1946,16 @@
       gap: 8px;
       margin-bottom: 10px;
     }
+    .launch-flow-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .launch-flow-toolbar .launch-product-picker {
+      margin-bottom: 0;
+    }
     .launch-product-pill {
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -2554,6 +2564,7 @@
       .launch-date-num,
       .launch-days-num,
       .launch-row-action { text-align: left; }
+      .launch-flow-toolbar { flex-direction: column; }
       .launch-issue-box { grid-template-columns: 1fr; }
       .detail-grid, .yield-stage-grid { grid-template-columns: 1fr; }
       .sensory-gallery,
@@ -2868,7 +2879,7 @@
                 </div>
                 <div class="launch-dashboard" id="launchDashboard"></div>
                 <div class="launch-search-row">
-                  <input class="search" id="launchSearch" placeholder="搜索档期、品类、负责人、节点">
+                  <input class="search" id="launchSearch" placeholder="搜索档期、品类、食品、节点">
                 </div>
                 <div class="launch-board">
                   <div class="launch-subhead">
@@ -3734,6 +3745,23 @@
     </div>
   </div>
 
+  <div class="modal" id="launchProductModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2>新增档期内产品</h2><button class="btn" data-close-modal="launchProductModal">关闭</button></div>
+      <div class="panel-body">
+        <form class="form" id="launchProductForm">
+          <p class="inline-note" id="launchProductCampaignLabel"></p>
+          <div class="form two">
+            <div class="field"><label>产品名称</label><input id="launchProductName" placeholder="如：新品蛋糕 / 烘焙 SKU" required></div>
+            <div class="field"><label>品类</label><select id="launchProductCategory"><option>烘焙</option><option>三明治</option><option>蛋糕</option><option>其他</option></select></div>
+          </div>
+          <div class="field"><label>备注</label><textarea id="launchProductNote" placeholder="供应商、当前风险、需要补充的资料"></textarea></div>
+          <div class="row-actions"><button class="btn primary" type="submit">保存产品</button><button class="btn" id="clearLaunchProductFormBtn" type="button">清空</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="bakeRecordModal">
     <div class="modal-card">
       <div class="modal-head"><h2 id="bakeRecordModalTitle">新增烤程</h2><button class="btn" data-close-modal="bakeRecordModal">关闭</button></div>
@@ -4504,27 +4532,57 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       "其他": { mechanism: "其他", fields: ["参数", "时间"] }
     };
     const launchMilestoneTemplates = [
-      { key: "research", label: "市场和消费者调研", shortLabel: "调研", offsetDays: -172, durationDays: 10, flowKeys: ["Brief"] },
-      { key: "charter", label: "Charter", shortLabel: "Charter", offsetDays: -165, durationDays: 4, flowKeys: ["Brief"] },
-      { key: "brief", label: "Brief需求到供应商", shortLabel: "Brief", offsetDays: -158, durationDays: 4, flowKeys: ["Brief"] },
-      { key: "prototype", label: "产品原型打造和测试", shortLabel: "原型", offsetDays: -95, durationDays: 60, flowKeys: ["初版配方确认", "稳定性测试", "众测"], actualKeys: ["formula", "sample"] },
-      { key: "consumer", label: "众测（含第一轮报价）", shortLabel: "众测", offsetDays: -88, durationDays: 4, flowKeys: ["V1报价", "众测"] },
-      { key: "npc", label: "产品委员会汇报", shortLabel: "NPC", offsetDays: -81, durationDays: 4, flowKeys: ["NPC"] },
-      { key: "optimization", label: "产品优化", shortLabel: "优化", offsetDays: -60, durationDays: 18, flowKeys: ["初版配方确认", "配方确认"] },
-      { key: "rdConfirm", label: "研发产品确认", shortLabel: "研发确认", offsetDays: -60, durationDays: 0, flowKeys: ["初版配方确认", "配方确认"], actualKeys: ["formula", "finalFormula"] },
-      { key: "thawing", label: "解冻测试确认", shortLabel: "解冻", offsetDays: -53, durationDays: 3, flowKeys: ["稳定性测试"] },
-      { key: "pilot", label: "中试确认", shortLabel: "中试", offsetDays: -46, durationDays: 0, flowKeys: ["中试", "中试验收"], actualKeys: ["pilot"] },
-      { key: "factoryTrial", label: "工厂试产", shortLabel: "试产", offsetDays: -46, durationDays: 11, flowKeys: ["中试跟产", "三方跟产", "中试"], actualKeys: ["pilotFollow", "thirdPartyFollow"] },
-      { key: "spec", label: "规格书制作与审核确认", shortLabel: "规格书", offsetDays: -46, durationDays: 10, flowKeys: ["规格书"] },
-      { key: "transport", label: "运输测试确认", shortLabel: "运输", offsetDays: -46, durationDays: 10, flowKeys: ["运输测试"] },
-      { key: "sop", label: "烤程制作、加热SOP、陈列指引", shortLabel: "烤程SOP", offsetDays: -46, durationDays: 4, flowKeys: ["烤程SOP"] },
-      { key: "mass", label: "大生产", shortLabel: "大生产", offsetDays: -36, durationDays: 2, flowKeys: ["大生产"] },
-      { key: "massConfirm", label: "大生产确认", shortLabel: "大生产确认", offsetDays: -25, durationDays: 11, flowKeys: ["大生产验收"], actualKeys: ["massAcceptance"] },
-      { key: "shelfLife", label: "保质期测试确认", shortLabel: "保质期", offsetDays: -25, durationDays: 31, flowKeys: ["稳定性测试"] },
-      { key: "warehouse", label: "产品到仓", shortLabel: "到仓", offsetDays: -18, durationDays: 4, flowKeys: ["大生产验收"] },
-      { key: "launchReady", label: "上市前准备完成", shortLabel: "上市准备", offsetDays: -15, durationDays: 0, flowKeys: ["烤程SOP"] },
-      { key: "launch", label: "上市", shortLabel: "上市", offsetDays: 0, durationDays: 0, flowKeys: [] },
-      { key: "postLaunch", label: "上市后跟踪", shortLabel: "上市后", offsetDays: 17, durationDays: 16, flowKeys: ["上市"] }
+      { key: "prototype", label: "产品原型开发", shortLabel: "原型开发", offsetDays: -187, flowKeys: ["初版配方确认", "配方确认"], actualKeys: ["formula", "sample"] },
+      { key: "consumer", label: "产品众测", shortLabel: "众测", offsetDays: -118, flowKeys: ["众测"], actualKeys: ["consumer"] },
+      { key: "npc", label: "Gate：NPC", shortLabel: "NPC", offsetDays: -111, flowKeys: ["NPC"], actualKeys: ["npc"] },
+      { key: "pilot", label: "产品中试", shortLabel: "中试", offsetDays: -90, flowKeys: ["中试", "中试验收"], actualKeys: ["pilot"] },
+      { key: "mass", label: "产品大生产", shortLabel: "大生产", offsetDays: -59, flowKeys: ["大生产", "大生产验收"], actualKeys: ["mass", "massAcceptance"] },
+      { key: "warehouse", label: "产品到仓", shortLabel: "到仓", offsetDays: -30, flowKeys: ["大生产验收"], actualKeys: ["warehouse"] },
+      { key: "launch", label: "产品上市时间", shortLabel: "上市", offsetDays: 0, flowKeys: ["上市"] }
+    ];
+    const feishuScheduleSource = "Feishu · 档期时间表&项目管理";
+    const feishuScheduleRows = [
+      ["FY26","1-2月：CNY蛋糕","已完成","2026-01-06","2025-07-03","2025-09-19","2025-09-10","2025-11-11","2025-09-17","2025-11-12","2025-10-08","2025-12-03","2025-11-08","2025-12-27","2025-12-07"],
+      ["FY26","1月：烘焙换新","已完成","2026-01-06","2025-07-03","2025-09-24","2025-09-10","","2025-09-17","","2025-10-08","","2025-11-08","","2025-12-07"],
+      ["FY26","2月初：原味千层","已完成","2026-02-26","2025-08-23","2025-09-26","2025-10-31","2025-05-20","2025-11-07","2025-11-19","2025-11-28","2025-12-23","2025-12-29","2026-01-15","2026-01-27"],
+      ["FY26","情人节：提拉米苏","已完成","2026-02-12","2025-08-09","2025-12-08","2025-10-17","","2025-10-24","2025-12-17","2025-11-14","2025-12-30","2025-12-15","2026-01-21","2026-01-13"],
+      ["FY26","3月：芝士分子周年庆-抹茶蛋糕","已完成","2026-02-26","2025-08-23","2025-11-04","2025-10-31","2025-12-11","2025-11-07","2025-12-25","2025-11-28","2026-01-13","2025-12-29","2026-02-04","2026-01-27"],
+      ["FY26","4月：摘星芝士蛋糕回归","已完成","2026-03-26","2025-09-20","2025-11-04","2025-11-28","","2025-12-05","2025-12-25","2025-12-26","2026-01-08","2026-01-26","2026-02-02","2026-02-24"],
+      ["FY26","4月：三明治换新，3个品类","已完成","2026-03-26","2025-09-20","2025-11-04","2025-11-28","2025-12-18","2025-12-05","2026-01-14","2025-12-26","2026-01-27","2026-01-26","2026-03-10","2026-02-24"],
+      ["FY26","4月：烘焙换新","已完成","2026-03-26","2025-09-20","2025-12-04","2025-11-28","2025-12-25","2025-12-05","2026-01-07","2025-12-26","2026-01-20","2026-01-26","2026-03-02","2026-02-24"],
+      ["FY26","4月：栗子蛋糕升级","已完成","2026-04-14","2025-10-09","2025-11-04","2025-12-17","","2025-12-24","","2026-01-14","","2026-02-14","","2026-03-15"],
+      ["FY26","5月：玫瑰荔枝蛋糕","已完成","2026-04-30","2025-10-25","2025-12-11","2026-01-02","2026-01-29","2026-01-09","2026-02-04","2026-01-30","","2026-03-02","","2026-03-31"],
+      ["FY26","6月：云瑰葡萄千层蛋糕","已完成","2026-05-28","2025-11-22","2025-12-11","2026-01-30","","2026-02-06","2026-02-04","2026-02-27","2026-04-20","2026-03-30","","2026-04-28"],
+      ["FY26","7月：埃塞：莓果、青提、茉莉","进行中","2026-07-02","2025-12-27","2026-01-28","2026-03-06","2026-04-10","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
+      ["FY26","7月：烘焙换新","进行中","2026-07-02","2025-12-27","2026-01-26","2026-03-06","2026-03-26","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
+      ["FY26","7月：+4三明治换新","进行中","2026-07-02","2025-12-27","2026-01-28","2026-03-06","","2026-03-13","","2026-04-03","","2026-05-04","","2026-06-02"],
+      ["FY26","8月：核心品巧克力蛋糕","进行中","2026-08-06","2026-01-31","2026-03-31","2026-04-10","2026-05-21","2026-04-17","","2026-05-08","","2026-06-08","","2026-07-07"],
+      ["FY26","8月：桂花档期","进行中","2026-08-06","2026-01-31","2026-01-28","2026-04-10","2026-05-22","2026-04-17","","2026-05-08","","2026-06-08","","2026-07-07"],
+      ["FY26","10月：大航海家-秋日限定","进行中","2026-09-24","2026-03-21","2026-03-21","2026-05-29","","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
+      ["FY26","10月：烘焙换新","进行中","2026-09-24","2026-03-21","2026-03-21","2026-05-29","","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
+      ["FY26","10月：+4/+9三明治换新","进行中","2026-09-24","2026-03-21","2026-03-21","2026-05-29","","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
+      ["FY26","10月：厚切鸡排新口味","进行中","2026-09-24","2026-03-21","2025-08-01","2026-05-29","2026-03-10","2026-06-05","","2026-06-26","","2026-07-27","","2026-08-25"],
+      ["FY26","11月：迪克森-榛果巧克力千层","未开始","2026-11-05","2026-05-02","2026-05-11","2026-07-10","","2026-07-17","","2026-08-07","","2026-09-07","","2026-10-06"],
+      ["FY26","12月：节日蛋糕","未开始","2026-12-08","2026-06-04","2026-04-13","2026-08-12","","2026-08-19","","2026-09-09","","2026-10-10","","2026-11-08"],
+      ["FY27","1-2月：CNY蛋糕","未开始","2027-01-06","2026-07-03","","2026-09-10","","2026-09-17","","2026-10-08","","2026-11-08","","2026-12-07"],
+      ["FY27","1月：烘焙换新","未开始","2027-01-06","2026-07-03","","2026-09-10","","2026-09-17","","2026-10-08","","2026-11-08","","2026-12-07"],
+      ["FY27","1月：三明治换新","未开始","2027-01-06","2026-07-03","","2026-09-10","","2026-09-17","","2026-10-08","","2026-11-08","","2026-12-07"],
+      ["FY27","3月：芝士分子周年庆-抹茶蛋糕","未开始","2027-02-26","2026-08-23","","2026-10-31","","2026-11-07","","2026-11-28","","2026-12-29","","2027-01-27"],
+      ["FY27","4月：摘星档期蛋糕","未开始","2027-03-26","2026-09-20","","2026-11-28","","2026-12-05","","2026-12-26","","2027-01-26","","2027-02-24"],
+      ["FY27","4月：三明治换新","未开始","2027-03-26","2026-09-20","","2026-11-28","","2026-12-05","","2026-12-26","","2027-01-26","","2027-02-24"],
+      ["FY27","4月：烘焙换新","未开始","2027-03-26","2026-09-20","","2026-11-28","","2026-12-05","","2026-12-26","","2027-01-26","","2027-02-24"],
+      ["FY27","5月：云南档期蛋糕","未开始","2027-04-30","2026-10-25","","2027-01-02","","2027-01-09","","2027-01-30","","2027-03-02","","2027-03-31"],
+      ["FY27","6月：云瑰葡萄千层蛋糕","未开始","2027-05-28","2026-11-22","","2027-01-30","","2027-02-06","","2027-02-27","","2027-03-30","","2027-04-28"],
+      ["FY27","7月：埃塞：青提、茉莉","未开始","2027-07-02","2026-12-27","","2027-03-06","","2027-03-13","","2027-04-03","","2027-05-04","","2027-06-02"],
+      ["FY27","7月：烘焙换新","未开始","2027-07-02","2026-12-27","","2027-03-06","","2027-03-13","","2027-04-03","","2027-05-04","","2027-06-02"],
+      ["FY27","7月：三明治换新","未开始","2027-07-02","2026-12-27","","2027-03-06","","2027-03-13","","2027-04-03","","2027-05-04","","2027-06-02"],
+      ["FY27","8月：桂花档期1","未开始","2027-08-06","2027-01-31","","2027-04-10","","2027-04-17","","2027-05-08","","2027-06-08","","2027-07-07"],
+      ["FY27","9月：桂花档期2","未开始","2027-09-03","2027-02-28","","2027-05-08","","2027-05-15","","2027-06-05","","2027-07-06","","2027-08-04"],
+      ["FY27","10月：大航海家-秋日限定","未开始","2027-09-24","2027-03-21","","2027-05-29","","2027-06-05","","2027-06-26","","2027-07-27","","2027-08-25"],
+      ["FY27","10月：烘焙换新","未开始","2027-09-24","2027-03-21","","2027-05-29","","2027-06-05","","2027-06-26","","2027-07-27","","2027-08-25"],
+      ["FY27","10月：三明治换新","未开始","2027-09-24","2027-03-21","","2027-05-29","","2027-06-05","","2027-06-26","","2027-07-27","","2027-08-25"],
+      ["FY27","11月：迪克森-榛果巧克力千层","未开始","2027-11-05","2027-05-02","","2027-07-10","","2027-07-17","","2027-08-07","","2027-09-07","","2027-10-06"],
+      ["FY27","12月：节日蛋糕","未开始","2027-12-08","2027-06-04","","2027-08-12","","2027-08-19","","2027-09-09","","2027-10-10","","2027-11-08"]
     ];
     const coffeeBarFlowItems = [
       "Brief", "初版配方确认", "V1报价", "稳定性测试", "众测", "NPC", "配方确认",
@@ -4562,47 +4620,140 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (!entries.length) entries.push({ name: "档期产品待补", category: "其他" });
       return entries;
     }
-    function buildFeishuCalendarLaunchProjects() {
-      const coveredCampaigns = new Set(["SOE：埃塞", "桂花酒酿", "大航海家", "迪克森少校冬日盛典II"]);
-      return (productCalendarData["2026"] || [])
-        .filter(period => period.start && period.name && !period.name.startsWith("FY26") && !coveredCampaigns.has(period.name))
-        .flatMap(period => {
-          const launchDate = productCalendarLaunchDate(period.start);
-          if (!launchDate) return [];
-          const completed = Boolean(period.end && productCalendarLaunchDate(period.end) && productCalendarLaunchDate(period.end) <= "2026-07-01");
-          const campaignName = `${calendarPeriodCode(period)} ${period.name}`;
-          return calendarSkuEntries(period).map((item, index) => ({
-            id: `feishu-calendar-2026-${calendarPeriodCode(period)}-${index + 1}`,
-            name: item.name,
-            launchDate,
-            category: item.category,
-            categories: [item.category],
-            launchCampaign: campaignName,
-            launchCampaignId: "",
-            owner: "Louise",
-            calendarCompleted: completed,
-            source: "Feishu · FY26 产品日历",
-            note: `${period.name}：来自 FY26 产品日历。${item.name === "档期产品待补" ? "食品 SKU 待补。" : ""}`,
-            checkedFlow: completed ? completedCoffeeBarFlow() : feishuCoffeeBarFlow({ brief: true })
-          }));
+    const feishuScheduleProductMap = {
+      "7月：埃塞：莓果、青提、茉莉": [
+        { id: "feishu-coffee-bar-blueberry-cheesecake-20260702", name: "蓝莓芝士蛋糕", category: "蛋糕", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true } }
+      ],
+      "7月：烘焙换新": [
+        { id: "feishu-coffee-bar-high-protein-bagel-20260702", name: "高蛋白全麦贝果", category: "烘焙", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true } },
+        { id: "feishu-coffee-bar-fig-cheese-bun-20260702", name: "无花果乳酪包", category: "烘焙", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true } },
+        { id: "feishu-coffee-bar-mulberry-fig-ciabatta-20260702", name: "桑葚无花果恰巴塔", category: "烘焙", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true } }
+      ],
+      "7月：+4三明治换新": [
+        { id: "feishu-coffee-bar-basil-pesto-panini-20260702", name: "罗勒青酱帕尼尼", category: "三明治", flow: { brief: true, formula: true, sample: true, consumer: true, npc: true } },
+        { id: "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702", name: "黑松露厚切鸡排贝果三明治", category: "三明治", flow: { brief: true, formula: true, sample: true, consumer: true } },
+        { id: "feishu-coffee-bar-classic-chicken-bagel-sandwich-20260702", name: "经典厚切鸡排贝果三明治", category: "三明治", flow: { brief: true, formula: true, sample: true, consumer: true } }
+      ],
+      "8月：核心品巧克力蛋糕": [
+        { id: "feishu-coffee-bar-core-chocolate-cake-20260806", name: "核心品巧克力蛋糕", category: "蛋糕", flow: { brief: true, formula: true, sample: true, consumer: true } }
+      ],
+      "8月：桂花档期": [
+        { id: "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806", name: "桂花酒酿蛋糕", category: "蛋糕", flow: { brief: true, formula: true, sample: true, consumer: true } }
+      ],
+      "10月：大航海家-秋日限定": [
+        { id: "feishu-coffee-bar-mango-pomelo-sago-cake-20260924", name: "杨枝甘露蛋糕", category: "蛋糕", flow: { brief: true, formula: true, sample: true, consumer: true } }
+      ],
+      "10月：烘焙换新": [
+        { id: "feishu-coffee-bar-q4-bakery-refresh-20260924", name: "Q4烘焙换新", category: "烘焙", flow: { brief: true } }
+      ],
+      "10月：+4/+9三明治换新": [
+        { id: "feishu-coffee-bar-q4-sandwich-refresh-20260924", name: "Q4三明治换新", category: "三明治", flow: { brief: true } }
+      ],
+      "10月：厚切鸡排新口味": [
+        { id: "feishu-coffee-bar-thick-cut-chicken-new-flavor-20260924", name: "厚切鸡排新口味", category: "三明治", flow: { brief: true, formula: true, sample: true, consumer: true } }
+      ],
+      "12月：节日蛋糕": [
+        { id: "feishu-coffee-bar-holiday-cake-20261208", name: "12月：节日蛋糕", category: "蛋糕", flow: { brief: true } }
+      ]
+    };
+
+    function feishuScheduleId(row) {
+      const safeName = String(row.name || "").replace(/[^a-zA-Z0-9\u4e00-\u9fa5]+/g, "-").replace(/^-|-$/g, "");
+      return `feishu-schedule-${row.year}-${normalizeLaunchDate(row.launchDate)}-${safeName}`;
+    }
+
+    function inferLaunchCategory(name = "") {
+      if (/三明治|鸡排|帕尼尼/.test(name)) return "三明治";
+      if (/烘焙|贝果|面包|恰巴塔|乳酪包/.test(name)) return "烘焙";
+      if (/蛋糕|千层|提拉米苏|桂花|巧克力|甘露|栗子|玫瑰|荔枝|CNY|节日/.test(name)) return "蛋糕";
+      return "其他";
+    }
+
+    function fallbackScheduleProduct(row) {
+      const category = inferLaunchCategory(row.name);
+      const cleaned = String(row.name || "")
+        .replace(/^(?:\d+-\d+月|\d+月初|\d+月|情人节)[：:]/, "")
+        .replace(/，\d+个品类$/, "")
+        .trim();
+      const shouldWaitForSku = /换新|档期|埃塞/.test(cleaned) && !/蛋糕|千层|提拉米苏|鸡排|巧克力|甘露|栗子|玫瑰|荔枝|CNY|节日/.test(cleaned);
+      return [{ name: shouldWaitForSku ? "食品 SKU 待补" : (cleaned || row.name || "食品 SKU 待补"), category }];
+    }
+
+    function feishuScheduleRecord(row) {
+      const [year, name, status, launchDate, prototypePlan, prototypeActual, consumerPlan, consumerActual, npcPlan, npcActual, pilotPlan, pilotActual, massPlan, massActual, warehousePlan] = row;
+      return {
+        year,
+        name,
+        status,
+        launchDate,
+        id: "",
+        plannedDates: {
+          prototype: prototypePlan,
+          consumer: consumerPlan,
+          npc: npcPlan,
+          pilot: pilotPlan,
+          mass: massPlan,
+          warehouse: warehousePlan,
+          launch: launchDate
+        },
+        actualDates: {
+          prototype: prototypeActual,
+          consumer: consumerActual,
+          npc: npcActual,
+          pilot: pilotActual,
+          mass: massActual
+        }
+      };
+    }
+
+    function feishuScheduleFlow(row, product = {}) {
+      if (row.status === "已完成") return completedCoffeeBarFlow();
+      const actual = row.actualDates || {};
+      return feishuCoffeeBarFlow({
+        ...(product.flow || {}),
+        brief: true,
+        formula: Boolean(actual.prototype) || product.flow?.formula,
+        sample: Boolean(actual.prototype) || product.flow?.sample,
+        consumer: Boolean(actual.consumer) || product.flow?.consumer,
+        npc: Boolean(actual.npc) || product.flow?.npc,
+        pilot: Boolean(actual.pilot) || product.flow?.pilot,
+        mass: Boolean(actual.mass) || product.flow?.mass
+      });
+    }
+
+    function buildFeishuScheduleLaunchProjects() {
+      return feishuScheduleRows
+        .map(item => {
+          const row = feishuScheduleRecord(item);
+          row.id = feishuScheduleId(row);
+          return row;
+        })
+        .flatMap(row => {
+          const mappedProducts = feishuScheduleProductMap[row.name] || fallbackScheduleProduct(row);
+          return mappedProducts.map((product, index) => {
+            const category = product.category || inferLaunchCategory(product.name || row.name);
+            return {
+              id: product.id || `${row.id}-product-${index + 1}`,
+              name: product.name || "食品 SKU 待补",
+              launchDate: row.launchDate,
+              category,
+              categories: [category],
+              launchCampaign: row.name,
+              launchCampaignId: row.id,
+              owner: "Louise",
+              source: `${feishuScheduleSource} · ${row.year}`,
+              feishuStatus: row.status,
+              calendarCompleted: row.status === "已完成",
+              plannedDates: { ...row.plannedDates },
+              actualDates: { ...row.actualDates },
+              note: `${row.year} ${row.name}：来自档期表；食品可在 Coffee Bar 全流程中补充。`,
+              checkedFlow: feishuScheduleFlow(row, product)
+            };
+          });
         });
     }
-    const feishuCalendarLaunchProjects = buildFeishuCalendarLaunchProjects();
-    const feishuCoffeeBarLaunchProjects = [
-      ...feishuCalendarLaunchProjects,
-      { id: "feishu-coffee-bar-blueberry-cheesecake-20260702", name: "蓝莓芝士蛋糕", launchDate: "2026-07-02", category: "蛋糕", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true }) },
-      { id: "feishu-coffee-bar-high-protein-bagel-20260702", name: "高蛋白全麦贝果", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
-      { id: "feishu-coffee-bar-fig-cheese-bun-20260702", name: "无花果乳酪包", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
-      { id: "feishu-coffee-bar-mulberry-fig-ciabatta-20260702", name: "桑葚无花果恰巴塔", launchDate: "2026-07-02", category: "烘焙", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true, pilot: true, spec: true, sop: true }) },
-      { id: "feishu-coffee-bar-basil-pesto-panini-20260702", name: "罗勒青酱帕尼尼", launchDate: "2026-07-02", category: "三明治", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true, npc: true }) },
-      { id: "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702", name: "黑松露厚切鸡排贝果三明治", launchDate: "2026-07-02", category: "三明治", launchCampaign: "0702 SOE：埃塞", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：鸡排和面包改进。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
-      { id: "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806", name: "桂花酒酿蛋糕", launchDate: "2026-08-06", category: "蛋糕", launchCampaign: "0806 桂花酒酿", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
-      { id: "feishu-coffee-bar-core-chocolate-cake-20260806", name: "核心品巧克力蛋糕", launchDate: "2026-08-06", category: "蛋糕", launchCampaign: "0806 桂花酒酿", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
-      { id: "feishu-coffee-bar-mango-pomelo-sago-cake-20260924", name: "杨枝甘露蛋糕", launchDate: "2026-09-24", category: "蛋糕", launchCampaign: "0924 大航海家", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true, formula: true, sample: true, consumer: true }) },
-      { id: "feishu-coffee-bar-q4-sandwich-refresh-20260924", name: "Q4三明治换新", launchDate: "2026-09-24", category: "三明治", launchCampaign: "0924 大航海家", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) },
-      { id: "feishu-coffee-bar-q4-bakery-refresh-20260924", name: "Q4烘焙换新", launchDate: "2026-09-24", category: "烘焙", launchCampaign: "0924 大航海家", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) },
-      { id: "feishu-coffee-bar-holiday-cake-20261208", name: "12月：节日蛋糕", launchDate: "2026-12-08", category: "蛋糕", launchCampaign: "1208 迪克森少校冬日盛典II", owner: "Louise", source: "Feishu · coffee bar全周期任务池", note: "飞书导入：项目状态 进行中。", checkedFlow: feishuCoffeeBarFlow({ brief: true }) }
-    ];
+
+    const feishuCoffeeBarLaunchProjects = buildFeishuScheduleLaunchProjects();
     function feishuCoffeeBarFlow(flags = {}) {
       return {
         "Brief": Boolean(flags.brief),
@@ -4837,6 +4988,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let competitorProductImagesData = [];
     let editingBakeRecordId = null;
     let editingLaunchProjectId = null;
+    let launchProductCampaignId = "";
     let activeLaunchProjectId = null;
     let activeLaunchMilestoneKey = "";
     let launchStatusFilter = "";
@@ -5079,12 +5231,25 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function withRequiredLaunchProjects(projects) {
-      const savedProjects = (projects || []).map(migrateLaunchProject);
+      const requiredProjects = structuredClone(feishuCoffeeBarLaunchProjects).map(migrateLaunchProject);
+      const requiredById = new Map(requiredProjects.map(project => [project.id, project]));
+      const requiredKeys = new Set(requiredProjects.map(launchProjectIdentity));
+      const deprecatedSeed = project => /^feishu-calendar-2026-/.test(project.id || "") || project.source === "Feishu · FY26 产品日历";
+      const savedProjects = (projects || [])
+        .map(project => {
+          const required = requiredById.get(project.id);
+          if (!required) return migrateLaunchProject(project);
+          return migrateLaunchProject({
+            ...project,
+            ...required,
+            issueNote: project.issueNote || required.issueNote || "",
+            checkedFlow: project.checkedFlow || required.checkedFlow,
+            actualDates: { ...(required.actualDates || {}), ...(project.actualDates || {}) }
+          });
+        })
+        .filter(project => !deprecatedSeed(project) && (requiredById.has(project.id) || !requiredKeys.has(launchProjectIdentity(project))));
       const savedIds = new Set(savedProjects.map(project => project.id));
-      const savedKeys = new Set(savedProjects.map(launchProjectIdentity));
-      const required = structuredClone(feishuCoffeeBarLaunchProjects)
-        .map(migrateLaunchProject)
-        .filter(project => !savedIds.has(project.id) && !savedKeys.has(launchProjectIdentity(project)));
+      const required = requiredProjects.filter(project => !savedIds.has(project.id));
       return [...savedProjects, ...required];
     }
 
@@ -5245,18 +5410,20 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function defaultLaunchCampaignForProject(project = {}) {
       const byId = {
-        "feishu-coffee-bar-blueberry-cheesecake-20260702": "0702 SOE：埃塞",
-        "feishu-coffee-bar-high-protein-bagel-20260702": "0702 SOE：埃塞",
-        "feishu-coffee-bar-fig-cheese-bun-20260702": "0702 SOE：埃塞",
-        "feishu-coffee-bar-mulberry-fig-ciabatta-20260702": "0702 SOE：埃塞",
-        "feishu-coffee-bar-basil-pesto-panini-20260702": "0702 SOE：埃塞",
-        "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702": "0702 SOE：埃塞",
-        "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806": "0806 桂花酒酿",
-        "feishu-coffee-bar-core-chocolate-cake-20260806": "0806 桂花酒酿",
-        "feishu-coffee-bar-mango-pomelo-sago-cake-20260924": "0924 大航海家",
-        "feishu-coffee-bar-q4-sandwich-refresh-20260924": "0924 大航海家",
-        "feishu-coffee-bar-q4-bakery-refresh-20260924": "0924 大航海家",
-        "feishu-coffee-bar-holiday-cake-20261208": "1208 迪克森少校冬日盛典II"
+        "feishu-coffee-bar-blueberry-cheesecake-20260702": "7月：埃塞：莓果、青提、茉莉",
+        "feishu-coffee-bar-high-protein-bagel-20260702": "7月：烘焙换新",
+        "feishu-coffee-bar-fig-cheese-bun-20260702": "7月：烘焙换新",
+        "feishu-coffee-bar-mulberry-fig-ciabatta-20260702": "7月：烘焙换新",
+        "feishu-coffee-bar-basil-pesto-panini-20260702": "7月：+4三明治换新",
+        "feishu-coffee-bar-truffle-chicken-bagel-sandwich-20260702": "7月：+4三明治换新",
+        "feishu-coffee-bar-classic-chicken-bagel-sandwich-20260702": "7月：+4三明治换新",
+        "feishu-coffee-bar-osmanthus-rice-wine-cake-20260806": "8月：桂花档期",
+        "feishu-coffee-bar-core-chocolate-cake-20260806": "8月：核心品巧克力蛋糕",
+        "feishu-coffee-bar-mango-pomelo-sago-cake-20260924": "10月：大航海家-秋日限定",
+        "feishu-coffee-bar-q4-sandwich-refresh-20260924": "10月：+4/+9三明治换新",
+        "feishu-coffee-bar-q4-bakery-refresh-20260924": "10月：烘焙换新",
+        "feishu-coffee-bar-thick-cut-chicken-new-flavor-20260924": "10月：厚切鸡排新口味",
+        "feishu-coffee-bar-holiday-cake-20261208": "12月：节日蛋糕"
       };
       return byId[project.id] || "";
     }
@@ -5286,6 +5453,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const categories = splitLaunchCategories(project.categories?.length ? project.categories : (project.category || "烘焙"));
       const requiredLaunchCampaign = defaultLaunchCampaignForProject(project);
       const launchCampaign = requiredLaunchCampaign || project.launchCampaign || project.campaign || "";
+      const feishuStatus = project.feishuStatus || "";
       return {
         ...project,
         id: project.id || crypto.randomUUID(),
@@ -5297,11 +5465,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         launchCampaignId: project.launchCampaignId || "",
         owner: project.owner || "Louise",
         issueNote: project.issueNote || "",
-        calendarCompleted: Boolean(project.calendarCompleted),
+        feishuStatus,
+        calendarCompleted: Boolean(project.calendarCompleted) || feishuStatus === "已完成",
+        plannedDates: { ...(project.plannedDates || {}) },
         actualDates,
         checkedFlow: Object.fromEntries(coffeeBarFlowItems.map(item => [
           item,
-          Boolean(project.calendarCompleted) || Boolean(checkedFlow[item]) || (flowAliases[item] || []).some(alias => Boolean(checkedFlow[alias]))
+          Boolean(project.calendarCompleted) || feishuStatus === "已完成" || Boolean(checkedFlow[item]) || (flowAliases[item] || []).some(alias => Boolean(checkedFlow[alias]))
         ]))
       };
     }
@@ -5520,8 +5690,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         const categories = uniqueClean(sortedItems.map(project => project.category));
         const owners = uniqueClean(sortedItems.map(project => project.owner));
         const sources = uniqueClean(sortedItems.map(project => project.source));
+        const feishuStatuses = uniqueClean(sortedItems.map(project => project.feishuStatus));
+        const plannedDates = {};
         const actualDates = {};
         launchMilestoneTemplates.forEach(template => {
+          const planned = uniqueClean(sortedItems.map(project => {
+            const plannedDates = project.plannedDates || {};
+            return plannedDates[template.key] || addDays(project.launchDate, template.offsetDays);
+          }));
+          if (planned.length) plannedDates[template.key] = planned[0];
           const dateKeys = [template.key, ...(template.actualKeys || [])].filter(Boolean);
           const dates = uniqueClean(sortedItems.map(project => {
             const actualDates = project.actualDates || {};
@@ -5535,12 +5712,19 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         ]));
         return {
           id: `launch-campaign-${key.replace(/[^a-zA-Z0-9_-]+/g, "-")}`,
+          campaignKey: key,
           name,
           launchDate: sortedItems[0]?.launchDate || "",
           category: categories.join(" / ") || "未分类",
+          categories,
           owner: owners.join(" / "),
           source: sources[0] || "",
+          feishuStatus: feishuStatuses.length === 1 ? feishuStatuses[0] : "",
+          launchCampaign: name,
+          launchCampaignId: sortedItems[0]?.launchCampaignId || "",
+          calendarCompleted: sortedItems.length > 0 && sortedItems.every(project => Boolean(project.calendarCompleted)),
           note: sortedItems.map(project => project.name).join("、"),
+          plannedDates,
           actualDates,
           checkedFlow,
           products: sortedItems
@@ -5862,11 +6046,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function calculateLaunchMilestones(project) {
       const today = formatDateInput(new Date());
       return launchMilestoneTemplates.map(template => {
-        const plannedDate = addDays(project.launchDate, template.offsetDays);
+        const plannedDate = project?.plannedDates?.[template.key] || addDays(project.launchDate, template.offsetDays);
         const actualDate = launchMilestoneActualDate(project, template);
         const flowDone = launchMilestoneFlowDone(project, template);
         const launchDatePassed = template.key === "launch" && project.launchDate && dayDiff(project.launchDate, today) <= 0;
-        const completedByCalendar = Boolean(project.calendarCompleted);
+        const completedByCalendar = Boolean(project.calendarCompleted) || project.feishuStatus === "已完成";
         const displayActualDate = actualDate || ((flowDone || completedByCalendar || launchDatePassed) ? plannedDate : "");
         const expectedDays = Math.abs(template.offsetDays);
         const daysFromToday = plannedDate ? dayDiff(plannedDate, today) : "";
@@ -6173,7 +6357,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function launchOffsetGuideHtml() {
       return `
         <div class="launch-offset-guide">
-          <b>Feishu 倒排</b>
+          <b>Feishu 默认倒排</b>
           ${launchMilestoneTemplates.map(item => {
             const duration = launchDurationText(item);
             return `<span title="${escapeAttr(item.label)}">${escapeHtml(launchMilestoneDisplayLabel(item))} ${escapeHtml(launchOffsetText(item))}${duration ? ` / ${escapeHtml(duration)}` : ""}</span>`;
@@ -6309,10 +6493,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const products = campaign?.products?.length ? campaign.products : [project];
       if (label) label.textContent = `当前档期：${campaign?.name || project.name || "未命名档期"} · 当前食品：${project.name || "未命名食品"} · ${project.launchDate || "未定上市日"}`;
       host.innerHTML = `
-        <div class="launch-product-picker">
-          ${products.map(item => `
-            <button class="launch-product-pill ${item.id === project.id ? "active" : ""}" data-select-launch-product="${escapeAttr(item.id)}" type="button">${escapeHtml(item.name || "未命名食品")}</button>
-          `).join("")}
+        <div class="launch-flow-toolbar">
+          <div class="launch-product-picker">
+            ${products.map(item => `
+              <button class="launch-product-pill ${item.id === project.id ? "active" : ""}" data-select-launch-product="${escapeAttr(item.id)}" type="button">${escapeHtml(item.name || "未命名食品")}</button>
+            `).join("")}
+          </div>
+          <button class="btn compact" data-open-launch-product="${escapeAttr(campaign?.id || project.id)}" type="button">新增产品</button>
         </div>
         <div class="checkbox-grid">
           ${coffeeBarFlowItems.map(item => `
@@ -6597,6 +6784,67 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function activeLaunchProject() {
       return ensureActiveLaunchProject();
+    }
+
+    function launchCampaignById(id = "") {
+      const campaigns = buildLaunchCampaigns(state.launchProjects || []);
+      return campaigns.find(item => item.id === id || (item.products || []).some(product => product.id === id))
+        || campaigns.find(item => launchItemIsActive(item))
+        || campaigns[0]
+        || null;
+    }
+
+    function clearLaunchProductForm() {
+      document.querySelector("#launchProductForm")?.reset();
+      const category = document.querySelector("#launchProductCategory");
+      if (category) category.value = "烘焙";
+    }
+
+    function openLaunchProductModal(campaignId = "") {
+      const campaign = launchCampaignById(campaignId);
+      if (!campaign) return;
+      launchProductCampaignId = campaign.id;
+      clearLaunchProductForm();
+      const category = document.querySelector("#launchProductCategory");
+      if (category) category.value = campaign.categories?.[0] || splitLaunchCategories(campaign.category || "烘焙")[0] || "烘焙";
+      const label = document.querySelector("#launchProductCampaignLabel");
+      if (label) label.textContent = `补充到：${campaign.name || "未命名档期"} · 上市 ${campaign.launchDate || "未定"}`;
+      openModal("launchProductModal");
+    }
+
+    function saveLaunchProduct(event) {
+      event.preventDefault();
+      const campaign = launchCampaignById(launchProductCampaignId);
+      if (!campaign) return;
+      const seed = campaign.products?.[0] || {};
+      const name = document.querySelector("#launchProductName").value.trim();
+      const category = document.querySelector("#launchProductCategory").value || "烘焙";
+      if (!name) {
+        event.currentTarget.reportValidity?.();
+        document.querySelector("#launchProductName")?.focus();
+        return;
+      }
+      const project = migrateLaunchProject({
+        id: crypto.randomUUID(),
+        name,
+        launchDate: campaign.launchDate || seed.launchDate || "",
+        category,
+        categories: [category],
+        launchCampaign: campaign.name || seed.launchCampaign || "",
+        launchCampaignId: campaign.launchCampaignId || seed.launchCampaignId || `manual-${campaign.id}`,
+        owner: "Louise",
+        source: "手动补录 · Coffee Bar 全流程",
+        plannedDates: { ...(campaign.plannedDates || seed.plannedDates || {}) },
+        actualDates: {},
+        note: document.querySelector("#launchProductNote").value.trim(),
+        checkedFlow: feishuCoffeeBarFlow({ brief: true })
+      });
+      state.launchProjects.push(project);
+      activeLaunchProjectId = project.id;
+      persist();
+      closeModal("launchProductModal");
+      clearLaunchProductForm();
+      renderLaunchProjects();
     }
 
     function renderLaunchProjects() {
@@ -10924,6 +11172,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     document.querySelector("#launchProjectForm")?.addEventListener("submit", saveLaunchProject);
     document.querySelector("#clearLaunchFormBtn")?.addEventListener("click", () => { clearLaunchForm(); renderCoffeeBarChecklist(); });
     document.querySelector("#openLaunchProjectModalBtn")?.addEventListener("click", () => openLaunchProjectModal());
+    document.querySelector("#launchProductForm")?.addEventListener("submit", saveLaunchProduct);
+    document.querySelector("#clearLaunchProductFormBtn")?.addEventListener("click", clearLaunchProductForm);
     document.querySelector("#launchSearch")?.addEventListener("input", renderLaunchProjects);
     ["opportunityIdeas", "competitorTests", "oemRecords"].forEach(key => {
       document.querySelector(`#${key}Search`)?.addEventListener("input", () => {
@@ -11064,6 +11314,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const selectLaunchProduct = event.target.closest("[data-select-launch-product]");
       if (selectLaunchProduct) {
         selectLaunchProject(selectLaunchProduct.dataset.selectLaunchProduct);
+        return;
+      }
+      const openLaunchProduct = event.target.closest("[data-open-launch-product]");
+      if (openLaunchProduct) {
+        openLaunchProductModal(openLaunchProduct.dataset.openLaunchProduct);
         return;
       }
       const importLaunchIssue = event.target.closest("[data-import-launch-issue]");
