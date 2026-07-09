@@ -699,6 +699,24 @@
   <script>
     const TABLE = "supplier_feedback_records";
     const CATEGORYLAB_STORAGE_KEY = "burger-bom-tool-v1";
+    const CAMPAIGN_OPTIONS = [
+      "0106 Q1 烘焙换新",
+      "0106 Q2 三明治换新",
+      "0226 芝士分子周年庆",
+      "0326 创世巨星",
+      "0326 Q2烘焙换新",
+      "0326 Q2三明治换新",
+      "0430 云南档期 1",
+      "0528 云南档期 2",
+      "0702 Q3烘焙换新",
+      "0702 Q3三明治换新",
+      "0806 桂花档期",
+      "0924 大航海家",
+      "0924 Q4烘焙换新",
+      "0924 Q4三明治换新",
+      "1105 迪克森少校 1",
+      "1208 迪克森少校 2"
+    ];
     const config = window.CATEGORYLAB_SUPABASE || {};
     const cloudbaseConfig = window.CATEGORYLAB_CLOUDBASE || {};
     const cloudbaseHost = /tcloudbase|cloudbase|tencent/i.test(location.hostname) || new URLSearchParams(location.search).get("backend") === "cloudbase";
@@ -855,6 +873,10 @@
       return `<div class="kv-item"><label>${escapeHtml(label)}</label>${fieldInput(field, value, placeholder, type)}</div>`;
     }
 
+    function uniqueOptions(values) {
+      return [...new Set(values.map(item => String(item || "").trim()).filter(Boolean))];
+    }
+
     function categoryLabData() {
       const raw = localStorage.getItem(CATEGORYLAB_STORAGE_KEY);
       if (!raw) return null;
@@ -863,6 +885,14 @@
       } catch (error) {
         return null;
       }
+    }
+
+    function campaignOptions(current = "") {
+      const data = categoryLabData();
+      const launchNames = Array.isArray(data?.launchProjects)
+        ? data.launchProjects.map(project => project?.name)
+        : [];
+      return ["", ...uniqueOptions([...CAMPAIGN_OPTIONS, ...launchNames, current])];
     }
 
     function isImportedToCategoryLab(row) {
@@ -883,6 +913,7 @@
           row.version_label,
           row.product_type,
           row.test_category,
+          row.campaign,
           row.version_change,
           row.finished_spec,
           row.ingredients_structure,
@@ -1001,7 +1032,7 @@
             ${factItem("测试类别", row.test_category)}
             ${factItem("送样时间", row.sample_date)}
           </div>
-          ${sectionHtml("本次提交 / 调整点", row.version_change)}
+          ${sectionHtml("本版调整点", row.version_change)}
           ${sectionHtml("产品结构", row.ingredients_structure)}
           ${sectionHtml("核心原料及卖点", row.core_ingredients_selling_points)}
         </section>
@@ -1032,10 +1063,10 @@
         ${renderImageStrip(row)}
         ${renderSupplierBlock(row)}
         <section class="edit-panel">
-          <h3>内部补填</h3>
+          <h3>产品经理补充测试结果</h3>
           <div class="edit-grid">
             ${fieldBlock("报价（元，含税含运）", fieldInput("quote_rmb", row.quote_rmb, "线下确认后填写"))}
-            ${fieldBlock("处理状态", fieldSelect("status", ["待处理", "已确认"], row.status || "待处理"))}
+            ${fieldBlock("档期名称", fieldSelect("campaign", campaignOptions(row.campaign), row.campaign))}
             ${fieldBlock("测试场景 / 反馈来源", fieldSelect("tasting_scene", ["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], row.tasting_scene))}
             ${fieldBlock("本轮结论", fieldSelect("round_conclusion", ["", "继续调整", "暂停", "通过且储备", "通过且进入众测"], row.round_conclusion))}
             ${fieldBlock("测试反馈", fieldTextarea("tasting_feedback", row.tasting_feedback, "测试反馈", 4), "span-2")}
@@ -1064,6 +1095,7 @@
           ${kv("送样时间", row.sample_date)}
           ${kv("类型", row.product_type)}
           ${kv("测试类别", row.test_category)}
+          ${kv("档期名称", row.campaign)}
           ${kv("版本", row.version_label)}
           ${kv("成品规格（克）", row.finished_spec)}
           <div class="${importClass}">${escapeHtml(importText)}</div>
@@ -1210,6 +1242,7 @@
         sample_date: detailValue("sample_date", row.sample_date || "").trim() || null,
         product_type: detailValue("product_type", row.product_type || "").trim(),
         test_category: detailValue("test_category", row.test_category || "").trim(),
+        campaign: detailValue("campaign", row.campaign || "").trim(),
         version_change: detailValue("version_change", row.version_change || "").trim(),
         finished_spec: detailValue("finished_spec", row.finished_spec || "").trim(),
         ingredients_structure: detailValue("ingredients_structure", row.ingredients_structure || "").trim(),
@@ -1220,7 +1253,7 @@
         round_conclusion: detailValue("round_conclusion", row.round_conclusion || ""),
         next_step_direction: detailValue("next_step_direction", row.next_step_direction || "").trim(),
         key_blocker: detailValue("key_blocker", row.key_blocker || "").trim(),
-        status: detailValue("status", row.status || "待处理") || "待处理"
+        status: row.status || "待处理"
       };
     }
 
@@ -1256,7 +1289,7 @@
         id: `supplier-${row.id}`,
         time: row.created_at ? dateText(row.created_at) : new Date().toLocaleString("zh-CN"),
         category: row.product_type || "",
-        campaign: row.test_category || row.tasting_scene || "",
+        campaign: row.campaign || "",
         project: row.product_name || "",
         supplier: row.supplier_name || "",
         brand: "",
@@ -1290,6 +1323,7 @@
           row.followup_code ? `提交编号：${row.followup_code}` : "",
           row.product_type ? `产品类型：${row.product_type}` : "",
           row.test_category ? `测试类别：${row.test_category}` : "",
+          row.campaign ? `档期名称：${row.campaign}` : "",
           row.version_change ? `本版调整点：${row.version_change}` : "",
           row.core_ingredients_selling_points ? `核心原料及卖点：${row.core_ingredients_selling_points}` : "",
           row.key_blocker ? `关键卡点 / 备注：${row.key_blocker}` : ""
@@ -1357,6 +1391,7 @@
         "送样时间",
         "产品类型",
         "测试类别",
+        "档期名称",
         "本版调整点",
         "成品规格（克）",
         "产品结构",
@@ -1379,6 +1414,7 @@
         row.sample_date,
         row.product_type,
         row.test_category,
+        row.campaign,
         row.version_change,
         row.finished_spec,
         row.ingredients_structure,
