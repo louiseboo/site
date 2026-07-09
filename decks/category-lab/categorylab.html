@@ -1788,6 +1788,35 @@
     .timeline-dot:hover {
       transform: translateX(-50%) scale(1.35);
       box-shadow: 0 0 0 4px rgba(199, 185, 157, .28);
+      z-index: 12;
+    }
+    .timeline-dot::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%;
+      bottom: 20px;
+      min-width: 188px;
+      max-width: 260px;
+      transform: translateX(-50%) translateY(4px);
+      border: 1px solid rgba(47, 40, 31, .22);
+      border-radius: 6px;
+      background: #2f281f;
+      color: #fffdf8;
+      box-shadow: 0 10px 24px rgba(47, 40, 31, .18);
+      padding: 8px 10px;
+      font-size: 11px;
+      font-weight: 760;
+      line-height: 1.45;
+      white-space: pre-line;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .12s ease, transform .12s ease;
+      z-index: 30;
+    }
+    .timeline-dot:hover::after,
+    .timeline-dot:focus::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
     .timeline-dot.pending {
       border-color: #8a806f;
@@ -1939,6 +1968,40 @@
     }
     .launch-product-list {
       overflow-wrap: anywhere;
+    }
+    .launch-product-token-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .launch-product-token {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      max-width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffaf0;
+      padding: 3px 5px 3px 8px;
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .launch-token-action {
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 4px;
+      cursor: pointer;
+    }
+    .launch-token-action:hover {
+      background: #f3ead9;
+      color: var(--text);
     }
     .launch-product-picker {
       display: flex;
@@ -2468,7 +2531,10 @@
     .launch-delta.bad { color: var(--red); border-color: #ecc7bd; background: #fff7f4; }
     .launch-delta.good { color: var(--green); border-color: #b9dac8; background: #f4fbf5; }
     .launch-row-action {
-      text-align: right;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
     }
     .launch-flow-panel {
       margin-top: 12px;
@@ -2903,7 +2969,7 @@
                     <span>节点日期</span>
                     <span>预期天数</span>
                     <span>状态</span>
-                    <span>编辑</span>
+                    <span>操作</span>
                   </div>
                   <div id="launchGroupedList"></div>
                 </div>
@@ -2926,7 +2992,7 @@
               <div class="launch-page-head">
                 <div class="launch-page-title">
                   <h2>产品日历</h2>
-                  <p>飞书产品日历 · 2025 / 2026 档期与食品 SKU。</p>
+                  <p>飞书产品日历 · 2025 / 2026 档期与食品。</p>
                 </div>
                 <div class="launch-actions">
                   <button class="btn compact active" data-product-calendar-year="2026" type="button">2026</button>
@@ -3747,16 +3813,16 @@
 
   <div class="modal" id="launchProductModal">
     <div class="modal-card">
-      <div class="modal-head"><h2>新增档期内产品</h2><button class="btn" data-close-modal="launchProductModal">关闭</button></div>
+      <div class="modal-head"><h2 id="launchProductModalTitle">新增食品</h2><button class="btn" data-close-modal="launchProductModal">关闭</button></div>
       <div class="panel-body">
         <form class="form" id="launchProductForm">
           <p class="inline-note" id="launchProductCampaignLabel"></p>
           <div class="form two">
-            <div class="field"><label>产品名称</label><input id="launchProductName" placeholder="如：新品蛋糕 / 烘焙 SKU" required></div>
+            <div class="field"><label>食品名称</label><input id="launchProductName" placeholder="如：桂花酒酿蛋糕" required></div>
             <div class="field"><label>品类</label><select id="launchProductCategory"><option>烘焙</option><option>三明治</option><option>蛋糕</option><option>其他</option></select></div>
           </div>
           <div class="field"><label>备注</label><textarea id="launchProductNote" placeholder="供应商、当前风险、需要补充的资料"></textarea></div>
-          <div class="row-actions"><button class="btn primary" type="submit">保存产品</button><button class="btn" id="clearLaunchProductFormBtn" type="button">清空</button></div>
+          <div class="row-actions"><button class="btn primary" id="saveLaunchProductBtn" type="submit">保存食品</button><button class="btn" id="clearLaunchProductFormBtn" type="button">清空</button></div>
         </form>
       </div>
     </div>
@@ -4617,7 +4683,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (!entries.length && period.focus) {
         String(period.focus).split("\n").map(item => item.trim()).filter(Boolean).forEach(name => entries.push({ name, category: "其他" }));
       }
-      if (!entries.length) entries.push({ name: "档期产品待补", category: "其他" });
       return entries;
     }
     const feishuScheduleProductMap = {
@@ -4676,7 +4741,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         .replace(/，\d+个品类$/, "")
         .trim();
       const shouldWaitForSku = /换新|档期|埃塞/.test(cleaned) && !/蛋糕|千层|提拉米苏|鸡排|巧克力|甘露|栗子|玫瑰|荔枝|CNY|节日/.test(cleaned);
-      return [{ name: shouldWaitForSku ? "食品 SKU 待补" : (cleaned || row.name || "食品 SKU 待补"), category }];
+      return [{ name: shouldWaitForSku ? "" : (cleaned || row.name || ""), category, isPlaceholder: shouldWaitForSku }];
     }
 
     function feishuScheduleRecord(row) {
@@ -4734,7 +4799,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             const category = product.category || inferLaunchCategory(product.name || row.name);
             return {
               id: product.id || `${row.id}-product-${index + 1}`,
-              name: product.name || "食品 SKU 待补",
+              name: product.name || "",
+              isPlaceholder: Boolean(product.isPlaceholder),
               launchDate: row.launchDate,
               category,
               categories: [category],
@@ -4989,6 +5055,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let editingBakeRecordId = null;
     let editingLaunchProjectId = null;
     let launchProductCampaignId = "";
+    let editingLaunchProductId = null;
     let activeLaunchProjectId = null;
     let activeLaunchMilestoneKey = "";
     let launchStatusFilter = "";
@@ -5065,7 +5132,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             sensoryRecords: saved.sensoryRecords || [],
             competitorAlbums: withRequiredCompetitorAlbums(saved.competitorAlbums || []),
             bakeRecords: withRequiredBakeRecords(saved.bakeRecords || []),
-            launchProjects: withRequiredLaunchProjects(saved.launchProjects || [])
+            deletedLaunchProjectIds: saved.deletedLaunchProjectIds || [],
+            launchProjects: withRequiredLaunchProjects(saved.launchProjects || [], saved.deletedLaunchProjectIds || [])
           };
         }
       } catch (error) {}
@@ -5081,7 +5149,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         sensoryRecords: [],
         competitorAlbums: withRequiredCompetitorAlbums([]),
         bakeRecords: withRequiredBakeRecords([]),
-        launchProjects: withRequiredLaunchProjects([])
+        deletedLaunchProjectIds: [],
+        launchProjects: withRequiredLaunchProjects([], [])
       };
     }
 
@@ -5230,8 +5299,23 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return `${project.name || ""}__${project.launchDate || ""}`;
     }
 
-    function withRequiredLaunchProjects(projects) {
-      const requiredProjects = structuredClone(feishuCoffeeBarLaunchProjects).map(migrateLaunchProject);
+    function launchProductIsPlaceholder(project = {}) {
+      return Boolean(project.isPlaceholder) || /食品\s*SKU\s*(待补|代补)/i.test(project.name || "");
+    }
+
+    function visibleLaunchProducts(products = []) {
+      return (products || []).filter(project => !launchProductIsPlaceholder(project));
+    }
+
+    function launchCampaignStorageKey(project = {}) {
+      return project.launchCampaignId || project.launchCampaign || project.campaign || `${project.launchDate || ""}__${project.category || ""}`;
+    }
+
+    function withRequiredLaunchProjects(projects, deletedIds = []) {
+      const deleted = new Set(deletedIds || []);
+      const requiredProjects = structuredClone(feishuCoffeeBarLaunchProjects)
+        .map(migrateLaunchProject)
+        .filter(project => !deleted.has(project.id));
       const requiredById = new Map(requiredProjects.map(project => [project.id, project]));
       const requiredKeys = new Set(requiredProjects.map(launchProjectIdentity));
       const deprecatedSeed = project => /^feishu-calendar-2026-/.test(project.id || "") || project.source === "Feishu · FY26 产品日历";
@@ -5247,10 +5331,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             actualDates: { ...(required.actualDates || {}), ...(project.actualDates || {}) }
           });
         })
+        .filter(project => !deleted.has(project.id))
         .filter(project => !deprecatedSeed(project) && (requiredById.has(project.id) || !requiredKeys.has(launchProjectIdentity(project))));
+      const realCampaignKeys = new Set(savedProjects.filter(project => !launchProductIsPlaceholder(project)).map(launchCampaignStorageKey));
+      const savedWithoutStalePlaceholders = savedProjects.filter(project => !launchProductIsPlaceholder(project) || !realCampaignKeys.has(launchCampaignStorageKey(project)));
       const savedIds = new Set(savedProjects.map(project => project.id));
-      const required = requiredProjects.filter(project => !savedIds.has(project.id));
-      return [...savedProjects, ...required];
+      const required = requiredProjects.filter(project => !savedIds.has(project.id))
+        .filter(project => !launchProductIsPlaceholder(project) || !realCampaignKeys.has(launchCampaignStorageKey(project)));
+      return [...savedWithoutStalePlaceholders, ...required];
     }
 
     function competitorSpecWeight(spec = "") {
@@ -5458,6 +5546,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         ...project,
         id: project.id || crypto.randomUUID(),
         name: project.name || "",
+        isPlaceholder: launchProductIsPlaceholder(project),
         launchDate: project.launchDate || "",
         category: categories.join(" / ") || "烘焙",
         categories: categories.length ? categories : ["烘焙"],
@@ -5687,7 +5776,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return [...groups.entries()].map(([key, items]) => {
         const sortedItems = items.slice();
         const name = launchCampaignNameForGroup(sortedItems);
-        const categories = uniqueClean(sortedItems.map(project => project.category));
+        const displayItems = visibleLaunchProducts(sortedItems);
+        const categories = uniqueClean((displayItems.length ? displayItems : sortedItems).map(project => project.category));
         const owners = uniqueClean(sortedItems.map(project => project.owner));
         const sources = uniqueClean(sortedItems.map(project => project.source));
         const feishuStatuses = uniqueClean(sortedItems.map(project => project.feishuStatus));
@@ -5723,7 +5813,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           launchCampaign: name,
           launchCampaignId: sortedItems[0]?.launchCampaignId || "",
           calendarCompleted: sortedItems.length > 0 && sortedItems.every(project => Boolean(project.calendarCompleted)),
-          note: sortedItems.map(project => project.name).join("、"),
+          note: displayItems.map(project => project.name).join("、"),
           plannedDates,
           actualDates,
           checkedFlow,
@@ -6158,7 +6248,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function launchProjectSearchText(project) {
       const milestones = calculateLaunchMilestones(project).map(item => [item.label, item.status, item.plannedDate, item.actualDate].join(" "));
-      const productsText = (project.products || []).map(item => [item.name, item.category, item.owner, item.note].join(" ")).join(" ");
+      const productsText = visibleLaunchProducts(project.products || []).map(item => [item.name, item.category, item.owner, item.note].join(" ")).join(" ");
       return [project.name, project.category, project.owner, project.note, productsText, launchStatusText(project), ...milestones].join(" ").toLowerCase();
     }
 
@@ -6302,7 +6392,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
                 <span class="timeline-actual-bar ${tone}" style="--start:${startX}%;--end:${actualEndX}%"></span>
                 ${milestones.map(item => {
                   const dotTone = item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "pending") : "pending";
-                  return `<span class="timeline-dot ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(item.plannedDate, minTime, maxTime)}%"></span>`;
+                  return `<span class="timeline-dot ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(item.key)}" data-tooltip="${escapeAttr(launchMilestoneTooltip(item))}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(item.plannedDate, minTime, maxTime)}%"></span>`;
                 }).join("")}
                 <span class="timeline-date-label ${tone}${labelEndClass}" style="--x:${endX}%">上市 ${escapeHtml(launchDateLabel(project.launchDate))}</span>
                 <span class="timeline-today" style="--today:${todayX}%"></span>
@@ -6354,6 +6444,17 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       ].filter(Boolean).join(" · ");
     }
 
+    function launchMilestoneTooltip(milestone) {
+      const rows = [
+        `${launchMilestoneDisplayLabel(milestone)} ${launchOffsetText(milestone)}`,
+        milestone?.plannedDate ? `计划：${milestone.plannedDate}` : "",
+        milestone?.key !== "launch" && milestone?.actualDate ? `实际：${milestone.actualDate}` : "",
+        milestone?.key !== "launch" && milestone?.actualDate ? `偏差：${launchDeltaText(milestone)}` : "",
+        milestone?.status ? `状态：${milestone.status}` : ""
+      ].filter(Boolean);
+      return rows.join("\n");
+    }
+
     function launchOffsetGuideHtml() {
       return `
         <div class="launch-offset-guide">
@@ -6396,15 +6497,25 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             const completion = launchCompletion(project);
             const tone = launchGroupTone(group.key);
             const delta = launchDeltaText(current);
-            const products = project.products || [];
+            const products = visibleLaunchProducts(project.products || []);
             const productNames = products.map(item => item.name).filter(Boolean);
             const editTarget = products[0]?.id || project.id;
             return `
               <div class="launch-list-row ${tone} ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(project.id)}">
                 <div class="launch-row-title">
                   <b>${escapeHtml(project.name || "未命名档期")}</b>
-                  <span>${escapeHtml(project.category || "未分类")} · ${products.length || 1} 个食品</span>
-                  <small class="launch-product-list">${escapeHtml(productNames.join("、") || project.name || "")}</small>
+                  <span>${escapeHtml(project.category || "未分类")}${products.length ? ` · ${products.length} 个食品` : ""}</span>
+                  ${products.length ? `
+                    <div class="launch-product-token-list">
+                      ${products.map(item => `
+                        <span class="launch-product-token">
+                          ${escapeHtml(item.name || "未命名食品")}
+                          <button class="launch-token-action" data-edit-launch-product="${escapeAttr(item.id)}" type="button">编辑</button>
+                          <button class="launch-token-action" data-delete-launch-product="${escapeAttr(item.id)}" type="button">删除</button>
+                        </span>
+                      `).join("")}
+                    </div>
+                  ` : ""}
                 </div>
                 <div class="launch-plan-actual">
                   <b>计划 ${escapeHtml(launchDateLabel(project.launchDate))}</b>
@@ -6436,7 +6547,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
                 </div>
                 <div class="launch-days-num">${escapeHtml(launchUrgencyText(project, current))}</div>
                 <div><span class="status-dot ${tone}">${escapeHtml(launchStatusText(project))}</span></div>
-                <div class="launch-row-action"><button class="btn compact" data-edit-launch="${escapeAttr(editTarget)}" type="button">编辑</button></div>
+                <div class="launch-row-action">
+                  ${products.length ? `<button class="btn compact" data-edit-launch-product="${escapeAttr(editTarget)}" type="button">编辑</button>` : ""}
+                  <button class="btn compact" data-open-launch-product="${escapeAttr(project.id)}" type="button">新增食品</button>
+                  <button class="btn compact" data-delete-launch-campaign="${escapeAttr(project.id)}" type="button">删除</button>
+                </div>
               </div>
             `;
           }).join("")}
@@ -6451,7 +6566,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         return null;
       }
       if (!projects.some(project => project.id === activeLaunchProjectId)) {
-        activeLaunchProjectId = projects[0].id;
+        activeLaunchProjectId = (projects.find(project => !launchProductIsPlaceholder(project)) || projects[0]).id;
       }
       return projects.find(project => project.id === activeLaunchProjectId) || projects[0];
     }
@@ -6490,8 +6605,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         return;
       }
       const campaign = buildLaunchCampaigns(state.launchProjects || []).find(item => (item.products || []).some(product => product.id === project.id));
-      const products = campaign?.products?.length ? campaign.products : [project];
-      if (label) label.textContent = `当前档期：${campaign?.name || project.name || "未命名档期"} · 当前食品：${project.name || "未命名食品"} · ${project.launchDate || "未定上市日"}`;
+      const allProducts = campaign?.products?.length ? campaign.products : [project];
+      const products = visibleLaunchProducts(allProducts);
+      if (launchProductIsPlaceholder(project) && products.length) {
+        project = products[0];
+        activeLaunchProjectId = project.id;
+      }
+      const currentProductText = !launchProductIsPlaceholder(project) && project.name ? ` · 当前食品：${project.name}` : "";
+      if (label) label.textContent = `当前档期：${campaign?.name || project.name || "未命名档期"}${currentProductText} · ${project.launchDate || campaign?.launchDate || "未定上市日"}`;
       host.innerHTML = `
         <div class="launch-flow-toolbar">
           <div class="launch-product-picker">
@@ -6499,7 +6620,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
               <button class="launch-product-pill ${item.id === project.id ? "active" : ""}" data-select-launch-product="${escapeAttr(item.id)}" type="button">${escapeHtml(item.name || "未命名食品")}</button>
             `).join("")}
           </div>
-          <button class="btn compact" data-open-launch-product="${escapeAttr(campaign?.id || project.id)}" type="button">新增产品</button>
+          <button class="btn compact" data-open-launch-product="${escapeAttr(campaign?.id || project.id)}" type="button">新增食品</button>
         </div>
         <div class="checkbox-grid">
           ${coffeeBarFlowItems.map(item => `
@@ -6586,7 +6707,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           entries.push({ name, group: "档期重点", tier: "Focus", category: "其他" });
         });
       }
-      if (!entries.length && includeFallback) entries.push({ name: "食品 SKU 待补", group: "未录入", tier: "待补", category: "其他" });
       return entries;
     }
 
@@ -6627,7 +6747,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           const groupStart = index === 0 || rows[index - 1].group !== row.group;
           return `
             <tr>
-              <th class="calendar-sku-label calendar-sticky-1">${index === 0 ? "食品SKU" : ""}</th>
+              <th class="calendar-sku-label calendar-sticky-1">${index === 0 ? "食品" : ""}</th>
               <th class="calendar-group calendar-sticky-2">${groupStart ? escapeHtml(row.group) : ""}</th>
               <th class="calendar-tier calendar-sticky-3">${escapeHtml(row.tier)}</th>
               ${periods.map(period => `<td>${productCalendarCell(period.sku?.[row.key] || "")}</td>`).join("")}
@@ -6727,7 +6847,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       host.innerHTML = `
         <div class="product-calendar-shell">
           <div class="product-calendar-toolbar">
-            <input class="search" id="productCalendarSearch" placeholder="搜索档期、节日、食品 SKU" value="${escapeAttr(productCalendarSearchQuery)}">
+            <input class="search" id="productCalendarSearch" placeholder="搜索档期、节日、食品" value="${escapeAttr(productCalendarSearchQuery)}">
             <div class="calendar-filter-row">
               ${statusFilters.map(([value, label]) => `<button class="calendar-chip ${value === productCalendarStatusFilter ? "active" : ""}" data-product-calendar-status="${escapeAttr(value)}" type="button">${escapeHtml(label)}</button>`).join("")}
               ${groupFilters.map(([value, label]) => `<button class="calendar-chip ${value === productCalendarGroupFilter ? "active" : ""}" data-product-calendar-group="${escapeAttr(value)}" type="button">${escapeHtml(label)}</button>`).join("")}
@@ -6795,20 +6915,36 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function clearLaunchProductForm() {
+      editingLaunchProductId = null;
       document.querySelector("#launchProductForm")?.reset();
       const category = document.querySelector("#launchProductCategory");
       if (category) category.value = "烘焙";
+      const title = document.querySelector("#launchProductModalTitle");
+      if (title) title.textContent = "新增食品";
+      const saveBtn = document.querySelector("#saveLaunchProductBtn");
+      if (saveBtn) saveBtn.textContent = "保存食品";
     }
 
-    function openLaunchProductModal(campaignId = "") {
+    function openLaunchProductModal(campaignId = "", productId = "") {
       const campaign = launchCampaignById(campaignId);
       if (!campaign) return;
       launchProductCampaignId = campaign.id;
       clearLaunchProductForm();
+      const product = productId ? (state.launchProjects || []).find(item => item.id === productId) : null;
+      if (product) {
+        editingLaunchProductId = product.id;
+        document.querySelector("#launchProductName").value = product.name || "";
+        document.querySelector("#launchProductCategory").value = product.category || product.categories?.[0] || "烘焙";
+        document.querySelector("#launchProductNote").value = product.note || "";
+        const title = document.querySelector("#launchProductModalTitle");
+        if (title) title.textContent = "编辑食品";
+        const saveBtn = document.querySelector("#saveLaunchProductBtn");
+        if (saveBtn) saveBtn.textContent = "保存修改";
+      }
       const category = document.querySelector("#launchProductCategory");
-      if (category) category.value = campaign.categories?.[0] || splitLaunchCategories(campaign.category || "烘焙")[0] || "烘焙";
+      if (category && !product) category.value = campaign.categories?.[0] || splitLaunchCategories(campaign.category || "烘焙")[0] || "烘焙";
       const label = document.querySelector("#launchProductCampaignLabel");
-      if (label) label.textContent = `补充到：${campaign.name || "未命名档期"} · 上市 ${campaign.launchDate || "未定"}`;
+      if (label) label.textContent = `${product ? "编辑于" : "补充到"}：${campaign.name || "未命名档期"} · 上市 ${campaign.launchDate || "未定"}`;
       openModal("launchProductModal");
     }
 
@@ -6824,6 +6960,25 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         document.querySelector("#launchProductName")?.focus();
         return;
       }
+      if (editingLaunchProductId) {
+        const existing = (state.launchProjects || []).find(item => item.id === editingLaunchProductId);
+        if (!existing) return;
+        existing.name = name;
+        existing.category = category;
+        existing.categories = [category];
+        existing.note = document.querySelector("#launchProductNote").value.trim();
+        existing.isPlaceholder = false;
+        activeLaunchProjectId = existing.id;
+        persist();
+        closeModal("launchProductModal");
+        clearLaunchProductForm();
+        renderLaunchProjects();
+        return;
+      }
+      const campaignKey = launchCampaignStorageKey(seed.id ? seed : campaign);
+      state.launchProjects = (state.launchProjects || []).filter(project =>
+        !(launchProductIsPlaceholder(project) && launchCampaignStorageKey(project) === campaignKey)
+      );
       const project = migrateLaunchProject({
         id: crypto.randomUUID(),
         name,
@@ -6845,6 +7000,31 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       closeModal("launchProductModal");
       clearLaunchProductForm();
       renderLaunchProjects();
+    }
+
+    function deleteLaunchProduct(productId = "") {
+      const project = (state.launchProjects || []).find(item => item.id === productId);
+      if (!project) return;
+      askDeleteConfirm(`确认删除「${project.name || "这个食品"}」？`, () => {
+        state.deletedLaunchProjectIds = uniqueClean([...(state.deletedLaunchProjectIds || []), project.id]);
+        state.launchProjects = (state.launchProjects || []).filter(item => item.id !== project.id);
+        if (activeLaunchProjectId === project.id) activeLaunchProjectId = null;
+        persist();
+        renderLaunchProjects();
+      });
+    }
+
+    function deleteLaunchCampaign(campaignId = "") {
+      const campaign = launchCampaignById(campaignId);
+      if (!campaign) return;
+      const ids = (campaign.products || []).map(item => item.id).filter(Boolean);
+      askDeleteConfirm(`确认删除「${campaign.name || "这个档期"}」？该档期下食品也会一起删除。`, () => {
+        state.deletedLaunchProjectIds = uniqueClean([...(state.deletedLaunchProjectIds || []), ...ids]);
+        state.launchProjects = (state.launchProjects || []).filter(item => !ids.includes(item.id));
+        if (ids.includes(activeLaunchProjectId)) activeLaunchProjectId = null;
+        persist();
+        renderLaunchProjects();
+      });
     }
 
     function renderLaunchProjects() {
@@ -11300,6 +11480,22 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         openLaunchProjectModal(editLaunch.dataset.editLaunch);
         return;
       }
+      const editLaunchProduct = event.target.closest("[data-edit-launch-product]");
+      if (editLaunchProduct) {
+        const productId = editLaunchProduct.dataset.editLaunchProduct;
+        openLaunchProductModal(productId, productId);
+        return;
+      }
+      const deleteLaunchProductBtn = event.target.closest("[data-delete-launch-product]");
+      if (deleteLaunchProductBtn) {
+        deleteLaunchProduct(deleteLaunchProductBtn.dataset.deleteLaunchProduct);
+        return;
+      }
+      const deleteLaunchCampaignBtn = event.target.closest("[data-delete-launch-campaign]");
+      if (deleteLaunchCampaignBtn) {
+        deleteLaunchCampaign(deleteLaunchCampaignBtn.dataset.deleteLaunchCampaign);
+        return;
+      }
       const selectLaunchNode = event.target.closest("[data-select-launch-node]");
       if (selectLaunchNode) {
         selectLaunchMilestone(selectLaunchNode.dataset.selectLaunchNode, selectLaunchNode.dataset.milestoneKey);
@@ -12165,7 +12361,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (!data.sensoryRecords) data.sensoryRecords = [];
       data.competitorAlbums = (data.competitorAlbums || []).map(migrateCompetitorAlbum);
       data.bakeRecords = withRequiredBakeRecords(data.bakeRecords || []);
-      data.launchProjects = withRequiredLaunchProjects(data.launchProjects || []);
+      data.deletedLaunchProjectIds = data.deletedLaunchProjectIds || [];
+      data.launchProjects = withRequiredLaunchProjects(data.launchProjects || [], data.deletedLaunchProjectIds);
       state = data;
       if (imported.workspaceLists) {
         workspaceLists = normalizeWorkspaceLists(imported.workspaceLists);
