@@ -206,6 +206,13 @@ function isDirectInvocation(event = {}) {
   );
 }
 
+function isNotificationTestAuthorized(event = {}, body = {}, env = process.env) {
+  if (isDirectInvocation(event)) return true;
+  const expected = text(env.CATEGORYLAB_ADMIN_CODE);
+  const provided = adminCodeFromEvent(event, body);
+  return Boolean(expected && provided && hashToken(expected) === hashToken(provided));
+}
+
 function notificationError(error) {
   return String(error?.message || error || "邮件发送失败。")
     .replace(/[\r\n]+/g, " ")
@@ -431,8 +438,8 @@ async function submitSupplierFeedback(app, collection, body) {
   return { id, edit_token: editToken, record: publicSubmissionRecord(record) };
 }
 
-async function sendLatestNotificationTest(app, collection, event) {
-  if (!isDirectInvocation(event)) throw new Error("测试邮件只能通过腾讯云函数内部调用。");
+async function sendLatestNotificationTest(app, collection, event, body) {
+  if (!isNotificationTestAuthorized(event, body)) throw new Error("测试邮件授权失败。");
   const config = notificationConfig();
   if (!config.testTo) throw new Error("缺少 MAIL_TEST_TO。");
   const result = await collection.orderBy("created_at", "desc").limit(1).get();
@@ -520,8 +527,8 @@ async function handleEvent(event = {}) {
     if (!PUBLIC_ACTIONS.has(action) && !action.startsWith("admin") && !directNotificationTest) {
       throw new Error("请求类型不支持。");
     }
-    if (directNotificationTest && !isDirectInvocation(event)) {
-      throw new Error("测试邮件只能通过腾讯云函数内部调用。");
+    if (directNotificationTest && !isNotificationTestAuthorized(event, body)) {
+      throw new Error("测试邮件授权失败。");
     }
 
     const app = getApp();
@@ -529,7 +536,7 @@ async function handleEvent(event = {}) {
     let data;
 
     if (action === "ping") data = { ok: true };
-    else if (directNotificationTest) data = await sendLatestNotificationTest(app, collection, event);
+    else if (directNotificationTest) data = await sendLatestNotificationTest(app, collection, event, body);
     else if (action === "submitSupplierFeedback") data = await submitSupplierFeedback(app, collection, body);
     else if (action === "adminLogin") {
       assertAdmin(event, body);
@@ -583,6 +590,7 @@ exports._private = {
   publicSubmissionRecord,
   notificationConfig,
   isDirectInvocation,
+  isNotificationTestAuthorized,
   downloadNotificationAttachments,
   notifyRecord,
   isPublicAction: action => PUBLIC_ACTIONS.has(action)
