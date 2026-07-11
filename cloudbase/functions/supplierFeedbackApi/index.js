@@ -1,5 +1,10 @@
 const crypto = require("crypto");
 const http = require("http");
+const {
+  attachmentFilename,
+  buildNotificationMessage,
+  sendNotification
+} = require("./notification");
 
 const COLLECTION = "supplier_feedback_records";
 const IMAGE_LIMIT = 6;
@@ -158,6 +163,138 @@ function publicRecord(record = {}) {
   return safe;
 }
 
+function publicSubmissionRecord(record = {}) {
+  const {
+    edit_token_hash,
+    notification_status,
+    notification_sent_at,
+    notification_error,
+    notification_test_sent_at,
+    notification_test_error,
+    ...safe
+  } = record;
+  return safe;
+}
+
+function notificationRecipients(value) {
+  return String(value || "")
+    .split(/[;,]/)
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function notificationConfig(env = process.env) {
+  const smtpUser = text(env.MAIL_SMTP_USER);
+  return {
+    enabled: String(env.MAIL_NOTIFY_ENABLED || "").toLowerCase() === "true",
+    smtpUser,
+    smtpPass: text(env.MAIL_SMTP_PASS),
+    from: `Category Lab 产品信息通知 <${smtpUser}>`,
+    testTo: notificationRecipients(env.MAIL_TEST_TO)[0] || "",
+    notifyTo: notificationRecipients(env.MAIL_NOTIFY_TO),
+    inboxUrl: text(env.MAIL_INBOX_URL)
+  };
+}
+
+function isDirectInvocation(event = {}) {
+  return !(
+    event.httpMethod ||
+    event.path ||
+    event.url ||
+    event.rawPath ||
+    event.requestContext?.http?.method
+  );
+}
+
+function notificationError(error) {
+  return String(error?.message || error || "邮件发送失败。")
+    .replace(/[\r\n]+/g, " ")
+    .slice(0, 500);
+}
+
+async function downloadNotificationAttachments(app, record = {}) {
+  const attachments = [];
+  const images = Array.isArray(record.image_paths) ? record.image_paths.slice(0, IMAGE_LIMIT) : [];
+  for (const [index, image] of images.entries()) {
+    if (!image?.fileID) continue;
+    try {
+      const downloaded = await app.downloadFile({ fileID: image.fileID });
+      const content = downloaded?.fileContent;
+      if (!content) continue;
+      attachments.push({
+        filename: attachmentFilename(record, index),
+        content: Buffer.isBuffer(content) ? content : Buffer.from(content),
+        contentType: text(image.type) || "image/jpeg"
+      });
+    } catch (error) {
+      // A broken image must not block the text notification or supplier submission.
+    }
+  }
+  return attachments;
+}
+
+async function updateNotificationMetadata(collection, id, patch) {
+  try {
+    await collection.doc(id).update(patch);
+  } catch (error) {
+    return false;
+  }
+  return true;
+}
+
+async function notifyRecord(app, collection, record, recipients, dependencies = {}) {
+  const config = dependencies.config || notificationConfig();
+  const send = dependencies.send || sendNotification;
+  const mode = dependencies.mode === "test" ? "test" : "automatic";
+  const now = new Date().toISOString();
+
+  try {
+    if (!config.smtpUser) throw new Error("缺少 MAIL_SMTP_USER。");
+    if (!config.smtpPass) throw new Error("缺少 MAIL_SMTP_PASS。");
+    if (!Array.isArray(recipients) || !recipients.length) throw new Error("缺少邮件收件人。");
+    const attachments = await downloadNotificationAttachments(app, record);
+    const message = buildNotificationMessage(record, {
+      from: config.from,
+      to: recipients,
+      inboxUrl: config.inboxUrl,
+      attachments
+    });
+    const result = await send({
+      smtpUser: config.smtpUser,
+      smtpPass: config.smtpPass,
+      message
+    });
+    const patch = mode === "test"
+      ? {
+          notification_test_sent_at: now,
+          notification_test_error: null,
+          updated_at: now
+        }
+      : {
+          notification_status: "sent",
+          notification_sent_at: now,
+          notification_error: null,
+          updated_at: now
+        };
+    await updateNotificationMetadata(collection, record.id, patch);
+    return { ok: true, messageId: text(result?.messageId), attachments: attachments.length };
+  } catch (error) {
+    const message = notificationError(error);
+    const patch = mode === "test"
+      ? {
+          notification_test_error: message,
+          updated_at: now
+        }
+      : {
+          notification_status: "failed",
+          notification_error: message,
+          updated_at: now
+        };
+    await updateNotificationMetadata(collection, record.id, patch);
+    return { ok: false, error: message };
+  }
+}
+
 function databaseWriteRecord(record = {}) {
   const { _id, ...safe } = record;
   return safe;
@@ -287,7 +424,32 @@ async function submitSupplierFeedback(app, collection, body) {
     updated_at: now
   };
   await collection.doc(id).set(databaseWriteRecord(record));
-  return { id, edit_token: editToken, record: publicRecord(record) };
+  const mailConfig = notificationConfig();
+  if (mailConfig.enabled) {
+    await notifyRecord(app, collection, record, mailConfig.notifyTo, { config: mailConfig });
+  }
+  return { id, edit_token: editToken, record: publicSubmissionRecord(record) };
+}
+
+async function sendLatestNotificationTest(app, collection, event) {
+  if (!isDirectInvocation(event)) throw new Error("测试邮件只能通过腾讯云函数内部调用。");
+  const config = notificationConfig();
+  if (!config.testTo) throw new Error("缺少 MAIL_TEST_TO。");
+  const result = await collection.orderBy("created_at", "desc").limit(1).get();
+  const record = publicRecord(result.data?.[0] || {});
+  if (!record.id) throw new Error("没有可用于测试邮件的产品记录。");
+  const notification = await notifyRecord(app, collection, record, [config.testTo], {
+    config,
+    mode: "test"
+  });
+  if (!notification.ok) throw new Error(notification.error || "测试邮件发送失败。");
+  return {
+    recordId: record.id,
+    productName: record.product_name,
+    recipient: config.testTo,
+    messageId: notification.messageId,
+    attachments: notification.attachments
+  };
 }
 
 async function getByFollowupCode(collection, code) {
@@ -354,8 +516,12 @@ async function handleEvent(event = {}) {
 
     const body = parseEventBody(event);
     const action = text(body.action);
-    if (!PUBLIC_ACTIONS.has(action) && !action.startsWith("admin")) {
+    const directNotificationTest = action === "sendLatestNotificationTest";
+    if (!PUBLIC_ACTIONS.has(action) && !action.startsWith("admin") && !directNotificationTest) {
       throw new Error("请求类型不支持。");
+    }
+    if (directNotificationTest && !isDirectInvocation(event)) {
+      throw new Error("测试邮件只能通过腾讯云函数内部调用。");
     }
 
     const app = getApp();
@@ -363,6 +529,7 @@ async function handleEvent(event = {}) {
     let data;
 
     if (action === "ping") data = { ok: true };
+    else if (directNotificationTest) data = await sendLatestNotificationTest(app, collection, event);
     else if (action === "submitSupplierFeedback") data = await submitSupplierFeedback(app, collection, body);
     else if (action === "adminLogin") {
       assertAdmin(event, body);
@@ -413,5 +580,10 @@ exports._private = {
   requireFields,
   databaseWriteRecord,
   sanitizePublicSubmissionPayload,
+  publicSubmissionRecord,
+  notificationConfig,
+  isDirectInvocation,
+  downloadNotificationAttachments,
+  notifyRecord,
   isPublicAction: action => PUBLIC_ACTIONS.has(action)
 };
