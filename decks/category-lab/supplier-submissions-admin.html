@@ -1257,6 +1257,11 @@
       return Number.isNaN(value) ? 0 : value;
     }
 
+    function groupingUpdateTime(row = {}) {
+      const value = new Date(row.updated_at || row.created_at || 0).getTime();
+      return Number.isNaN(value) ? 0 : value;
+    }
+
     function groupingVersionNumber(row = {}) {
       const match = String(row.version_label || "").trim().match(/^v\s*(\d+)$/i);
       return match ? Number(match[1]) : NaN;
@@ -1492,7 +1497,7 @@
 
     function latestGroupValue(group, field) {
       return [...(group.records || [])]
-        .sort((a, b) => groupingTime(b) - groupingTime(a))
+        .sort((a, b) => groupingUpdateTime(b) - groupingUpdateTime(a))
         .find(row => String(row[field] || "").trim())?.[field] || "";
     }
 
@@ -2439,6 +2444,16 @@
       const groupToggle = event.target.closest("[data-product-group-toggle]");
       if (groupToggle) {
         const key = groupToggle.dataset.productGroupToggle;
+        const group = visibleProductGroupsInDisplayOrder().find(item => item.key === key);
+        const isActiveGroup = group?.records.some(row => row.id === activeRecordId);
+        if (group && !isActiveGroup) {
+          const latestVersion = group.records[group.records.length - 1] || group.latest;
+          activeRecordId = latestVersion?.id || "";
+          supplierEditOpen = false;
+          setProductGroupExpanded(key, true);
+          renderAll(activeRecordId);
+          return;
+        }
         const shouldExpand = groupToggle.getAttribute("aria-expanded") !== "true";
         setProductGroupExpanded(key, shouldExpand);
         renderList();
