@@ -378,6 +378,29 @@
       background: #dfeadf;
       color: var(--confirmed);
     }
+    .version-stage-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 20px;
+      border: 1px solid #ccb98f;
+      border-radius: 999px;
+      background: #f2ead8;
+      color: #6e5426;
+      padding: 1px 7px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.4;
+      vertical-align: middle;
+    }
+    .version-stage-preview {
+      min-height: 34px;
+      border-left: 2px solid #b89254;
+      background: #f8f2e6;
+      color: var(--muted);
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
     .detail-meta {
       margin: 0 0 18px;
       color: var(--muted);
@@ -934,6 +957,58 @@
       return devRecords.some(item => item.supplierSubmissionId === row.id || item.id === `supplier-${row.id}`);
     }
 
+    function normalizeVersionStageText(value) {
+      return String(value || "").replace(/\s+/g, "").toLowerCase();
+    }
+
+    function productIdentity(row = {}) {
+      return `${normalizeVersionStageText(row.supplier_name)}::${normalizeVersionStageText(row.product_name)}`;
+    }
+
+    function recordVersionNumber(row = {}) {
+      const match = String(row.version_label || "").trim().match(/^v\s*(\d+)$/i);
+      return match ? Number(match[1]) : NaN;
+    }
+
+    function recordSequenceTime(row = {}) {
+      const value = new Date(row.created_at || 0).getTime();
+      return Number.isNaN(value) ? 0 : value;
+    }
+
+    function compareRecordSequence(a = {}, b = {}) {
+      const aVersion = recordVersionNumber(a);
+      const bVersion = recordVersionNumber(b);
+      if (Number.isFinite(aVersion) && Number.isFinite(bVersion) && aVersion !== bVersion) return aVersion - bVersion;
+      const timeDifference = recordSequenceTime(a) - recordSequenceTime(b);
+      if (timeDifference) return timeDifference;
+      return String(a.id || "").localeCompare(String(b.id || ""));
+    }
+
+    function deriveVersionStage(row = {}, allRecords = []) {
+      const milestoneStages = {
+        "通过且进入众测": "众测版",
+        "通过且进入中试": "中试版",
+        "通过且进入大生产": "大生产版"
+      };
+      if (milestoneStages[row.round_conclusion]) return milestoneStages[row.round_conclusion];
+
+      const optimizationRules = {
+        "众测后优化": { conclusion: "通过且进入众测", stage: "众测优化版" },
+        "中试后优化": { conclusion: "通过且进入中试", stage: "中试优化版" },
+        "上市后优化": { conclusion: "通过且进入大生产", stage: "大生产优化版" }
+      };
+      const rule = optimizationRules[row.tasting_scene];
+      const identity = productIdentity(row);
+      if (!rule || identity === "::") return "";
+      const hasPriorMilestone = (allRecords || []).some(candidate =>
+        candidate.id !== row.id &&
+        productIdentity(candidate) === identity &&
+        compareRecordSequence(candidate, row) < 0 &&
+        candidate.round_conclusion === rule.conclusion
+      );
+      return hasPriorMilestone ? rule.stage : "";
+    }
+
     function createdTime(row) {
       const time = new Date(row.created_at || 0).getTime();
       return Number.isNaN(time) ? 0 : time;
@@ -975,6 +1050,7 @@
           row.product_name,
           row.supplier_name,
           row.version_label,
+          deriveVersionStage(row, records),
           row.product_type,
           row.test_category,
           row.campaign,
@@ -1042,13 +1118,19 @@
       return row.status === "已确认" ? "confirmed" : "pending";
     }
 
+    function versionStageBadge(stage) {
+      return stage ? `<span class="version-stage-badge">${escapeHtml(stage)}</span>` : "";
+    }
+
     function renderList() {
       const rows = visibleRecords();
       if (!rows.length) {
         listEl.innerHTML = `<div class="empty-list">暂无匹配记录。</div>`;
         return;
       }
-      listEl.innerHTML = rows.map(row => `
+      listEl.innerHTML = rows.map(row => {
+        const stage = deriveVersionStage(row, records);
+        return `
         <button class="submission-item ${row.id === activeRecordId ? "active" : ""} ${row.status === "已确认" ? "confirmed" : ""}" data-record-id="${escapeAttr(row.id)}" type="button">
           <span class="item-head">
             <span class="item-title">${escapeHtml(compactText(row.product_name, "未命名产品"))}</span>
@@ -1057,11 +1139,14 @@
           <span class="item-meta">
             ${escapeHtml(compactText(row.supplier_name, "未知供应商"))}
             · ${escapeHtml(compactText(row.product_type || row.test_category, "未分类"))}
+            · ${escapeHtml(compactText(row.version_label, "未填版本"))}
+            ${stage ? ` · ${versionStageBadge(stage)}` : ""}
             · <span class="status-word ${statusClass(row)}">${escapeHtml(row.status || "待处理")}</span>
           </span>
           <span class="item-summary">${escapeHtml(compactText(row.version_change || row.core_ingredients_selling_points || row.ingredients_structure, "暂无摘要"))}</span>
         </button>
-      `).join("");
+      `;
+      }).join("");
     }
 
     function renderImageStrip(row) {
@@ -1096,7 +1181,7 @@
             ${fieldBlock("供应商", fieldInput("supplier_name", row.supplier_name, "供应商"))}
             ${fieldBlock("品名", fieldInput("product_name", row.product_name, "品名"))}
             ${fieldBlock("版本", fieldInput("version_label", row.version_label, "V1 / V2 / V3"))}
-            ${fieldBlock("产品规格", fieldInput("finished_spec", row.finished_spec, "如：165g/份、单个规格、包装规格"))}
+            ${fieldBlock("产品规格（g）", fieldInput("finished_spec", row.finished_spec, "如：165/份、单个规格、包装规格"))}
             ${fieldBlock("长度（mm）", fieldInput("length_mm", row.length_mm, "填写数字"))}
             ${fieldBlock("宽度（mm）", fieldInput("width_mm", row.width_mm, "填写数字"))}
             ${fieldBlock("高度（mm）", fieldInput("height_mm", row.height_mm, "填写数字"))}
@@ -1112,6 +1197,7 @@
     }
 
     function renderSupplierBlock(row) {
+      const versionStage = deriveVersionStage(row, records);
       return `
         <section class="supplier-block">
           <div class="supplier-head">
@@ -1122,7 +1208,8 @@
             ${factItem("供应商", row.supplier_name)}
             ${factItem("品名", row.product_name)}
             ${factItem("版本", row.version_label)}
-            ${factItem("产品规格", row.finished_spec)}
+            ${versionStage ? factItem("版本阶段", versionStage) : ""}
+            ${factItem("产品规格（g）", row.finished_spec)}
             ${factItem("长度（mm）", row.length_mm)}
             ${factItem("宽度（mm）", row.width_mm)}
             ${factItem("高度（mm）", row.height_mm)}
@@ -1146,6 +1233,7 @@
         return;
       }
       const badgeClass = statusClass(row);
+      const versionStage = deriveVersionStage(row, records);
       detailPane.innerHTML = `
         <div class="detail-title-row">
           <h2>${escapeHtml(compactText(row.product_name, "未命名产品"))}</h2>
@@ -1156,6 +1244,7 @@
           ${row.product_type ? `（${escapeHtml(row.product_type)}）` : ""}
           · ${escapeHtml(compactText(row.test_category, "未填测试类别"))}
           · ${escapeHtml(compactText(row.version_label, "未填版本"))}
+          ${versionStage ? ` · ${versionStageBadge(versionStage)}` : ""}
           · ${escapeHtml(dateText(row.created_at))}
           · 第 ${submissionNumber(row)} 次提交
         </p>
@@ -1167,7 +1256,8 @@
             ${fieldBlock("报价（元，含税含运）", fieldInput("quote_rmb", row.quote_rmb, "线下确认后填写"))}
             ${fieldBlock("档期名称", fieldSelect("campaign", campaignOptions(row.campaign), row.campaign))}
             ${fieldBlock("测试场景 / 反馈来源", fieldSelect("tasting_scene", ["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], row.tasting_scene))}
-            ${fieldBlock("本轮结论", fieldSelect("round_conclusion", ["", "继续调整", "暂停", "通过且储备", "通过且进入众测"], row.round_conclusion))}
+            ${fieldBlock("本轮结论", fieldSelect("round_conclusion", ["", "继续调整", "暂停", "通过且储备", "通过且进入众测", "通过且进入中试", "通过且进入大生产"], row.round_conclusion))}
+            <div class="version-stage-preview span-2" data-version-stage-preview>${versionStage ? `自动识别版本阶段：${escapeHtml(versionStage)}` : "尚未识别版本阶段。进入众测、中试或大生产后自动标记。"}</div>
             ${fieldBlock("测试反馈", fieldTextarea("tasting_feedback", row.tasting_feedback, "测试反馈", 4), "span-2")}
             ${fieldBlock("下一步改进方向", fieldTextarea("next_step_direction", row.next_step_direction, "下一步改进方向", 3), "span-2")}
             ${fieldBlock("关键卡点 / 备注", fieldTextarea("key_blocker", row.key_blocker, "关键卡点 / 备注", 3), "span-2")}
@@ -1179,6 +1269,7 @@
 
     function renderMeta(row) {
       const imported = isImportedToCategoryLab(row);
+      const versionStage = deriveVersionStage(row, records);
       const importText = imported ? "已导入 Category Lab" : "未导入 Category Lab";
       const importClass = imported ? "import-state ok" : row.status === "已确认" ? "import-state warn" : "import-state";
       metaPanel.innerHTML = `
@@ -1196,7 +1287,8 @@
           ${kv("测试类别", row.test_category)}
           ${kv("档期名称", row.campaign)}
           ${kv("版本", row.version_label)}
-          ${kv("产品规格", row.finished_spec)}
+          ${versionStage ? kv("版本阶段", versionStage) : ""}
+          ${kv("产品规格（g）", row.finished_spec)}
           ${kv("长度（mm）", row.length_mm)}
           ${kv("宽度（mm）", row.width_mm)}
           ${kv("高度（mm）", row.height_mm)}
@@ -1362,6 +1454,16 @@
       };
     }
 
+    function updateVersionStagePreview() {
+      const row = activeRecord();
+      const preview = appPanel.querySelector("[data-version-stage-preview]");
+      if (!row || !preview) return;
+      const stage = deriveVersionStage({ ...row, ...activePayload() }, records);
+      preview.textContent = stage
+        ? `自动识别版本阶段：${stage}`
+        : "尚未识别版本阶段。进入众测、中试或大生产后自动标记。";
+    }
+
     async function saveRow(id = activeRecordId, override = {}) {
       if (!roleCanEdit() || !id) return null;
       const payload = { ...activePayload(), ...override };
@@ -1413,6 +1515,7 @@
         width: row.width_mm || "",
         height: row.height_mm || "",
         version: row.version_label || "V1",
+        versionStage: deriveVersionStage(row, records),
         testDate: row.sample_date || "",
         type: "OEM 品类测试",
         images: imageUrls(row),
@@ -1501,13 +1604,14 @@
         "品名",
         "供应商",
         "版本",
+        "版本阶段",
         "提交编号",
         "送样时间",
         "产品类型",
         "测试类别",
         "档期名称",
         "本版调整点",
-        "产品规格",
+        "产品规格（g）",
         "长度（mm）",
         "宽度（mm）",
         "高度（mm）",
@@ -1527,6 +1631,7 @@
         row.product_name,
         row.supplier_name,
         row.version_label,
+        deriveVersionStage(row, records),
         row.followup_code,
         row.sample_date,
         row.product_type,
@@ -1651,6 +1756,9 @@
       } catch (error) {
         showMessage(error.message || "操作失败。", "error");
       }
+    });
+    appPanel.addEventListener("change", event => {
+      if (["tasting_scene", "round_conclusion"].includes(event.target?.dataset?.field)) updateVersionStagePreview();
     });
     lightboxClose.addEventListener("click", () => lightbox.classList.add("hidden"));
     lightbox.addEventListener("click", event => {

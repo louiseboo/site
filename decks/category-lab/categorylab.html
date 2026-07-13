@@ -460,6 +460,19 @@
       font-size: 12px;
       font-weight: 700;
     }
+    .version-stage-badge {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 6px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #efe3cf;
+      color: #7a4d1f;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.4;
+      vertical-align: middle;
+    }
     .warn {
       color: var(--amber);
       font-weight: 700;
@@ -4028,7 +4041,7 @@
             <div class="field"><label>本版调整点 / 打样目的</label><textarea id="sensorySamplePurpose" placeholder="这一版相比上一版改了什么；为什么需要这次复样"></textarea></div>
             <div class="tasting-process-stack">
               <div class="field"><label>试吃场景 / 反馈来源</label><select id="sensoryFeedbackSource"><option value="前期打磨测试" selected>前期打磨测试</option><option value="众测后优化">众测后优化</option><option value="中试后优化">中试后优化</option><option value="上市后优化">上市后优化</option></select></div>
-              <div class="field"><label>本轮结论</label><select id="sensoryRoundConclusion"><option value="继续调整" selected>继续调整</option><option value="暂停">暂停</option><option value="通过且储备">通过且储备</option><option value="通过且进入众测">通过且进入众测</option></select></div>
+              <div class="field"><label>本轮结论</label><select id="sensoryRoundConclusion"><option value="继续调整" selected>继续调整</option><option value="暂停">暂停</option><option value="通过且储备">通过且储备</option><option value="通过且进入众测">通过且进入众测</option><option value="通过且进入中试">通过且进入中试</option><option value="通过且进入大生产">通过且进入大生产</option></select></div>
             </div>
             <div class="field tasting-process-wide"><label>关键卡点 / 备注</label><textarea id="sensoryKeyBlocker" placeholder="只写最影响决策的一件事：风味 / 外观 / 结构 / 成本 / 供应 / 门店操作"></textarea></div>
           </div>
@@ -5813,6 +5826,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         project: record.project || record.product || "",
         campaign: record.campaign || "",
         spec: record.spec || "",
+        versionStage: versionStageFromConclusion(record.roundConclusion) || record.versionStage || "",
         overallEvaluation: record.overallEvaluation || "",
         materials: record.materials || record.title || "",
         yield: record.yield || {}
@@ -8378,7 +8392,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         const text = [
           record.name, record.type, record.status, record.note, record.xhsUrl, record.imageUrl,
           record.project, record.brand, record.category, record.supplier,
-          record.spec, record.price, record.weight, record.length, record.width, record.height
+          record.spec, record.versionStage, record.price, record.weight, record.length, record.width, record.height
         ].join(" ").toLowerCase();
         const rowCategory = key === "opportunityIdeas" ? record.type : record.category;
         return (!query || text.includes(query)) && (!category || rowCategory === category);
@@ -8692,7 +8706,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             <td>${escapeHtml(record.testDate || record.time || "")}</td>
             <td><b>${escapeHtml(record.project || "")}</b></td>
             <td>${escapeHtml(key === "oemRecords" ? (record.supplier || "") : (record.category || ""))}</td>
-            <td>${escapeHtml(record.version || "")}</td>
+            <td>${escapeHtml(record.version || "")}${record.versionStage ? `<span class="version-stage-badge">${escapeHtml(record.versionStage)}</span>` : ""}</td>
             <td>${escapeHtml(sensoryAverageScore(record))}</td>
             <td>${escapeHtml(record.note || "")}</td>
             <td>${opportunityActionsHtml("opportunity-dev", record.id)}</td>
@@ -11372,7 +11386,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function exportDevCsv(records = visibleDevRecords(), filename = "研发过程记录.csv") {
-      const rows = [["时间","产品","品牌","品类","档期名称","版本","类型","供应商","规格","价格(RMB)","重量(g)","长度(mm)","宽度(mm)","高度(mm)","物料/用量","原始重量(g)","去皮后(g)","切配后(g)","加热后(g)","冷却后(g)","最终可用量(g)","得率链路","本版调整点 / 打样目的","试吃场景 / 反馈来源","本轮结论","关键卡点 / 备注","外观","外观评分","风味","风味评分","香气","香气评分","组织质地","组织质地评分","总体评价","下一步改进方向"]];
+      const rows = [["时间","产品","品牌","品类","档期名称","版本","版本阶段","类型","供应商","规格","价格(RMB)","重量(g)","长度(mm)","宽度(mm)","高度(mm)","物料/用量","原始重量(g)","去皮后(g)","切配后(g)","加热后(g)","冷却后(g)","最终可用量(g)","得率链路","本版调整点 / 打样目的","试吃场景 / 反馈来源","本轮结论","关键卡点 / 备注","外观","外观评分","风味","风味评分","香气","香气评分","组织质地","组织质地评分","总体评价","下一步改进方向"]];
       (records || []).forEach(record => rows.push([
         record.time,
         record.project,
@@ -11380,6 +11394,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         record.category || "",
         record.campaign || "",
         record.version || "",
+        record.versionStage || "",
         devTypeLabel(record),
         record.supplier || "",
         record.spec || "",
@@ -11532,6 +11547,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         ["类别", record.category || ""],
         ["档期名称", record.campaign || ""],
         ["版本", record.version || ""],
+        ["版本阶段", record.versionStage || ""],
         ["类型", devTypeLabel(record)],
         ["供应商", record.supplier || ""],
         ["测试日期", record.testDate || ""],
@@ -11707,8 +11723,16 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return legacyMap[value] || "前期打磨测试";
     }
 
+    function versionStageFromConclusion(value) {
+      return {
+        "通过且进入众测": "众测版",
+        "通过且进入中试": "中试版",
+        "通过且进入大生产": "大生产版"
+      }[value] || "";
+    }
+
     function normalizeTastingRoundConclusion(value) {
-      const currentOptions = ["继续调整", "暂停", "通过且储备", "通过且进入众测"];
+      const currentOptions = ["继续调整", "暂停", "通过且储备", "通过且进入众测", "通过且进入中试", "通过且进入大生产"];
       if (currentOptions.includes(value)) return value;
       const legacyMap = {
         "通过": "通过且储备",
@@ -12916,6 +12940,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const existing = (state.devRecords || []).find(item => item.id === editingDevRecordId);
       const recordType = document.querySelector("#sensoryRecordType").value || "OEM 品类测试";
       const isCompetitor = recordType === "竞品测试";
+      const feedbackSource = document.querySelector("#sensoryFeedbackSource").value;
+      const roundConclusion = document.querySelector("#sensoryRoundConclusion").value;
       const record = {
         id: crypto.randomUUID(),
         time: existing?.time || new Date().toLocaleString("zh-CN"),
@@ -12936,8 +12962,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         images: [...sensoryImages],
         image: sensoryImages[0] || "",
         samplePurpose: document.querySelector("#sensorySamplePurpose").value.trim(),
-        feedbackSource: document.querySelector("#sensoryFeedbackSource").value,
-        roundConclusion: document.querySelector("#sensoryRoundConclusion").value,
+        feedbackSource,
+        roundConclusion,
+        versionStage: versionStageFromConclusion(roundConclusion) || existing?.versionStage || "",
         keyBlocker: document.querySelector("#sensoryKeyBlocker").value.trim(),
         overallEvaluation: document.querySelector("#sensoryOverallEvaluation").value.trim(),
         sensory: {
