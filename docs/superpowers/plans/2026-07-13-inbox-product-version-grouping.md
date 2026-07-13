@@ -73,7 +73,7 @@ Expected: all grouping and fuzzy-candidate tests PASS.
 
 - [ ] **Step 1: Add failing static and behavior assertions**
 
-Assert the inbox contains product-group controls, version child buttons, version switcher, `?id=` preservation, and that filtering a group keeps nonmatching sibling versions available.
+Assert the inbox contains product-group controls, version child buttons and version switcher; the stable URL continues removing `id`; filtering a group keeps nonmatching sibling versions available.
 
 - [ ] **Step 2: Run tests and verify RED**
 
@@ -94,7 +94,7 @@ The active group stays open. Group filters decide visibility, but each visible g
 
 - [ ] **Step 4: Add version switcher above detail content**
 
-The switcher changes `activeRecordId`, updates the `?id=` query, rerenders detail/meta/list, and does not call the API.
+The switcher changes `activeRecordId`, keeps the URL free of record-specific suffixes, rerenders detail/meta/list, and does not call the API.
 
 - [ ] **Step 5: Run tests and verify GREEN**
 
