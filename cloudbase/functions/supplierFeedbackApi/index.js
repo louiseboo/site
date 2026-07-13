@@ -140,7 +140,26 @@ function normalizeAdminUpdatePayload(payload = {}) {
   Object.keys(normalized).forEach(key => {
     if (Object.hasOwn(payload, key)) patch[key] = normalized[key];
   });
+  if (Object.hasOwn(payload, "product_group_id")) {
+    patch.product_group_id = nullableText(payload.product_group_id);
+  }
   return patch;
+}
+
+function normalizeGroupingSupplier(value) {
+  return String(value || "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[\s\p{P}\p{S}]+/gu, "");
+}
+
+function validateProductGroupingRecords(records = []) {
+  if (!records.length) throw new Error("没有可归组的产品记录。");
+  const suppliers = new Set(records.map(record => normalizeGroupingSupplier(record.supplier_name)).filter(Boolean));
+  if (suppliers.size !== 1 || records.some(record => !normalizeGroupingSupplier(record.supplier_name))) {
+    throw new Error("只能合并同一供应商的产品记录。");
+  }
+  return true;
 }
 
 function requireFields(payload, names) {
@@ -500,6 +519,27 @@ async function adminUpdate(collection, event, body) {
   return { record };
 }
 
+async function adminSetProductGroup(collection, event, body) {
+  assertAdmin(event, body);
+  const recordIds = [...new Set((Array.isArray(body.recordIds) ? body.recordIds : []).map(text).filter(Boolean))];
+  if (!recordIds.length || recordIds.length > 100) throw new Error("产品归组记录数量必须在 1 到 100 条之间。");
+  const snapshots = await Promise.all(recordIds.map(id => collection.doc(id).get()));
+  const records = snapshots.map(result => result.data?.[0] || null);
+  if (records.some(record => !record)) throw new Error("部分产品记录不存在，请刷新收件箱后重试。");
+  validateProductGroupingRecords(records);
+  const productGroupId = nullableText(body.productGroupId);
+  const updatedAt = new Date().toISOString();
+  await Promise.all(recordIds.map(id => collection.doc(id).update({
+    product_group_id: productGroupId,
+    updated_at: updatedAt
+  })));
+  const updatedSnapshots = await Promise.all(recordIds.map(id => collection.doc(id).get()));
+  const updatedRecords = await Promise.all(updatedSnapshots.map((result, index) =>
+    hydrateRecordImages(getApp(), publicRecord(result.data?.[0] || { id: recordIds[index], product_group_id: productGroupId, updated_at: updatedAt }))
+  ));
+  return { records: updatedRecords };
+}
+
 async function adminDelete(collection, event, body) {
   assertAdmin(event, body);
   const id = text(body.id);
@@ -543,6 +583,7 @@ async function handleEvent(event = {}) {
       data = { profile: { display_name: "Louise", role: "owner" } };
     } else if (action === "adminList") data = await adminList(collection, event, body);
     else if (action === "adminUpdate") data = await adminUpdate(collection, event, body);
+    else if (action === "adminSetProductGroup") data = await adminSetProductGroup(collection, event, body);
     else if (action === "adminDelete") data = await adminDelete(collection, event, body);
 
     return jsonResponse(200, { ok: true, data });
@@ -584,6 +625,7 @@ exports._private = {
   parseEventBody,
   normalizeRecordPayload,
   normalizeAdminUpdatePayload,
+  validateProductGroupingRecords,
   requireFields,
   databaseWriteRecord,
   sanitizePublicSubmissionPayload,
