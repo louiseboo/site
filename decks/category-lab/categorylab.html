@@ -1956,6 +1956,204 @@
       height: 14px;
       background: var(--red);
     }
+    .launch-campaign-products {
+      grid-column: 1 / -1;
+      border-bottom: 1px solid var(--line);
+      background: #f8f1e5;
+      padding: 14px 16px 16px;
+    }
+    .launch-campaign-products-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+    .launch-campaign-products-head h4 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .launch-campaign-products-head p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .launch-campaign-products-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+    .launch-product-overview-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fffdf8;
+    }
+    .launch-product-overview {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .launch-product-overview th,
+    .launch-product-overview td {
+      padding: 9px 12px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+    .launch-product-overview th:last-child,
+    .launch-product-overview td:last-child { border-right: 0; }
+    .launch-product-overview tbody tr:last-child td { border-bottom: 0; }
+    .launch-product-overview th {
+      background: #f3ead9;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .launch-product-overview th:first-child { width: 28%; }
+    .launch-product-overview tbody tr {
+      cursor: pointer;
+    }
+    .launch-product-overview tbody tr:hover,
+    .launch-product-overview tbody tr.active {
+      background: #f4e5d1;
+    }
+    .launch-product-name {
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 0;
+      text-align: left;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .launch-product-name span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .launch-product-node {
+      display: grid;
+      gap: 2px;
+      min-height: 34px;
+      align-content: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 10px;
+      font-weight: 760;
+    }
+    button.launch-product-node {
+      width: 100%;
+      border: 0;
+      border-radius: 5px;
+      background: transparent;
+      padding: 4px;
+      text-align: left;
+      cursor: pointer;
+    }
+    button.launch-product-node:hover,
+    button.launch-product-node[aria-pressed="true"] {
+      background: #f0dfc8;
+      box-shadow: inset 0 0 0 1px rgba(138, 90, 54, .25);
+    }
+    .launch-product-node b {
+      color: var(--text);
+      font-size: 11px;
+    }
+    .launch-product-node small {
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 10px;
+      font-weight: 760;
+    }
+    .launch-product-node.bad b,
+    .launch-product-node.bad small { color: var(--red); }
+    .launch-product-node.warn b,
+    .launch-product-node.warn small { color: var(--amber); }
+    .launch-product-node.done small { color: var(--green); }
+    .launch-product-node-editor {
+      display: grid;
+      grid-template-columns: minmax(170px, 1fr) minmax(190px, 1fr) auto;
+      gap: 12px;
+      align-items: end;
+      margin-top: 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fffaf2;
+      padding: 10px 12px;
+    }
+    .launch-product-node-editor b,
+    .launch-product-node-editor span {
+      display: block;
+    }
+    .launch-product-node-editor span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .launch-product-node-editor label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .launch-product-node-editor input {
+      width: 100%;
+      margin-top: 4px;
+    }
+    .launch-product-node-editor .status-dot { align-self: center; }
+    .launch-inline-flow {
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+    .launch-inline-flow-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .launch-inline-flow-head h4 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .launch-campaign-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 0;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .launch-campaign-toggle::before {
+      content: "+";
+      display: inline-grid;
+      place-items: center;
+      width: 16px;
+      height: 16px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: #fffdf8;
+      color: var(--text);
+      line-height: 1;
+    }
+    .launch-campaign-toggle.expanded::before { content: "−"; }
     .launch-list-panel {
       margin-top: 12px;
       padding: 0;
@@ -2939,6 +3137,12 @@
       .calendar-filter-row { justify-content: flex-start; }
       .calendar-period-list { border-right: 0; border-bottom: 1px solid var(--line); }
       .launch-summary-strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .launch-campaign-products-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .launch-campaign-products-actions { justify-content: flex-start; }
+      .launch-product-node-editor { grid-template-columns: 1fr; }
       .validation-kpis .kpi,
       .validation-kpis .kpi.total { grid-column: span 1; }
       .recipe-meta { grid-template-columns: 1fr; }
@@ -3293,9 +3497,11 @@
                   <div class="launch-subhead">
                     <div>
                       <h3>时间轴</h3>
-                      <p>每行一个档期，关键节点落在计划线上，实际进度用第二条线标出。</p>
+                      <p>每行一个档期；节点有实际日期时显示在实际线上，否则显示在计划线上。</p>
                     </div>
                     <div class="launch-subhead-actions">
+                      <button class="btn compact" data-launch-expand-all type="button">全部展开</button>
+                      <button class="btn compact" data-launch-collapse-all type="button">全部收起</button>
                       <button class="btn compact" data-toggle-launch-timeline-done type="button">隐藏已完成</button>
                     </div>
                   </div>
@@ -3307,27 +3513,6 @@
                     <span><i class="launch"></i>上市日</span>
                     <span><i class="today"></i>今天</span>
                   </div>
-                </div>
-                <div class="launch-list-panel">
-                  <div class="launch-list-head">
-                    <span>档期 / 食品</span>
-                    <span>上市日期</span>
-                    <span>当前关键节点</span>
-                    <span>节点日期</span>
-                    <span>预期天数</span>
-                    <span>状态</span>
-                    <span>操作</span>
-                  </div>
-                  <div id="launchGroupedList"></div>
-                </div>
-                <div class="launch-flow-panel">
-                  <div class="launch-subhead">
-                    <div>
-                      <h3>Coffee Bar 全流程</h3>
-                      <p id="launchActiveProjectLabel"></p>
-                    </div>
-                  </div>
-                  <div id="coffeeBarChecklist"></div>
                 </div>
               </div>
             </div>
@@ -4955,6 +5140,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     const WORKSPACE_LIST_STORAGE_KEY = "categorylab-workspace-lists-v1";
     const PRODUCT_CALENDAR_MATRIX_STORAGE_KEY = "categorylab-product-calendar-sq-matrix-v1";
     const LAUNCH_TIMELINE_HIDE_DONE_STORAGE_KEY = "categorylab-launch-timeline-hide-done-v1";
+    const LAUNCH_CAMPAIGN_EXPANSION_STORAGE_KEY = "categorylab-launch-campaign-expansion-v1";
     const WORKSPACE_LIST_CLEANUP_KEY = "categorylab-workspace-lists-cleanup-v1";
     const WORKSPACE_LIST_CLEANUP_VERSION = "2026-06-16-clear-product-ideas";
     const ovenProfiles = {
@@ -5448,6 +5634,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let launchDoneCollapsed = true;
     let launchYearFilter = "FY26";
     let launchTimelineHideDone = localStorage.getItem(LAUNCH_TIMELINE_HIDE_DONE_STORAGE_KEY) === "1";
+    let launchCampaignExpansionState = loadLaunchCampaignExpansionState();
+    let launchVisibleTimelineProjects = [];
     let productCalendarYear = "2026";
     let productCalendarGroupFilter = "";
     let productCalendarStatusFilter = "";
@@ -6204,11 +6392,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           }));
           if (planned.length) plannedDates[template.key] = planned[0];
           const dateKeys = [template.key, ...(template.actualKeys || [])].filter(Boolean);
-          const dates = uniqueClean(sortedItems.map(project => {
+          const milestoneProducts = displayItems.length ? displayItems : sortedItems;
+          const productDates = milestoneProducts.map(project => {
             const actualDates = project.actualDates || {};
             return dateKeys.map(key => actualDates[key]).find(Boolean) || "";
-          }));
-          if (dates.length === 1) actualDates[template.key] = dates[0];
+          });
+          const dates = uniqueClean(productDates);
+          if (productDates.length && productDates.every(Boolean) && dates.length === 1) actualDates[template.key] = dates[0];
         });
         const checkedFlow = Object.fromEntries(coffeeBarFlowItems.map(item => [
           item,
@@ -6775,6 +6965,22 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       ]));
     }
 
+    function launchPlannedDatesAfterCampaignEdit(project = {}, nextLaunchDate = "") {
+      const previousLaunchDate = project.launchDate || "";
+      const currentDates = project.plannedDates && typeof project.plannedDates === "object" ? project.plannedDates : {};
+      const defaults = launchPlannedDatesForLaunchDate(nextLaunchDate);
+      if (!Object.keys(currentDates).length) return defaults;
+      if (!previousLaunchDate || !nextLaunchDate || previousLaunchDate === nextLaunchDate) {
+        return { ...defaults, ...currentDates, launch: nextLaunchDate || currentDates.launch || "" };
+      }
+      const shiftDays = dayDiff(nextLaunchDate, previousLaunchDate);
+      return Object.fromEntries(launchMilestoneTemplates.map(template => {
+        if (template.key === "launch") return [template.key, nextLaunchDate];
+        const currentDate = currentDates[template.key];
+        return [template.key, currentDate && Number.isFinite(shiftDays) ? addDays(currentDate, shiftDays) : defaults[template.key]];
+      }));
+    }
+
     function launchTimelineRange(projects) {
       const today = parseDateInput(formatDateInput(new Date()));
       const dates = [today];
@@ -6817,7 +7023,156 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (actualDates.length) {
         return actualDates.sort((a, b) => normalizeLaunchDate(a).localeCompare(normalizeLaunchDate(b))).at(-1);
       }
-      return formatDateInput(new Date());
+      return "";
+    }
+
+    function loadLaunchCampaignExpansionState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(LAUNCH_CAMPAIGN_EXPANSION_STORAGE_KEY));
+        return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function persistLaunchCampaignExpansionState() {
+      localStorage.setItem(LAUNCH_CAMPAIGN_EXPANSION_STORAGE_KEY, JSON.stringify(launchCampaignExpansionState));
+    }
+
+    function launchCampaignExpansionBucket(year = launchYearFilter) {
+      const key = year || "all";
+      if (!launchCampaignExpansionState[key] || typeof launchCampaignExpansionState[key] !== "object") {
+        launchCampaignExpansionState[key] = {};
+      }
+      return launchCampaignExpansionState[key];
+    }
+
+    function launchCampaignIsExpanded(campaign) {
+      const bucket = launchCampaignExpansionBucket();
+      if (Object.prototype.hasOwnProperty.call(bucket, campaign.id)) return Boolean(bucket[campaign.id]);
+      return launchItemIsActive(campaign);
+    }
+
+    function setLaunchCampaignExpanded(campaignId, expanded) {
+      launchCampaignExpansionBucket()[campaignId] = Boolean(expanded);
+      persistLaunchCampaignExpansionState();
+    }
+
+    function setVisibleLaunchCampaignsExpanded(expanded) {
+      const bucket = launchCampaignExpansionBucket();
+      launchVisibleTimelineProjects.forEach(campaign => {
+        bucket[campaign.id] = Boolean(expanded);
+      });
+      persistLaunchCampaignExpansionState();
+    }
+
+    function launchTimelineMarker(milestone) {
+      if (milestone?.key === "launch") {
+        return { lane: "planned", date: milestone.plannedDate || "", actualDate: "" };
+      }
+      const actualDate = milestone?.displayActualDate || milestone?.actualDate || "";
+      return actualDate
+        ? { lane: "actual", date: actualDate, actualDate }
+        : { lane: "planned", date: milestone?.plannedDate || "", actualDate: "" };
+    }
+
+    function launchMainProductMilestones(project) {
+      const mainKeys = new Set(["consumer", "npc", "pilot", "mass"]);
+      return calculateLaunchMilestones(project).filter(item => mainKeys.has(item.key));
+    }
+
+    function launchCampaignProductSummary(campaign) {
+      const products = visibleLaunchProducts(campaign.products || []);
+      const summary = { normal: 0, risk: 0, pending: 0 };
+      products.forEach(product => {
+        const milestones = launchMainProductMilestones(product);
+        if (milestones.some(item => item.status === "逾期")) summary.risk += 1;
+        else if (!milestones.some(item => item.done)) summary.pending += 1;
+        else summary.normal += 1;
+      });
+      return summary;
+    }
+
+    function launchProductNodeHtml(project, milestoneKey) {
+      const milestone = launchMainProductMilestones(project).find(item => item.key === milestoneKey);
+      if (!milestone) return `<span class="launch-product-node"><b>-</b></span>`;
+      const actualDate = milestone.displayActualDate || milestone.actualDate || "";
+      const delta = actualDate && milestone.plannedDate ? dayDiff(actualDate, milestone.plannedDate) : "";
+      const primary = `${actualDate ? "实" : "计"} ${launchDateLabel(actualDate || milestone.plannedDate)}`;
+      let secondary = milestone.status || "待完成";
+      let tone = launchStatusClass(milestone.status);
+      if (actualDate) {
+        if (Number.isFinite(delta) && delta > 0) {
+          secondary = `延后 ${delta} 天`;
+          tone = "bad";
+        } else if (Number.isFinite(delta) && delta < 0) {
+          secondary = `提前 ${Math.abs(delta)} 天`;
+          tone = "done";
+        } else {
+          secondary = "按期";
+          tone = "done";
+        }
+      }
+      return `<button class="launch-product-node ${escapeAttr(tone)}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}" aria-pressed="${activeLaunchProjectId === project.id && activeLaunchMilestoneKey === milestone.key ? "true" : "false"}" type="button"><b>${escapeHtml(primary)}</b><small>${escapeHtml(secondary)}</small></button>`;
+    }
+
+    function launchProductNodeEditorHtml(project) {
+      const milestone = launchMainProductMilestones(project).find(item => item.key === activeLaunchMilestoneKey);
+      if (!milestone) {
+        return `<div class="launch-product-node-editor"><div><b>节点日期</b><span>点击众测、NPC、中试或大生产，查看并填写实际日期。</span></div></div>`;
+      }
+      const actualValue = milestone.actualDate || milestone.displayActualDate || "";
+      return `
+        <div class="launch-product-node-editor">
+          <div><b>${escapeHtml(launchMilestoneDisplayLabel(milestone))}</b><span>计划日期 ${escapeHtml(milestone.plannedDate || "未定")}</span></div>
+          <label>实际日期<input class="small-input" type="date" value="${escapeAttr(actualValue)}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}"></label>
+          <span class="status-dot ${escapeAttr(launchStatusClass(milestone.status))}">${escapeHtml(milestone.status || "待完成")}</span>
+        </div>
+      `;
+    }
+
+    function launchCampaignProductsHtml(campaign) {
+      const products = visibleLaunchProducts(campaign.products || []);
+      const isActiveCampaign = launchItemIsActive(campaign);
+      const activeProduct = products.find(product => product.id === activeLaunchProjectId);
+      return `
+        <div class="launch-campaign-products" data-launch-campaign-products="${escapeAttr(campaign.id)}">
+          <div class="launch-campaign-products-head">
+            <div>
+              <h4>食品中心</h4>
+              <p>${escapeHtml(campaign.name || "未命名档期")} · ${products.length} 个食品</p>
+            </div>
+            <div class="launch-campaign-products-actions">
+              <button class="btn compact primary" data-open-launch-product="${escapeAttr(campaign.id)}" type="button">新增食品</button>
+              <button class="btn compact" data-edit-launch="${escapeAttr(campaign.id)}" type="button">编辑档期</button>
+              <button class="btn compact" data-delete-launch-campaign="${escapeAttr(campaign.id)}" type="button">删除档期</button>
+            </div>
+          </div>
+          <div class="launch-product-overview-wrap">
+            <table class="launch-product-overview">
+              <thead><tr><th>食品</th><th>众测</th><th>NPC</th><th>中试</th><th>大生产</th></tr></thead>
+              <tbody>
+                ${products.map(product => `
+                  <tr class="${product.id === activeLaunchProjectId ? "active" : ""}">
+                    <td><button class="launch-product-name" data-select-launch-product="${escapeAttr(product.id)}" type="button">${escapeHtml(product.name || "未命名食品")}<span>${escapeHtml(product.category || "未分类")}</span></button></td>
+                    <td>${launchProductNodeHtml(product, "consumer")}</td>
+                    <td>${launchProductNodeHtml(product, "npc")}</td>
+                    <td>${launchProductNodeHtml(product, "pilot")}</td>
+                    <td>${launchProductNodeHtml(product, "mass")}</td>
+                  </tr>
+                `).join("") || `<tr><td colspan="5"><div class="empty">这个档期还没有食品。</div></td></tr>`}
+              </tbody>
+            </table>
+          </div>
+          ${activeProduct ? launchProductNodeEditorHtml(activeProduct) : ""}
+          ${isActiveCampaign && activeProduct ? `
+            <div class="launch-inline-flow">
+              <div class="launch-inline-flow-head"><h4>Coffee Bar 全流程</h4></div>
+              <div id="coffeeBarChecklist"></div>
+            </div>
+          ` : ""}
+        </div>
+      `;
     }
 
     function renderLaunchTimeline(projects, options = {}) {
@@ -6849,34 +7204,33 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             const startX = launchTimelinePosition(start, minTime, maxTime);
             const endX = Math.max(startX + 1, launchTimelinePosition(end, minTime, maxTime));
             const actualEnd = launchActualProgressEnd(project, milestones);
-            const actualEndX = Math.max(startX + 1, launchTimelinePosition(actualEnd, minTime, maxTime));
-            const daysText = launchTimingText(launchMetrics(project).daysToLaunch);
+            const actualEndX = actualEnd ? Math.max(startX + 1, launchTimelinePosition(actualEnd, minTime, maxTime)) : startX;
             const labelEndClass = endX > 88 ? " end" : "";
             const products = project.products || [];
-            const productNames = products.map(item => item.name).filter(Boolean);
+            const visibleProducts = visibleLaunchProducts(products);
+            const productSummary = launchCampaignProductSummary(project);
             const selectTargetId = launchSelectTargetId(project);
+            const expanded = launchCampaignIsExpanded(project);
             return `
               <div class="timeline-project-info ${tone} ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(selectTargetId)}">
                 <b>${escapeHtml(project.name || "未命名档期")}</b>
-                <span>${escapeHtml(project.category || "未分类")} · ${escapeHtml(launchMilestoneDisplayLabel(current) || "暂无节点")} · 完成 ${completion.done}/${completion.total}</span>
-                <small>${escapeHtml(productNames.length ? productNames.join("、") : (project.owner || ""))}</small>
-                <em>${escapeHtml(launchStatusText(project))} · 上市 ${escapeHtml(launchDateLabel(project.launchDate))} · ${escapeHtml(daysText)}</em>
+                <span>${escapeHtml(project.category || "未分类")} · ${visibleProducts.length} 个食品</span>
+                <small>当前档期阶段：${escapeHtml(launchMilestoneDisplayLabel(current) || "暂无节点")} · 完成 ${completion.done}/${completion.total}</small>
+                <em>${productSummary.normal} 正常 · ${productSummary.risk} 风险 · ${productSummary.pending} 待开始</em>
+                <button class="launch-campaign-toggle ${expanded ? "expanded" : ""}" data-launch-campaign-toggle="${escapeAttr(project.id)}" aria-expanded="${expanded ? "true" : "false"}" type="button">${expanded ? "收起食品中心" : "展开食品中心"}</button>
               </div>
               <div class="timeline-track-cell ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(selectTargetId)}">
                 <span class="timeline-plan-bar" style="--start:${startX}%;--end:${endX}%"></span>
-                <span class="timeline-actual-bar ${tone}" style="--start:${startX}%;--end:${actualEndX}%"></span>
+                ${actualEnd ? `<span class="timeline-actual-bar ${tone}" style="--start:${startX}%;--end:${actualEndX}%"></span>` : ""}
                 ${milestones.map(item => {
+                  const marker = launchTimelineMarker(item);
                   const dotTone = item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "pending") : "pending";
-                  return `<span class="timeline-dot ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" data-tooltip="${escapeAttr(launchMilestoneTooltip(item))}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(item.plannedDate, minTime, maxTime)}%"></span>`;
-                }).join("")}
-                ${milestones.filter(item => item.displayActualDate || item.actualDate).map(item => {
-                  const actualDate = item.displayActualDate || item.actualDate;
-                  const dotTone = item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "pending") : "pending";
-                  return `<span class="timeline-dot actual ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" data-tooltip="${escapeAttr(launchMilestoneTooltip(item))}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(actualDate, minTime, maxTime)}%"></span>`;
+                  return `<span class="timeline-dot ${marker.lane === "actual" ? "actual" : ""} ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" data-actual-date="${escapeAttr(marker.actualDate)}" data-tooltip="${escapeAttr(launchMilestoneTooltip(item))}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(marker.date, minTime, maxTime)}%"></span>`;
                 }).join("")}
                 <span class="timeline-date-label ${tone}${labelEndClass}" style="--x:${endX}%">上市 ${escapeHtml(launchDateLabel(project.launchDate))}</span>
                 <span class="timeline-today" style="--today:${todayX}%"></span>
               </div>
+              ${expanded ? launchCampaignProductsHtml(project) : ""}
             `;
           }).join("")}
         </div>
@@ -6926,7 +7280,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function launchMilestoneTitle(milestone) {
-      const actualText = milestone?.displayActualDate || milestone?.actualDate || (milestone?.key === "launch" ? milestone?.plannedDate : "") || "未填";
+      if (milestone?.key === "launch") return milestone?.plannedDate ? `计划日期 ${milestone.plannedDate}` : "";
+      const actualText = milestone?.displayActualDate || milestone?.actualDate || "未填";
       return [
         milestone?.plannedDate ? `计划日期 ${milestone.plannedDate}` : "",
         `实际日期 ${actualText}`
@@ -6934,7 +7289,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function launchMilestoneTooltip(milestone) {
-      const actualText = milestone?.displayActualDate || milestone?.actualDate || (milestone?.key === "launch" ? milestone?.plannedDate : "") || "未填";
+      if (milestone?.key === "launch") return milestone?.plannedDate ? `计划日期：${milestone.plannedDate}` : "";
+      const actualText = milestone?.displayActualDate || milestone?.actualDate || "未填";
       const rows = [
         milestone?.plannedDate ? `计划日期：${milestone.plannedDate}` : "",
         `实际日期：${actualText}`
@@ -7060,6 +7416,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function selectLaunchProject(id) {
       const directProject = (state.launchProjects || []).find(project => project.id === id);
       if (directProject) {
+        const campaign = launchCampaignById(directProject.id);
+        if (campaign) setLaunchCampaignExpanded(campaign.id, true);
         activeLaunchProjectId = directProject.id;
         activeLaunchMilestoneKey = launchCurrentMilestone(directProject)?.key || "";
         renderLaunchProjects();
@@ -7067,6 +7425,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       }
       const campaign = buildLaunchCampaigns(state.launchProjects || []).find(item => item.id === id);
       if (!campaign) return;
+      setLaunchCampaignExpanded(campaign.id, true);
       activeLaunchProjectId = campaign.products?.[0]?.id || null;
       activeLaunchMilestoneKey = launchCurrentMilestone(campaign)?.key || "";
       renderLaunchProjects();
@@ -7083,10 +7442,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function renderCoffeeBarChecklist(project = activeLaunchProject()) {
       const host = document.querySelector("#coffeeBarChecklist");
-      const label = document.querySelector("#launchActiveProjectLabel");
       if (!host) return;
       if (!project) {
-        if (label) label.textContent = "";
         host.innerHTML = `<div class="empty">先新增或选择一个档期项目，再勾选 Coffee Bar 全流程。</div>`;
         return;
       }
@@ -7097,18 +7454,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         project = products[0];
         activeLaunchProjectId = project.id;
       }
-      const currentProductText = !launchProductIsPlaceholder(project) && project.name ? ` · 当前食品：${project.name}` : "";
-      if (label) label.textContent = `当前档期：${campaign?.name || project.name || "未命名档期"}${currentProductText} · ${project.launchDate || campaign?.launchDate || "未定上市日"}`;
       const canManageSelectedProduct = !launchProductIsPlaceholder(project) && Boolean(project.id);
       host.innerHTML = `
         <div class="launch-flow-toolbar">
-          <div class="launch-product-picker">
-            ${products.map(item => `
-              <button class="launch-product-pill ${item.id === project.id ? "active" : ""}" data-select-launch-product="${escapeAttr(item.id)}" type="button">${escapeHtml(item.name || "未命名食品")}</button>
-            `).join("")}
-          </div>
+          <div><b>${escapeHtml(project.name || "未命名食品")}</b><span class="muted"> · ${escapeHtml(project.category || "未分类")}</span></div>
           <div class="launch-flow-actions">
-            <button class="btn compact" data-open-launch-product="${escapeAttr(campaign?.id || project.id)}" type="button">新增食品</button>
             ${canManageSelectedProduct ? `
               <button class="btn compact" data-edit-launch-product="${escapeAttr(project.id)}" type="button">编辑</button>
               <button class="btn compact" data-delete-launch-product="${escapeAttr(project.id)}" type="button">删除</button>
@@ -8001,9 +8351,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         activeProject = ensureActiveLaunchProject();
       }
       syncLaunchTimelineDoneToggle(hiddenDoneCount);
+      launchVisibleTimelineProjects = timelineProjects;
       renderLaunchTimeline(timelineProjects, { hiddenDoneCount });
       syncLaunchTimelineDoneToggle(hiddenDoneCount);
-      renderLaunchGroupedList(visibleProjects);
       renderCoffeeBarChecklist(activeProject);
       renderProductCalendar();
     }
@@ -8038,18 +8388,18 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const note = document.querySelector("#launchNote").value.trim();
       if (!name && !launchDate) return;
       const launchYear = launchDate ? `FY${String(parseDateInput(launchDate)?.getFullYear() || "").slice(2)}` : launchYearFilter;
-      const plannedDates = launchPlannedDatesForLaunchDate(launchDate);
       const campaignId = existingCampaign?.launchCampaignId || existing?.launchCampaignId || `manual-${id}`;
       const targets = existingCampaign?.products?.length ? existingCampaign.products : (existing ? [existing] : []);
       if (targets.length) {
         targets.forEach(project => {
+          const nextPlannedDates = launchPlannedDatesAfterCampaignEdit(project, launchDate);
           project.launchDate = launchDate;
           project.launchYear = launchYear;
           project.launchCampaign = name;
           project.launchCampaignId = campaignId;
           project.category = launchProductIsPlaceholder(project) ? categories.join(" / ") : (project.category || categories[0] || "未分类");
           project.categories = launchProductIsPlaceholder(project) ? categories : (project.categories?.length ? project.categories : [project.category || categories[0]].filter(Boolean));
-          project.plannedDates = { ...plannedDates };
+          project.plannedDates = nextPlannedDates;
           if (launchProductIsPlaceholder(project)) {
             project.note = note;
             project.isPlaceholder = true;
@@ -8057,6 +8407,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         });
         activeLaunchProjectId = visibleLaunchProducts(targets)[0]?.id || targets[0]?.id || null;
       } else {
+        const plannedDates = launchPlannedDatesForLaunchDate(launchDate);
         const project = migrateLaunchProject({
           id,
           name: "",
@@ -12441,6 +12792,26 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (toggleLaunchTimelineDone) {
         launchTimelineHideDone = !launchTimelineHideDone;
         localStorage.setItem(LAUNCH_TIMELINE_HIDE_DONE_STORAGE_KEY, launchTimelineHideDone ? "1" : "0");
+        renderLaunchProjects();
+        return;
+      }
+      const expandLaunchCampaigns = event.target.closest("[data-launch-expand-all]");
+      if (expandLaunchCampaigns) {
+        setVisibleLaunchCampaignsExpanded(true);
+        renderLaunchProjects();
+        return;
+      }
+      const collapseLaunchCampaigns = event.target.closest("[data-launch-collapse-all]");
+      if (collapseLaunchCampaigns) {
+        setVisibleLaunchCampaignsExpanded(false);
+        renderLaunchProjects();
+        return;
+      }
+      const toggleLaunchCampaign = event.target.closest("[data-launch-campaign-toggle]");
+      if (toggleLaunchCampaign) {
+        const campaignId = toggleLaunchCampaign.dataset.launchCampaignToggle;
+        const campaign = launchVisibleTimelineProjects.find(item => item.id === campaignId);
+        if (campaign) setLaunchCampaignExpanded(campaignId, !launchCampaignIsExpanded(campaign));
         renderLaunchProjects();
         return;
       }
