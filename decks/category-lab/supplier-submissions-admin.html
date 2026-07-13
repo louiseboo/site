@@ -1034,6 +1034,7 @@
     let sortMode = "submitted";
     let supplierEditOpen = false;
     const expandedProductGroupKeys = new Set();
+    const collapsedProductGroupKeys = new Set();
     let groupingSourceKey = "";
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
@@ -1237,11 +1238,11 @@
       return `auto:${automaticProductKey(row)}`;
     }
 
-    function buildProductGroups(allRecords = [], matchingRecords = allRecords) {
+    function buildProductGroups(allRecords = [], matchingRecords = allRecords, identityRecords = allRecords) {
       const matchingIds = new Set((matchingRecords || []).map(row => row.id));
       const groups = new Map();
       (allRecords || []).forEach(row => {
-        const key = effectiveProductGroupKey(row, allRecords);
+        const key = effectiveProductGroupKey(row, identityRecords);
         const group = groups.get(key) || { key, records: [], matchingIds: new Set() };
         group.records.push(row);
         if (matchingIds.has(row.id)) group.matchingIds.add(row.id);
@@ -1259,6 +1260,10 @@
           group.confirmedCount = group.records.filter(row => row.status === "已确认").length;
           return group;
         });
+    }
+
+    function buildVisibleProductGroups(allRecords = [], tabRecords = allRecords, matchingRecords = tabRecords) {
+      return buildProductGroups(tabRecords, matchingRecords, allRecords);
     }
 
     function groupingBigrams(value) {
@@ -1386,12 +1391,15 @@
       return sorted.sort(compareSubmittedDesc);
     }
 
+    function recordMatchesStatusFilter(row, filter = statusFilter) {
+      return filter === "已导入"
+        ? isImportedToCategoryLab(row)
+        : (!filter || row.status === filter);
+    }
+
     function visibleRecords() {
       const q = searchInput.value.trim().toLowerCase();
       const filtered = records.filter(row => {
-        const statusOk = statusFilter === "已导入"
-          ? isImportedToCategoryLab(row)
-          : (!statusFilter || row.status === statusFilter);
         const haystack = [
           row.product_name,
           row.supplier_name,
@@ -1411,7 +1419,7 @@
           row.next_step_direction,
           row.key_blocker
         ].join(" ").toLowerCase();
-        return statusOk && (!q || haystack.includes(q));
+        return recordMatchesStatusFilter(row) && (!q || haystack.includes(q));
       });
       return sortRecords(filtered);
     }
@@ -1423,7 +1431,9 @@
     }
 
     function visibleProductGroups() {
-      const groups = buildProductGroups(records, visibleRecords());
+      const matchingRecords = visibleRecords();
+      const tabRecords = records.filter(row => recordMatchesStatusFilter(row));
+      const groups = buildVisibleProductGroups(records, tabRecords, matchingRecords);
       if (sortMode === "category") {
         return groups.sort((a, b) =>
           optionRank(PRODUCT_TYPE_ORDER, latestGroupValue(a, "product_type")) - optionRank(PRODUCT_TYPE_ORDER, latestGroupValue(b, "product_type")) ||
@@ -1451,6 +1461,10 @@
       return buildProductGroups(records, records).find(group => group.records.some(row => row.id === activeRecordId)) || null;
     }
 
+    function activeVisibleProductGroup() {
+      return visibleProductGroups().find(group => group.records.some(row => row.id === activeRecordId)) || null;
+    }
+
     function syncUrl() {
       const url = new URL(location.href);
       url.searchParams.delete("id");
@@ -1467,6 +1481,24 @@
         activeRecordId = matchingRows[0]?.id || availableRows[0]?.id || "";
       }
       syncUrl();
+    }
+
+    function productGroupExpanded(key, activeKey, expandedKeys = expandedProductGroupKeys, collapsedKeys = collapsedProductGroupKeys) {
+      return expandedKeys.has(key) || (key === activeKey && !collapsedKeys.has(key));
+    }
+
+    function setProductGroupExpanded(key, shouldExpand, expandedKeys = expandedProductGroupKeys, collapsedKeys = collapsedProductGroupKeys) {
+      if (shouldExpand) {
+        collapsedKeys.delete(key);
+        expandedKeys.add(key);
+      } else {
+        expandedKeys.delete(key);
+        collapsedKeys.add(key);
+      }
+    }
+
+    function shouldShowProcessingStatus(filter = statusFilter) {
+      return !filter;
     }
 
     function renderCounts() {
@@ -1502,9 +1534,10 @@
         return;
       }
       const activeGroupKey = activeProductGroup()?.key || "";
+      const showProcessingStatus = shouldShowProcessingStatus();
       listEl.innerHTML = groups.map(group => {
         const isActiveGroup = group.key === activeGroupKey;
-        const isExpanded = isActiveGroup || expandedProductGroupKeys.has(group.key);
+        const isExpanded = productGroupExpanded(group.key, activeGroupKey);
         const statusParts = [
           group.pendingCount ? `${group.pendingCount} 待处理` : "",
           group.confirmedCount ? `${group.confirmedCount} 已确认` : ""
@@ -1518,7 +1551,7 @@
               </span>
               <span class="product-group-meta-row">
                 <span>${escapeHtml(compactText(group.supplier, "未知供应商"))} · ${group.records.length} 个版本 · ${escapeHtml(relativeTime(group.latest.created_at))}</span>
-                <span class="product-group-status">${escapeHtml(statusParts)}</span>
+                ${showProcessingStatus && statusParts ? `<span class="product-group-status">处理状态：${escapeHtml(statusParts)}</span>` : ""}
               </span>
             </button>
             <div class="product-version-list">
@@ -1532,7 +1565,7 @@
                       <span class="item-time">${escapeHtml(relativeTime(row.created_at))}</span>
                     </span>
                     <span class="version-item-meta">
-                      <span class="status-word ${statusClass(row)}">${escapeHtml(row.status || "待处理")}</span>
+                      ${showProcessingStatus ? `<span class="status-word ${statusClass(row)}">处理状态：${escapeHtml(row.status || "待处理")}</span>` : ""}
                       <span>${escapeHtml(compactText(row.product_type || row.test_category, "未分类"))}</span>
                     </span>
                     <span class="version-item-summary">${escapeHtml(compactText(row.version_change || row.core_ingredients_selling_points || row.ingredients_structure, "暂无摘要"))}</span>
@@ -1546,7 +1579,7 @@
     }
 
     function renderVersionSwitcher(row) {
-      const group = activeProductGroup();
+      const group = activeVisibleProductGroup();
       if (!group || group.records.length < 2) return "";
       return `
         <nav class="version-switcher" aria-label="切换产品版本">
@@ -2258,6 +2291,8 @@
     document.querySelectorAll("[data-status-filter]").forEach(button => {
       button.addEventListener("click", () => {
         statusFilter = button.dataset.statusFilter;
+        expandedProductGroupKeys.clear();
+        collapsedProductGroupKeys.clear();
         renderAll("");
       });
     });
@@ -2265,8 +2300,8 @@
       const groupToggle = event.target.closest("[data-product-group-toggle]");
       if (groupToggle) {
         const key = groupToggle.dataset.productGroupToggle;
-        if (expandedProductGroupKeys.has(key)) expandedProductGroupKeys.delete(key);
-        else expandedProductGroupKeys.add(key);
+        const shouldExpand = groupToggle.getAttribute("aria-expanded") !== "true";
+        setProductGroupExpanded(key, shouldExpand);
         renderList();
         return;
       }
