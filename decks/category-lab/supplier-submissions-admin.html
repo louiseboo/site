@@ -688,6 +688,25 @@
       font-size: 13px;
       font-weight: 400;
     }
+    .combobox {
+      position: relative;
+      display: block;
+    }
+    .combobox::after {
+      content: "⌄";
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1;
+      pointer-events: none;
+      transform: translateY(-58%);
+    }
+    .combobox input {
+      width: 100%;
+      padding-right: 34px;
+    }
     .meta-sidebar {
       border-left: 1px solid var(--line);
       background: var(--side);
@@ -1209,6 +1228,15 @@
       return `<select data-field="${escapeAttr(field)}" ${roleCanEdit() ? "" : "disabled"}>${optionHtml(options, selected || "")}</select>`;
     }
 
+    function fieldCombobox(field, options, value, placeholder = "请输入或选择") {
+      const listId = `${field}-options`;
+      const optionList = options
+        .filter(Boolean)
+        .map(option => `<option value="${escapeAttr(option)}"></option>`)
+        .join("");
+      return `<span class="combobox"><input data-field="${escapeAttr(field)}" list="${escapeAttr(listId)}" value="${escapeAttr(value || "")}" placeholder="${escapeAttr(placeholder)}" autocomplete="off" ${roleCanEdit() ? "" : "disabled"}><datalist id="${escapeAttr(listId)}">${optionList}</datalist></span>`;
+    }
+
     function fieldBlock(label, control, extraClass = "") {
       return `<label class="field-label ${extraClass}"><span>${escapeHtml(label)}</span>${control}</label>`;
     }
@@ -1231,8 +1259,9 @@
       }
     }
 
-    function campaignOptions() {
-      return ["", ...CAMPAIGN_OPTIONS];
+    function campaignOptions(current = "") {
+      const savedCampaigns = records.map(row => String(row.campaign || "").trim()).filter(Boolean);
+      return [...new Set([...CAMPAIGN_OPTIONS, ...savedCampaigns, String(current || "").trim()].filter(Boolean))];
     }
 
     function isImportedToCategoryLab(row) {
@@ -1968,7 +1997,7 @@
           <h3>产品经理补充测试结果</h3>
           <div class="edit-grid">
             ${fieldBlock("报价（元，含税含运）", fieldInput("quote_rmb", row.quote_rmb, "线下确认后填写"))}
-            ${fieldBlock("档期名称", fieldSelect("campaign", campaignOptions(row.campaign), row.campaign))}
+            ${fieldBlock("档期名称", fieldCombobox("campaign", campaignOptions(row.campaign), row.campaign, "输入或选择档期名称"))}
             ${fieldBlock("测试场景 / 反馈来源", fieldSelect("tasting_scene", ["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], row.tasting_scene))}
             ${fieldBlock("本轮结论", fieldSelect("round_conclusion", ["", "继续调整", "暂停", "通过且储备", "通过且进入众测", "通过且进入中试", "通过且进入大生产"], row.round_conclusion))}
             <div class="version-stage-preview span-2" data-version-stage-preview>${versionStage ? `自动识别版本阶段：${escapeHtml(versionStage)}` : "尚未识别版本阶段。进入众测、中试或大生产后自动标记。"}</div>
