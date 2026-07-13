@@ -272,6 +272,61 @@
     .submission-list {
       display: grid;
     }
+    .test-category-section {
+      background: var(--paper);
+    }
+    .test-category-section + .test-category-section {
+      border-top: 1px solid var(--line);
+    }
+    .test-category-bar {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 16px 9px 14px;
+      border-top: 1px solid;
+      border-bottom: 1px solid;
+      border-left: 3px solid;
+    }
+    .test-category-bar.campaign-section {
+      border-color: #b58a4a;
+      background: #efe4cf;
+      color: #4b3822;
+    }
+    .test-category-bar.proposal-section {
+      border-color: #668069;
+      background: #e4ebe4;
+      color: #2f4a35;
+    }
+    .test-category-bar.uncategorized-section {
+      border-color: #8e877a;
+      background: #eeeae3;
+      color: #514c44;
+    }
+    .test-category-title {
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .test-category-meta {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      color: currentColor;
+      font-size: 11px;
+      font-weight: 650;
+      opacity: .78;
+      text-align: right;
+    }
+    .test-category-note {
+      border-right: 1px solid currentColor;
+      padding-right: 8px;
+    }
     .product-group {
       border-bottom: 1px solid var(--line);
     }
@@ -822,6 +877,17 @@
         grid-column: 2;
         border-top: 1px solid var(--line);
         border-left: 0;
+      }
+    }
+    @media (max-width: 480px) {
+      .test-category-bar {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .test-category-meta {
+        justify-content: flex-start;
+        text-align: left;
       }
     }
     @media (max-width: 780px) {
@@ -1449,6 +1515,46 @@
       return groups.sort((a, b) => groupingTime(b.latest) - groupingTime(a.latest));
     }
 
+    function testCategorySectionKey(group) {
+      const category = String(latestGroupValue(group, "test_category") || "").trim();
+      if (category === "档期测试") return "campaign";
+      if (category === "新品提案") return "proposal";
+      return "uncategorized";
+    }
+
+    function compareCampaignLaunchOrder(a, b, campaignOptions = CAMPAIGN_OPTIONS) {
+      const campaignDifference = optionRank(campaignOptions, latestGroupValue(a, "campaign"))
+        - optionRank(campaignOptions, latestGroupValue(b, "campaign"));
+      if (campaignDifference) return campaignDifference;
+      return groupingTime(b.latest) - groupingTime(a.latest);
+    }
+
+    function buildTestCategorySections(groups = [], filter = statusFilter, campaignOptions = CAMPAIGN_OPTIONS) {
+      if (!["待处理", "已确认"].includes(filter)) {
+        return [{ key: "all", label: "", note: "", groups: [...groups] }];
+      }
+      const definitions = [
+        { key: "campaign", label: "档期测试" },
+        { key: "proposal", label: "新品提案" },
+        { key: "uncategorized", label: "未分类" }
+      ];
+      const buckets = new Map(definitions.map(definition => [definition.key, []]));
+      groups.forEach(group => buckets.get(testCategorySectionKey(group)).push(group));
+      return definitions
+        .map(definition => {
+          const sectionGroups = [...buckets.get(definition.key)];
+          if (filter === "已确认" && definition.key === "campaign") {
+            sectionGroups.sort((a, b) => compareCampaignLaunchOrder(a, b, campaignOptions));
+          }
+          return {
+            ...definition,
+            note: filter === "已确认" && definition.key === "campaign" ? "按上市顺序" : "",
+            groups: sectionGroups
+          };
+        })
+        .filter(section => section.groups.length > 0);
+    }
+
     function recordById(id) {
       return records.find(row => row.id === id) || null;
     }
@@ -1465,6 +1571,14 @@
       return visibleProductGroups().find(group => group.records.some(row => row.id === activeRecordId)) || null;
     }
 
+    function visibleProductSections() {
+      return buildTestCategorySections(visibleProductGroups());
+    }
+
+    function visibleProductGroupsInDisplayOrder() {
+      return visibleProductSections().flatMap(section => section.groups);
+    }
+
     function syncUrl() {
       const url = new URL(location.href);
       url.searchParams.delete("id");
@@ -1472,13 +1586,14 @@
     }
 
     function ensureActive(preferredId = activeRecordId) {
-      const groups = visibleProductGroups();
+      const groups = visibleProductGroupsInDisplayOrder();
       const availableRows = groups.flatMap(group => group.records);
       if (preferredId && availableRows.some(row => row.id === preferredId)) {
         activeRecordId = preferredId;
       } else {
         const matchingRows = visibleRecords();
-        activeRecordId = matchingRows[0]?.id || availableRows[0]?.id || "";
+        const preferredRows = searchInput.value.trim() ? matchingRows : availableRows;
+        activeRecordId = preferredRows[0]?.id || availableRows[0]?.id || matchingRows[0]?.id || "";
       }
       syncUrl();
     }
@@ -1527,52 +1642,76 @@
       return stage ? `<span class="version-stage-badge">${escapeHtml(stage)}</span>` : "";
     }
 
+    function productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus) {
+      const isActiveGroup = group.key === activeGroupKey;
+      const isExpanded = productGroupExpanded(group.key, activeGroupKey);
+      const statusParts = [
+        group.pendingCount ? `${group.pendingCount} 待处理` : "",
+        group.confirmedCount ? `${group.confirmedCount} 已确认` : ""
+      ].filter(Boolean).join(" · ");
+      const confirmedCampaign = statusFilter === "已确认" && sectionKey === "campaign";
+      const campaignText = confirmedCampaign
+        ? ` · 档期：${compactText(latestGroupValue(group, "campaign"), "未选择")}`
+        : "";
+      return `
+        <section class="product-group ${isActiveGroup ? "active" : ""} ${isExpanded ? "" : "collapsed"}" data-product-group-key="${escapeAttr(group.key)}">
+          <button class="product-group-head" data-product-group-toggle="${escapeAttr(group.key)}" type="button" aria-expanded="${isExpanded}">
+            <span class="product-group-title-row">
+              <span class="product-group-title">${escapeHtml(compactText(group.name, "未命名产品"))}</span>
+              <span class="product-group-caret">▼</span>
+            </span>
+            <span class="product-group-meta-row">
+              <span>${escapeHtml(compactText(group.supplier, "未知供应商"))} · ${group.records.length} 个版本 · ${escapeHtml(relativeTime(group.latest.created_at))}${escapeHtml(campaignText)}</span>
+              ${showProcessingStatus && statusParts ? `<span class="product-group-status">处理状态：${escapeHtml(statusParts)}</span>` : ""}
+            </span>
+          </button>
+          <div class="product-version-list">
+            ${group.records.map(row => {
+              const stage = deriveVersionStage(row, records);
+              const matchesFilter = group.matchingIds.has(row.id);
+              return `
+                <button class="version-item ${row.id === activeRecordId ? "active" : ""} ${matchesFilter ? "" : "filter-muted"}" data-record-id="${escapeAttr(row.id)}" type="button">
+                  <span class="version-item-head">
+                    <span class="version-item-version">${escapeHtml(compactText(row.version_label, "未填版本"))}${stage ? versionStageBadge(stage) : ""}</span>
+                    <span class="item-time">${escapeHtml(relativeTime(row.created_at))}</span>
+                  </span>
+                  <span class="version-item-meta">
+                    ${showProcessingStatus ? `<span class="status-word ${statusClass(row)}">处理状态：${escapeHtml(row.status || "待处理")}</span>` : ""}
+                    <span>${escapeHtml(compactText(row.product_type || row.test_category, "未分类"))}</span>
+                  </span>
+                  <span class="version-item-summary">${escapeHtml(compactText(row.version_change || row.core_ingredients_selling_points || row.ingredients_structure, "暂无摘要"))}</span>
+                </button>
+              `;
+            }).join("")}
+          </div>
+        </section>
+      `;
+    }
+
     function renderList() {
-      const groups = visibleProductGroups();
+      const groups = visibleProductGroupsInDisplayOrder();
       if (!groups.length) {
         listEl.innerHTML = `<div class="empty-list">暂无匹配记录。</div>`;
         return;
       }
+      const sections = visibleProductSections();
       const activeGroupKey = activeProductGroup()?.key || "";
       const showProcessingStatus = shouldShowProcessingStatus();
-      listEl.innerHTML = groups.map(group => {
-        const isActiveGroup = group.key === activeGroupKey;
-        const isExpanded = productGroupExpanded(group.key, activeGroupKey);
-        const statusParts = [
-          group.pendingCount ? `${group.pendingCount} 待处理` : "",
-          group.confirmedCount ? `${group.confirmedCount} 已确认` : ""
-        ].filter(Boolean).join(" · ");
+      listEl.innerHTML = sections.map(section => {
+        const recordCount = section.groups.reduce((total, group) => total + group.records.length, 0);
+        const sectionBar = section.label ? `
+          <header class="test-category-bar ${section.key}-section" data-test-category-section="${escapeAttr(section.key)}">
+            <span class="test-category-title">${escapeHtml(section.label)}</span>
+            <span class="test-category-meta">
+              ${section.note ? `<span class="test-category-note">${escapeHtml(section.note)}</span>` : ""}
+              <span>${section.groups.length} 个产品 · ${recordCount} 条记录</span>
+            </span>
+          </header>
+        ` : "";
         return `
-          <section class="product-group ${isActiveGroup ? "active" : ""} ${isExpanded ? "" : "collapsed"}" data-product-group-key="${escapeAttr(group.key)}">
-            <button class="product-group-head" data-product-group-toggle="${escapeAttr(group.key)}" type="button" aria-expanded="${isExpanded}">
-              <span class="product-group-title-row">
-                <span class="product-group-title">${escapeHtml(compactText(group.name, "未命名产品"))}</span>
-                <span class="product-group-caret">▼</span>
-              </span>
-              <span class="product-group-meta-row">
-                <span>${escapeHtml(compactText(group.supplier, "未知供应商"))} · ${group.records.length} 个版本 · ${escapeHtml(relativeTime(group.latest.created_at))}</span>
-                ${showProcessingStatus && statusParts ? `<span class="product-group-status">处理状态：${escapeHtml(statusParts)}</span>` : ""}
-              </span>
-            </button>
-            <div class="product-version-list">
-              ${group.records.map(row => {
-                const stage = deriveVersionStage(row, records);
-                const matchesFilter = group.matchingIds.has(row.id);
-                return `
-                  <button class="version-item ${row.id === activeRecordId ? "active" : ""} ${matchesFilter ? "" : "filter-muted"}" data-record-id="${escapeAttr(row.id)}" type="button">
-                    <span class="version-item-head">
-                      <span class="version-item-version">${escapeHtml(compactText(row.version_label, "未填版本"))}${stage ? versionStageBadge(stage) : ""}</span>
-                      <span class="item-time">${escapeHtml(relativeTime(row.created_at))}</span>
-                    </span>
-                    <span class="version-item-meta">
-                      ${showProcessingStatus ? `<span class="status-word ${statusClass(row)}">处理状态：${escapeHtml(row.status || "待处理")}</span>` : ""}
-                      <span>${escapeHtml(compactText(row.product_type || row.test_category, "未分类"))}</span>
-                    </span>
-                    <span class="version-item-summary">${escapeHtml(compactText(row.version_change || row.core_ingredients_selling_points || row.ingredients_structure, "暂无摘要"))}</span>
-                  </button>
-                `;
-              }).join("")}
-            </div>
+          <section class="test-category-section ${section.key}-category-section">
+            ${sectionBar}
+            ${section.groups.map(group => productGroupListHtml(group, section.key, activeGroupKey, showProcessingStatus)).join("")}
           </section>
         `;
       }).join("");
@@ -2236,7 +2375,7 @@
     }
 
     function moveSelection(delta) {
-      const rows = visibleProductGroups().flatMap(group => group.records);
+      const rows = visibleProductGroupsInDisplayOrder().flatMap(group => group.records);
       if (!rows.length) return;
       const index = Math.max(0, rows.findIndex(row => row.id === activeRecordId));
       const next = rows[Math.min(rows.length - 1, Math.max(0, index + delta))];
