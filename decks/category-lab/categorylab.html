@@ -2781,6 +2781,74 @@
     .calendar-menu-item.lto {
       border-left: 3px solid var(--red);
     }
+    .calendar-menu-table {
+      width: 100%;
+      min-width: 0;
+      table-layout: fixed;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 11px;
+    }
+    .calendar-menu-table th,
+    .calendar-menu-table td {
+      padding: 8px 7px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+    .calendar-menu-table th {
+      background: #f0e6d5;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .calendar-menu-table th:last-child,
+    .calendar-menu-table td:last-child { border-right: 0; }
+    .calendar-menu-table th:nth-child(1) { width: 38%; }
+    .calendar-menu-table th:nth-child(2) { width: 9%; }
+    .calendar-menu-table th:nth-child(3),
+    .calendar-menu-table th:nth-child(4),
+    .calendar-menu-table th:nth-child(5) { width: 13%; }
+    .calendar-menu-table th:nth-child(6) { width: 14%; }
+    .calendar-menu-table .calendar-menu-item-actions { gap: 3px; }
+    .calendar-menu-table .calendar-menu-item-actions .btn { padding: 3px 5px; }
+    .calendar-menu-table tbody tr:last-child td { border-bottom: 0; }
+    .calendar-menu-table .menu-category-cell {
+      width: 104px;
+      background: #fbf6ec;
+      color: #5f5142;
+      font-weight: 900;
+    }
+    .calendar-menu-table .menu-group-row th {
+      padding: 7px 8px;
+      background: #fbf6ec;
+      color: #5f5142;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+    .calendar-menu-table .menu-product-cell {
+      color: #2f2923;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+    .calendar-menu-type {
+      display: inline-flex;
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+    .calendar-menu-type.lto { border-color: #efb4a3; color: var(--red); }
+    .calendar-menu-type.core { border-color: #a8ceb5; color: var(--green); }
+    .calendar-menu-type.seasonal { border-color: #dfc28e; color: var(--amber); }
     .calendar-empty-action {
       margin-top: 10px;
     }
@@ -3038,6 +3106,70 @@
       min-width: 150px;
       background: #f0e6d5;
     }
+    .product-calendar-table.annual-menu-matrix {
+      min-width: 1480px;
+      table-layout: fixed;
+    }
+    .product-calendar-table.annual-menu-matrix th,
+    .product-calendar-table.annual-menu-matrix td {
+      min-width: 110px;
+      max-width: 110px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .product-calendar-table.annual-menu-matrix [data-matrix-category] {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      min-width: 150px;
+      max-width: 150px;
+      background: #f0e6d5;
+      color: #3d342b;
+      font-weight: 900;
+    }
+    .annual-matrix-items {
+      display: grid;
+      gap: 5px;
+    }
+    .annual-matrix-item {
+      display: grid;
+      gap: 1px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid rgba(221, 213, 197, .72);
+    }
+    .annual-matrix-item:last-child { padding-bottom: 0; border-bottom: 0; }
+    .annual-matrix-item b { color: #3d342b; font-size: 10px; line-height: 1.25; }
+    .annual-matrix-item small { color: var(--muted); font-size: 9px; font-weight: 800; }
+    .calendar-product-manager {
+      display: grid;
+      gap: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+      overflow: hidden;
+    }
+    .calendar-product-manager .calendar-matrix-head { border-bottom: 1px solid var(--line); }
+    .calendar-product-manager-note {
+      margin: -3px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+    .calendar-product-manager-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+    }
+    .calendar-product-manager-table th,
+    .calendar-product-manager-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+    .calendar-product-manager-table th { color: var(--muted); font-size: 10px; font-weight: 900; }
+    .calendar-product-manager-table tr:last-child td { border-bottom: 0; }
+    .calendar-product-manager-table tr.inactive { opacity: .5; }
     .calendar-matrix-label {
       display: flex;
       justify-content: space-between;
@@ -3539,7 +3671,6 @@
               <div class="launch-page-head">
                 <div class="launch-page-title">
                   <h2>产品日历</h2>
-                  <p>飞书产品日历 · 按月份查看档期、食品与菜单。</p>
                 </div>
                 <div class="launch-actions">
                   <button class="btn compact active" data-product-calendar-year="2026" type="button">2026</button>
@@ -4368,8 +4499,40 @@
             <div class="field"><label>食品名称</label><input id="launchProductName" placeholder="如：桂花酒酿蛋糕" required></div>
             <div class="field"><label>品类</label><select id="launchProductCategory"><option>烘焙</option><option>三明治</option><option>蛋糕</option><option>其他</option></select></div>
           </div>
+          <div class="form four">
+            <div class="field"><label>菜单属性</label><select id="launchProductMenuType"><option value="lto">LTO</option><option value="core">Core</option><option value="seasonal">Seasonal Core</option></select></div>
+            <div class="field"><label>售价</label><input id="launchProductPrice" inputmode="decimal" placeholder="如：22"></div>
+            <div class="field"><label>早餐随心搭</label><input id="launchProductBreakfastOffer" placeholder="如：+4元"></div>
+            <div class="field"><label>正餐随心搭</label><input id="launchProductMealOffer" placeholder="如：+9元"></div>
+          </div>
+          <div class="field"><label>加价购</label><input id="launchProductAddOnOffer" placeholder="如：+6.9元"></div>
           <div class="field"><label>备注</label><textarea id="launchProductNote" placeholder="供应商、当前风险、需要补充的资料"></textarea></div>
           <div class="row-actions"><button class="btn primary" id="saveLaunchProductBtn" type="submit">保存食品</button><button class="btn" id="clearLaunchProductFormBtn" type="button">清空</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="menuProductModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2 id="menuProductModalTitle">新增核心产品</h2><button class="btn" data-close-modal="menuProductModal">关闭</button></div>
+      <div class="panel-body">
+        <form class="form" id="menuProductForm">
+          <div class="form two">
+            <div class="field"><label>产品名称</label><input id="menuProductName" required></div>
+            <div class="field"><label>分类</label><select id="menuProductGroup"><option value="Bakery">Bakery</option><option value="Sandwich&Meal">Sandwich&Meal</option><option value="Cake&Dessert">Cake&Dessert</option><option value="CPG">CPG</option></select></div>
+          </div>
+          <div class="form four">
+            <div class="field"><label>菜单属性</label><select id="menuProductType"><option value="core">Core</option><option value="seasonal">Seasonal Core</option></select></div>
+            <div class="field"><label>售价</label><input id="menuProductPrice" inputmode="decimal"></div>
+            <div class="field"><label>早餐随心搭</label><input id="menuProductBreakfastOffer" placeholder="如：+1元"></div>
+            <div class="field"><label>正餐随心搭</label><input id="menuProductMealOffer" placeholder="如：+9元"></div>
+          </div>
+          <div class="form two">
+            <div class="field"><label>加价购</label><input id="menuProductAddOnOffer" placeholder="如：+6.9元"></div>
+            <div class="field"><label>在售状态</label><select id="menuProductActive"><option value="1">在售</option><option value="0">下市</option></select></div>
+          </div>
+          <div class="row-actions"><button class="btn primary" type="submit">保存产品</button><button class="btn" id="clearMenuProductFormBtn" type="button">清空</button></div>
         </form>
       </div>
     </div>
@@ -5058,9 +5221,21 @@
         { name: "迪克森少校2", start: "2026/12/01", end: "2026/12/31", holiday: "12/25 圣诞节", sku: { cakeMid: "12月：节日蛋糕" } }
       ]
     };
-    const productCalendarCoreMenuDefaults = [
-      { name: "经典厚切鸡排贝果三明治", group: "Sandwich&Meal", category: "三明治" },
-      { name: "核心品巧克力蛋糕", group: "Cake&Dessert", category: "蛋糕" }
+    const productCalendarManagedMenuDefaults = [
+      { id: "menu-core-honey-bagel", name: "蜂蜜芝香贝果", group: "Bakery", category: "烘焙", menuType: "core", price: "16", breakfastOffer: "+1元", mealOffer: "", addOnOffer: "", active: true },
+      { id: "menu-core-wholewheat-bagel", name: "全麦贝果", group: "Bakery", category: "烘焙", menuType: "core", price: "16", breakfastOffer: "+1元", mealOffer: "", addOnOffer: "", active: true },
+      { id: "menu-core-sausage-roll", name: "法式酥皮香肠卷", group: "Bakery", category: "烘焙", menuType: "core", price: "22", breakfastOffer: "+4元", mealOffer: "", addOnOffer: "", active: true },
+      { id: "menu-core-egg-panini", name: "芝士培根太阳蛋帕尼尼", group: "Sandwich&Meal", category: "三明治", menuType: "core", price: "22", breakfastOffer: "+4元", mealOffer: "+4元", addOnOffer: "", active: true },
+      { id: "menu-core-chicken-bagel", name: "厚切鸡排贝果三明治", group: "Sandwich&Meal", category: "三明治", menuType: "core", price: "36", breakfastOffer: "", mealOffer: "+9元", addOnOffer: "", active: true },
+      { id: "menu-seasonal-beef-sub", name: "和风烧椒牛肉风味潜艇堡", group: "Sandwich&Meal", category: "三明治", menuType: "seasonal", price: "36", breakfastOffer: "", mealOffer: "+9元", addOnOffer: "", active: true },
+      { id: "menu-seasonal-shrimp-sub", name: "罗望子奶油虾仁潜艇堡", group: "Sandwich&Meal", category: "三明治", menuType: "seasonal", price: "36", breakfastOffer: "", mealOffer: "+9元", addOnOffer: "", active: true },
+      { id: "menu-core-chestnut-cake", name: "栗子蛋糕", group: "Cake&Dessert", category: "蛋糕", menuType: "core", price: "48", breakfastOffer: "", mealOffer: "", addOnOffer: "", active: true },
+      { id: "menu-core-brownie-mille", name: "香蕉布朗尼千层蛋糕", group: "Cake&Dessert", category: "蛋糕", menuType: "core", price: "48", breakfastOffer: "", mealOffer: "", addOnOffer: "", active: true },
+      { id: "menu-core-peets-mille", name: "皮爷经典千层蛋糕", group: "Cake&Dessert", category: "蛋糕", menuType: "core", price: "48", breakfastOffer: "", mealOffer: "", addOnOffer: "", active: true },
+      { id: "menu-core-tiramisu", name: "经典意式提拉米苏蛋糕", group: "Cake&Dessert", category: "蛋糕", menuType: "core", price: "48", breakfastOffer: "", mealOffer: "", addOnOffer: "", active: true },
+      { id: "menu-core-canele", name: "香草风味可露丽", group: "Cake&Dessert", category: "蛋糕", menuType: "core", price: "15", breakfastOffer: "", mealOffer: "", addOnOffer: "+6.9元", active: true },
+      { id: "menu-core-strawberry-yogurt", name: "草莓味酸奶", group: "CPG", category: "CPG", menuType: "core", price: "18", breakfastOffer: "", mealOffer: "", addOnOffer: "+9.9元", active: true },
+      { id: "menu-core-granola-yogurt", name: "无蔗糖格兰诺拉希腊式酸奶", group: "CPG", category: "CPG", menuType: "core", price: "18", breakfastOffer: "", mealOffer: "", addOnOffer: "+9.9元", active: true }
     ];
     const productCalendarMatrixDefaults = {
       rows: [
@@ -5154,6 +5329,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     const VALIDATION_SALES_STORAGE_KEY = "categorylab-validation-sales-v1";
     const WORKSPACE_LIST_STORAGE_KEY = "categorylab-workspace-lists-v1";
     const PRODUCT_CALENDAR_MATRIX_STORAGE_KEY = "categorylab-product-calendar-sq-matrix-v1";
+    const PRODUCT_CALENDAR_MENU_STORAGE_KEY = "categorylab-product-calendar-menu-products-v1";
     const LAUNCH_TIMELINE_HIDE_DONE_STORAGE_KEY = "categorylab-launch-timeline-hide-done-v1";
     const LAUNCH_CAMPAIGN_EXPANSION_STORAGE_KEY = "categorylab-launch-campaign-expansion-v1";
     const WORKSPACE_LIST_CLEANUP_KEY = "categorylab-workspace-lists-cleanup-v1";
@@ -5657,6 +5833,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let productCalendarSearchQuery = "";
     let productCalendarSelectedKey = "";
     let productCalendarMatrix = loadProductCalendarMatrix();
+    let productCalendarMenuProducts = loadProductCalendarMenuProducts();
+    let editingMenuProductId = null;
 
     const els = {
       pageTitle: document.querySelector("#pageTitle"),
@@ -6615,6 +6793,38 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function persistProductCalendarMatrix() {
       localStorage.setItem(PRODUCT_CALENDAR_MATRIX_STORAGE_KEY, JSON.stringify(productCalendarMatrix));
+    }
+
+    function normalizeProductCalendarMenuProduct(product = {}, index = 0) {
+      const group = ["Bakery", "Sandwich&Meal", "Cake&Dessert", "CPG"].includes(product.group)
+        ? product.group
+        : productCalendarGroupForCategory(product.category);
+      return {
+        id: product.id || `menu-product-${index + 1}`,
+        name: String(product.name || "").trim(),
+        group,
+        category: product.category || productCalendarCategoryForGroup(group),
+        menuType: product.menuType === "seasonal" ? "seasonal" : "core",
+        price: String(product.price || "").trim(),
+        breakfastOffer: String(product.breakfastOffer || "").trim(),
+        mealOffer: String(product.mealOffer || "").trim(),
+        addOnOffer: String(product.addOnOffer || "").trim(),
+        active: product.active !== false
+      };
+    }
+
+    function loadProductCalendarMenuProducts() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(PRODUCT_CALENDAR_MENU_STORAGE_KEY));
+        const source = Array.isArray(saved) ? saved : productCalendarManagedMenuDefaults;
+        return source.map(normalizeProductCalendarMenuProduct).filter(product => product.name);
+      } catch (error) {
+        return structuredClone(productCalendarManagedMenuDefaults);
+      }
+    }
+
+    function persistProductCalendarMenuProducts() {
+      localStorage.setItem(PRODUCT_CALENDAR_MENU_STORAGE_KEY, JSON.stringify(productCalendarMenuProducts));
     }
 
     function navViewKey(view) {
@@ -7743,8 +7953,12 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
               name: product.name || "",
               group,
               category,
-              tier,
-              menuType: "lto",
+              tier: product.breakfastOffer || product.mealOffer || product.addOnOffer || tier,
+              menuType: product.menuType || "lto",
+              price: product.price || indexed.price || "",
+              breakfastOffer: product.breakfastOffer || indexed.breakfastOffer || (/早餐/i.test(indexed.offerType || "") ? tier : ""),
+              mealOffer: product.mealOffer || indexed.mealOffer || "",
+              addOnOffer: product.addOnOffer || indexed.addOnOffer || (/加价购/i.test(indexed.tier || "") ? tier : ""),
               periodName: campaign.name,
               launchDate: campaign.launchDate,
               window: campaign.launchDate ? `上新 ${launchDateLabel(campaign.launchDate)}` : productCalendarPeriodRange(campaign)
@@ -7870,52 +8084,33 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function productCalendarMatrixHtml(period) {
-      const rows = productCalendarMatrix.rows || [];
-      const columns = productCalendarMatrix.columns || [];
+      const periods = productCalendarDecoratedPeriods();
+      const groups = ["Bakery", "Sandwich&Meal", "Cake&Dessert", "CPG"];
       return `
         <section class="calendar-matrix">
           <div class="calendar-matrix-head">
-            <h3>SQ 矩阵 · ${escapeHtml(productCalendarYear)} 全年</h3>
-            <div class="calendar-matrix-actions">
-              <button class="btn compact" data-product-calendar-add-row type="button">新增分类</button>
-              <button class="btn compact" data-product-calendar-add-column type="button">新增列</button>
-              <button class="btn compact" data-product-calendar-reset-matrix type="button">重置</button>
-            </div>
+            <h3>全年菜单矩阵 · ${escapeHtml(productCalendarYear)}</h3>
           </div>
-          <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} 全年 SQ 矩阵">
-            <table class="product-calendar-table sq-matrix">
+          <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} 全年菜单矩阵">
+            <table class="product-calendar-table annual-menu-matrix">
               <thead>
                 <tr>
                   <th>分类</th>
-                  ${columns.map(column => `
-                    <th>
-                      <div class="calendar-matrix-label">
-                        <span class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-column="${escapeAttr(column.id)}">${escapeHtml(column.label)}</span>
-                        <div class="calendar-matrix-label-actions">
-                          <button class="btn compact danger" data-product-calendar-delete-column="${escapeAttr(column.id)}" type="button">删除</button>
-                        </div>
-                      </div>
-                    </th>
-                  `).join("")}
+                  ${periods.map(item => `<th data-matrix-month="${item.monthIndex + 1}">${escapeHtml(item.monthLabel)}</th>`).join("")}
                 </tr>
               </thead>
               <tbody>
-                ${rows.map(row => `
+                ${groups.map(group => `
                   <tr>
-                    <th>
-                      <div class="calendar-matrix-label">
-                        <span class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-row="${escapeAttr(row.id)}">${escapeHtml(row.label)}</span>
-                        <div class="calendar-matrix-label-actions">
-                          <button class="btn compact danger" data-product-calendar-delete-row="${escapeAttr(row.id)}" type="button">删除</button>
+                    <th data-matrix-category="${escapeAttr(group)}">${escapeHtml(group)}</th>
+                    ${periods.map(item => {
+                      const products = productCalendarMonthlyMenuItems(item).filter(product => product.group === group);
+                      return `<td><div class="annual-matrix-items">${products.length ? products.map(product => `
+                        <div class="annual-matrix-item">
+                          <b>${escapeHtml(product.name)}</b>
+                          <small>${escapeHtml(productCalendarMenuTypeLabel(product.menuType))}</small>
                         </div>
-                      </div>
-                    </th>
-                    ${columns.map(column => {
-                      const cellKey = productCalendarMatrixCellKey(period, row.id, column.id);
-                      const value = Object.prototype.hasOwnProperty.call(productCalendarMatrix.cells || {}, cellKey)
-                        ? productCalendarMatrix.cells[cellKey]
-                        : productCalendarMatrixAutoValue(period, row, column);
-                      return `<td class="calendar-matrix-editable" contenteditable="true" data-product-calendar-matrix-cell="${escapeAttr(cellKey)}">${escapeHtml(value).replaceAll("\n", "<br>")}</td>`;
+                      `).join("") : `<span class="calendar-empty-cell">-</span>`}</div></td>`;
                     }).join("")}
                   </tr>
                 `).join("")}
@@ -8081,35 +8276,38 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return { core: "Core", seasonal: "Seasonal Core", lto: "LTO" }[type] || "LTO";
     }
 
-    function productCalendarMenuBoardHtml(periods = [], selected = null) {
-      const linkedEntries = selected?.skuEntries || [];
-      const coreDefaults = productCalendarCoreMenuDefaults.map(item => ({
-        ...item,
-        group: item.group || productCalendarGroupForCategory(item.category),
-        category: item.category || productCalendarCategoryForGroup(item.group),
-        menuType: "core",
-        window: "固定菜单"
+    function productCalendarManagedItems() {
+      if (productCalendarYear !== "2026") return [];
+      return productCalendarMenuProducts.filter(product => product.active).map(product => ({
+        ...product,
+        managedProductId: product.id,
+        tier: product.breakfastOffer || product.mealOffer || product.addOnOffer || ""
       }));
-      const menuItems = productCalendarUniqueMenuItems([
+    }
+
+    function productCalendarMonthlyMenuItems(period = null) {
+      const linkedEntries = period?.skuEntries || [];
+      return productCalendarUniqueMenuItems([
         ...linkedEntries.map(item => ({
           ...item,
           group: item.group || productCalendarGroupForCategory(item.category),
           category: item.category || productCalendarCategoryForGroup(item.group),
-          menuType: item.menuType || productCalendarMenuTier(item),
-          window: item.window || (item.launchDate ? `上新 ${launchDateLabel(item.launchDate)}` : "")
+          menuType: item.menuType || "lto",
+          price: item.price || "",
+          breakfastOffer: item.breakfastOffer || "",
+          mealOffer: item.mealOffer || "",
+          addOnOffer: item.addOnOffer || ""
         })),
-        ...coreDefaults
+        ...productCalendarManagedItems()
       ]).sort((a, b) =>
         productCalendarMenuSectionOrder(a.group) - productCalendarMenuSectionOrder(b.group)
         || String(a.name || "").localeCompare(String(b.name || ""), "zh-CN")
       );
-      const sections = ["Bakery", "Sandwich&Meal", "Cake&Dessert", "CPG"].map(group => ({
-        group,
-        label: productCalendarMenuSectionLabel(group),
-        items: menuItems.filter(item => item.group === group || (group === "CPG" && item.group === "Packaged Food"))
-      }));
-      const otherItems = menuItems.filter(item => !sections.some(section => section.items.includes(item)));
-      if (otherItems.length) sections.push({ group: "Other", label: "其他", items: otherItems });
+    }
+
+    function productCalendarMenuBoardHtml(periods = [], selected = null) {
+      const menuItems = productCalendarMonthlyMenuItems(selected);
+      const groups = ["Bakery", "Sandwich&Meal", "Cake&Dessert", "CPG"];
       return `
         <section class="calendar-menu-board">
           <div class="calendar-menu-head">
@@ -8118,29 +8316,131 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
               <p>${escapeHtml(selected ? `${selected.year} / ${selected.monthLabel}` : "选择月份查看菜单")}</p>
             </div>
           </div>
-          <div class="calendar-menu-grid">
-            ${sections.map(section => `
-              <section class="calendar-menu-lane">
-                <h4>${escapeHtml(section.label)}</h4>
-                <div class="calendar-menu-items">
-                  ${section.items.length ? section.items.map(item => `
-                    <div class="calendar-menu-item ${escapeAttr(item.menuType === "lto" ? "lto" : "")}">
-                      <b>${escapeHtml(item.name)}</b>
-                      <span>${escapeHtml([productCalendarMenuTypeLabel(item.menuType), item.tier, item.window].filter(Boolean).join(" · "))}</span>
-                      ${item.productId ? `
-                        <div class="calendar-menu-item-actions">
-                          <button class="btn compact" data-edit-launch-product="${escapeAttr(item.productId)}" type="button">编辑</button>
-                          <button class="btn compact danger" data-delete-launch-product="${escapeAttr(item.productId)}" type="button">删除</button>
-                        </div>
-                      ` : ""}
-                    </div>
-                  `).join("") : `<div class="empty">当月暂无${escapeHtml(section.label)}上新。</div>`}
-                </div>
-              </section>
-            `).join("")}
+          <div class="product-calendar-table-wrap">
+            <table class="calendar-menu-table">
+              <thead><tr><th>产品</th><th>售价</th><th>早餐随心搭</th><th>正餐随心搭</th><th>加价购</th><th>操作</th></tr></thead>
+              <tbody>
+                ${groups.map(group => {
+                  const items = menuItems.filter(item => item.group === group);
+                  if (!items.length) return "";
+                  return `
+                    <tr class="menu-group-row" data-menu-category="${escapeAttr(group)}"><th colspan="6">${escapeHtml(productCalendarMenuSectionLabel(group))}</th></tr>
+                    ${items.map(item => `
+                      <tr data-menu-category="${escapeAttr(item.group)}">
+                        <td class="menu-product-cell">${escapeHtml(item.name)} <span class="calendar-menu-type ${escapeAttr(item.menuType)}">${escapeHtml(productCalendarMenuTypeLabel(item.menuType))}</span></td>
+                        <td>${escapeHtml(item.price || "-")}</td>
+                        <td>${escapeHtml(item.breakfastOffer || "-")}</td>
+                        <td>${escapeHtml(item.mealOffer || "-")}</td>
+                        <td>${escapeHtml(item.addOnOffer || "-")}</td>
+                        <td><div class="calendar-menu-item-actions">
+                          ${item.productId ? `<button class="btn compact" data-edit-launch-product="${escapeAttr(item.productId)}" type="button">编辑</button><button class="btn compact danger" data-delete-launch-product="${escapeAttr(item.productId)}" type="button">删除</button>` : ""}
+                          ${item.managedProductId ? `<button class="btn compact" data-edit-menu-product="${escapeAttr(item.managedProductId)}" type="button">编辑</button>` : ""}
+                        </div></td>
+                      </tr>
+                    `).join("")}`;
+                }).join("") || `<tr><td colspan="6"><div class="empty">当月暂无菜单产品。</div></td></tr>`}
+              </tbody>
+            </table>
           </div>
         </section>
       `;
+    }
+
+    function productCalendarProductManagerHtml(periods = []) {
+      const rows = productCalendarMenuProducts
+        .map(product => ({ ...product, source: "菜单管理" }))
+        .sort((a, b) => productCalendarMenuSectionOrder(a.group) - productCalendarMenuSectionOrder(b.group) || String(a.name).localeCompare(String(b.name), "zh-CN"));
+      return `
+        <section class="calendar-product-manager">
+          <div class="calendar-matrix-head">
+            <div><h3>产品管理</h3><p class="calendar-product-manager-note">Core 与 Seasonal Core 在这里维护；LTO 自动来自档期。</p></div>
+            <button class="btn compact primary" data-open-menu-product type="button">新增核心产品</button>
+          </div>
+          <div class="product-calendar-table-wrap">
+            <table class="calendar-product-manager-table">
+              <thead><tr><th>产品</th><th>分类</th><th>属性</th><th>售价</th><th>菜单档位</th><th>来源/状态</th><th>操作</th></tr></thead>
+              <tbody>${rows.map(item => `
+                <tr class="${item.active === false ? "inactive" : ""}" data-menu-product-type="${escapeAttr(item.menuType)}">
+                  <td><b>${escapeHtml(item.name)}</b></td>
+                  <td>${escapeHtml(item.group)}</td>
+                  <td>${escapeHtml(productCalendarMenuTypeLabel(item.menuType))}</td>
+                  <td>${escapeHtml(item.price || "-")}</td>
+                  <td>${escapeHtml([item.breakfastOffer, item.mealOffer, item.addOnOffer].filter(Boolean).join(" / ") || "-")}</td>
+                  <td>${escapeHtml(item.menuType === "lto" ? (item.periodName || "档期联动") : (item.active === false ? "已下市" : "在售"))}</td>
+                  <td><div class="calendar-inline-actions">
+                    ${item.managedProductId || item.source === "菜单管理" ? `<button class="btn compact" data-edit-menu-product="${escapeAttr(item.id)}" type="button">编辑</button><button class="btn compact danger" data-delete-menu-product="${escapeAttr(item.id)}" type="button">删除</button>` : `<span class="calendar-menu-type lto">档期联动</span>`}
+                  </div></td>
+                </tr>
+              `).join("")}</tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
+    function clearMenuProductForm() {
+      editingMenuProductId = null;
+      document.querySelector("#menuProductForm")?.reset();
+      const type = document.querySelector("#menuProductType");
+      const active = document.querySelector("#menuProductActive");
+      const title = document.querySelector("#menuProductModalTitle");
+      if (type) type.value = "core";
+      if (active) active.value = "1";
+      if (title) title.textContent = "新增核心产品";
+    }
+
+    function openMenuProductModal(productId = "") {
+      clearMenuProductForm();
+      const product = productCalendarMenuProducts.find(item => item.id === productId);
+      if (product) {
+        editingMenuProductId = product.id;
+        document.querySelector("#menuProductName").value = product.name;
+        document.querySelector("#menuProductGroup").value = product.group;
+        document.querySelector("#menuProductType").value = product.menuType;
+        document.querySelector("#menuProductPrice").value = product.price || "";
+        document.querySelector("#menuProductBreakfastOffer").value = product.breakfastOffer || "";
+        document.querySelector("#menuProductMealOffer").value = product.mealOffer || "";
+        document.querySelector("#menuProductAddOnOffer").value = product.addOnOffer || "";
+        document.querySelector("#menuProductActive").value = product.active === false ? "0" : "1";
+        document.querySelector("#menuProductModalTitle").textContent = "编辑核心产品";
+      }
+      openModal("menuProductModal");
+    }
+
+    function saveMenuProduct(event) {
+      event.preventDefault();
+      const name = document.querySelector("#menuProductName").value.trim();
+      if (!name) return;
+      const group = document.querySelector("#menuProductGroup").value || "Bakery";
+      const next = normalizeProductCalendarMenuProduct({
+        id: editingMenuProductId || crypto.randomUUID(),
+        name,
+        group,
+        category: productCalendarCategoryForGroup(group),
+        menuType: document.querySelector("#menuProductType").value || "core",
+        price: document.querySelector("#menuProductPrice").value.trim(),
+        breakfastOffer: document.querySelector("#menuProductBreakfastOffer").value.trim(),
+        mealOffer: document.querySelector("#menuProductMealOffer").value.trim(),
+        addOnOffer: document.querySelector("#menuProductAddOnOffer").value.trim(),
+        active: document.querySelector("#menuProductActive").value !== "0"
+      });
+      const index = productCalendarMenuProducts.findIndex(item => item.id === next.id);
+      if (index >= 0) productCalendarMenuProducts[index] = next;
+      else productCalendarMenuProducts.push(next);
+      persistProductCalendarMenuProducts();
+      closeModal("menuProductModal");
+      clearMenuProductForm();
+      renderProductCalendar();
+    }
+
+    function deleteMenuProduct(productId = "") {
+      const product = productCalendarMenuProducts.find(item => item.id === productId);
+      if (!product) return;
+      askDeleteConfirm(`确认删除「${product.name}」？`, () => {
+        productCalendarMenuProducts = productCalendarMenuProducts.filter(item => item.id !== productId);
+        persistProductCalendarMenuProducts();
+        renderProductCalendar();
+      });
     }
 
     function renderProductCalendar() {
@@ -8187,6 +8487,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             ${productCalendarMenuBoardHtml(periods, selected)}
           </div>
           ${productCalendarMatrixHtml(selected)}
+          ${productCalendarProductManagerHtml(periods)}
         </div>
       `;
     }
@@ -8229,6 +8530,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#launchProductForm")?.reset();
       const category = document.querySelector("#launchProductCategory");
       if (category) category.value = "烘焙";
+      const menuType = document.querySelector("#launchProductMenuType");
+      if (menuType) menuType.value = "lto";
       const title = document.querySelector("#launchProductModalTitle");
       if (title) title.textContent = "新增食品";
       const saveBtn = document.querySelector("#saveLaunchProductBtn");
@@ -8245,6 +8548,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         editingLaunchProductId = product.id;
         document.querySelector("#launchProductName").value = product.name || "";
         document.querySelector("#launchProductCategory").value = product.category || product.categories?.[0] || "烘焙";
+        document.querySelector("#launchProductMenuType").value = product.menuType || "lto";
+        document.querySelector("#launchProductPrice").value = product.price || "";
+        document.querySelector("#launchProductBreakfastOffer").value = product.breakfastOffer || "";
+        document.querySelector("#launchProductMealOffer").value = product.mealOffer || "";
+        document.querySelector("#launchProductAddOnOffer").value = product.addOnOffer || "";
         document.querySelector("#launchProductNote").value = product.note || "";
         const title = document.querySelector("#launchProductModalTitle");
         if (title) title.textContent = "编辑食品";
@@ -8265,6 +8573,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const seed = campaign.products?.[0] || {};
       const name = document.querySelector("#launchProductName").value.trim();
       const category = document.querySelector("#launchProductCategory").value || "烘焙";
+      const menuFields = {
+        menuType: document.querySelector("#launchProductMenuType").value || "lto",
+        price: document.querySelector("#launchProductPrice").value.trim(),
+        breakfastOffer: document.querySelector("#launchProductBreakfastOffer").value.trim(),
+        mealOffer: document.querySelector("#launchProductMealOffer").value.trim(),
+        addOnOffer: document.querySelector("#launchProductAddOnOffer").value.trim()
+      };
       if (!name) {
         event.currentTarget.reportValidity?.();
         document.querySelector("#launchProductName")?.focus();
@@ -8276,6 +8591,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         existing.name = name;
         existing.category = category;
         existing.categories = [category];
+        Object.assign(existing, menuFields);
         existing.note = document.querySelector("#launchProductNote").value.trim();
         existing.isPlaceholder = false;
         activeLaunchProjectId = existing.id;
@@ -8283,6 +8599,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         closeModal("launchProductModal");
         clearLaunchProductForm();
         renderLaunchProjects();
+        renderProductCalendar();
         return;
       }
       const campaignKey = launchCampaignStorageKey(seed.id ? seed : campaign);
@@ -8303,6 +8620,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         launchYear: campaign.launchYear || launchYearValue(seed) || launchYearFilter,
         category,
         categories: [category],
+        ...menuFields,
         launchCampaign: campaign.name || seed.launchCampaign || "",
         launchCampaignId: campaign.launchCampaignId || seed.launchCampaignId || `manual-${campaign.id}`,
         owner: "Louise",
@@ -8319,6 +8637,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       closeModal("launchProductModal");
       clearLaunchProductForm();
       renderLaunchProjects();
+      renderProductCalendar();
     }
 
     function deleteLaunchProduct(productId = "") {
@@ -8351,6 +8670,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         if (activeLaunchProjectId === project.id) activeLaunchProjectId = siblingProducts[0]?.id || placeholder?.id || null;
         persist();
         renderLaunchProjects();
+        renderProductCalendar();
       });
     }
 
@@ -12750,6 +13070,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     document.querySelector("#clearLaunchFormBtn")?.addEventListener("click", () => { clearLaunchForm(); renderCoffeeBarChecklist(); });
     document.querySelector("#openLaunchProjectModalBtn")?.addEventListener("click", () => openLaunchProjectModal());
     document.querySelector("#launchProductForm")?.addEventListener("submit", saveLaunchProduct);
+    document.querySelector("#menuProductForm")?.addEventListener("submit", saveMenuProduct);
+    document.querySelector("#clearMenuProductFormBtn")?.addEventListener("click", clearMenuProductForm);
     document.querySelector("#clearLaunchProductFormBtn")?.addEventListener("click", clearLaunchProductForm);
     document.querySelector("#launchSearch")?.addEventListener("input", renderLaunchProjects);
     ["opportunityIdeas", "competitorTests", "oemRecords"].forEach(key => {
@@ -12906,6 +13228,21 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         productCalendarSearchQuery = "";
         productCalendarSelectedKey = "";
         renderProductCalendar();
+        return;
+      }
+      const openMenuProduct = event.target.closest("[data-open-menu-product]");
+      if (openMenuProduct) {
+        openMenuProductModal();
+        return;
+      }
+      const editMenuProduct = event.target.closest("[data-edit-menu-product]");
+      if (editMenuProduct) {
+        openMenuProductModal(editMenuProduct.dataset.editMenuProduct);
+        return;
+      }
+      const deleteManagedMenuProduct = event.target.closest("[data-delete-menu-product]");
+      if (deleteManagedMenuProduct) {
+        deleteMenuProduct(deleteManagedMenuProduct.dataset.deleteMenuProduct);
         return;
       }
       const addCalendarMatrixRow = event.target.closest("[data-product-calendar-add-row]");
