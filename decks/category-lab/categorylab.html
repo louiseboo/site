@@ -1717,6 +1717,12 @@
       padding: 0 16px;
       border-right: 1px solid var(--line);
     }
+    .timeline-left-head small {
+      margin-left: 8px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
     .timeline-months {
       position: relative;
     }
@@ -1973,12 +1979,38 @@
       background: var(--red);
       box-shadow: 0 0 0 1px rgba(178, 74, 43, .35);
       transform: translateX(-50%) rotate(45deg);
-      cursor: help;
+      cursor: default;
       z-index: 5;
     }
     .timeline-holiday-marker.marketing { background: var(--amber); }
     .timeline-holiday-marker:hover,
     .timeline-holiday-marker:focus { transform: translateX(-50%) rotate(45deg) scale(1.35); }
+    .timeline-holiday-marker::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      left: 50%;
+      top: 17px;
+      bottom: auto;
+      min-width: max-content;
+      max-width: 180px;
+      transform: translateX(-50%) rotate(-45deg);
+      border: 1px solid rgba(47, 40, 31, .22);
+      border-radius: 6px;
+      background: #2f281f;
+      color: #fffdf8;
+      box-shadow: 0 10px 24px rgba(47, 40, 31, .18);
+      padding: 7px 9px;
+      font-size: 10px;
+      font-weight: 760;
+      line-height: 1.35;
+      white-space: pre-line;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .12s ease;
+      z-index: 30;
+    }
+    .timeline-holiday-marker:hover::after,
+    .timeline-holiday-marker:focus::after { opacity: 1; }
     .launch-campaign-products {
       grid-column: 1 / -1;
       border-bottom: 1px solid var(--line);
@@ -7616,12 +7648,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function launchPlannedMilestoneTooltip(milestone) {
-      return milestone?.plannedDate ? `计划日期：${milestone.plannedDate}` : "计划日期：未定";
+      const label = milestone?.shortLabel || milestone?.label || "档期节点";
+      return `${label}\n${milestone?.plannedDate ? `计划日期：${milestone.plannedDate}` : "计划日期：未定"}`;
     }
 
     function launchActualMilestoneTooltip(milestone) {
       const actualDate = launchTimelineActualDate(milestone);
-      return actualDate ? `实际日期：${actualDate}` : "";
+      const label = milestone?.shortLabel || milestone?.label || "档期节点";
+      return actualDate ? `${label}\n实际日期：${actualDate}` : label;
     }
 
     function launchMainProductMilestones(project) {
@@ -7759,10 +7793,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const holidayEvents = launchTimelineHolidayEvents(minTime, maxTime);
       host.innerHTML = `
         <div class="launch-timeline-grid">
-          <div class="timeline-left-head">档期 / 品类</div>
+          <div class="timeline-left-head">档期 / 品类<small>◇ 重点节日</small></div>
           <div class="timeline-months">
             ${months.map(item => `<span class="timeline-month" style="left:${item.x}%">${escapeHtml(item.label)}</span>`).join("")}
-            ${holidayEvents.map((event, index) => `<button class="timeline-holiday-marker ${escapeAttr(event.type)}" style="--x:${launchTimelinePosition(event.date, minTime, maxTime)}%;--lane:${index % 2}" title="${escapeAttr(`${event.name} · ${event.date}`)}" aria-label="${escapeAttr(`${event.name} ${event.date}`)}" type="button"></button>`).join("")}
+            ${holidayEvents.map((event, index) => {
+              const tooltip = `重点节日：${event.name}\n${event.date}`;
+              return `<span class="timeline-holiday-marker ${escapeAttr(event.type)}" style="--x:${launchTimelinePosition(event.date, minTime, maxTime)}%;--lane:${index % 2}" data-tooltip="${escapeAttr(tooltip)}" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" role="note" tabindex="0"></span>`;
+            }).join("")}
             <span class="timeline-today" style="--today:${todayX}%"></span>
           </div>
           ${projects.map(project => {

@@ -111,7 +111,11 @@ test("timeline shows holiday markers and a scrollable seven-node dashboard", asy
   const markers = page.locator(".timeline-holiday-marker");
   assert.ok(await markers.count() > 0);
   const firstMarkerTitle = await markers.first().getAttribute("title");
-  assert.match(firstMarkerTitle || "", /\d{4}-\d{2}-\d{2}/);
+  assert.match(firstMarkerTitle || "", /重点节日.*\d{4}-\d{2}-\d{2}/);
+
+  const firstNodeTooltip = await page.locator(".timeline-dot.planned").first().getAttribute("data-tooltip");
+  assert.match(firstNodeTooltip || "", /原型开发|众测|NPC|中试|大生产|到仓|上市/);
+  assert.match(firstNodeTooltip || "", /计划日期/);
 
   await page.locator("[data-launch-expand-all]").click();
   const strip = page.locator(".launch-milestone-strip").first();
