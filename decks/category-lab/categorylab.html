@@ -8089,9 +8089,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return `
         <section class="calendar-matrix">
           <div class="calendar-matrix-head">
-            <h3>全年菜单矩阵 · ${escapeHtml(productCalendarYear)}</h3>
+            <h3>LTO 新品日历 · ${escapeHtml(productCalendarYear)}</h3>
           </div>
-          <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} 全年菜单矩阵">
+          <div class="product-calendar-table-wrap" role="region" aria-label="${escapeAttr(productCalendarYear)} LTO 新品日历">
             <table class="product-calendar-table annual-menu-matrix">
               <thead>
                 <tr>
@@ -8104,7 +8104,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
                   <tr>
                     <th data-matrix-category="${escapeAttr(group)}">${escapeHtml(group)}</th>
                     ${periods.map(item => {
-                      const products = productCalendarMonthlyMenuItems(item).filter(product => product.group === group);
+                      const products = productCalendarMonthlyMenuItems(item).filter(product => product.group === group && product.menuType === "lto");
                       return `<td><div class="annual-matrix-items">${products.length ? products.map(product => `
                         <div class="annual-matrix-item">
                           <b>${escapeHtml(product.name)}</b>

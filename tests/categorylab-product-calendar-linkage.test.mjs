@@ -88,9 +88,10 @@ test("monthly menu uses workbook category order and offer columns", async () => 
   assert.deepEqual(categories.slice(0, 4), ["Bakery", "Sandwich&Meal", "Cake&Dessert", "CPG"]);
 });
 
-test("annual matrix has sticky categories and twelve horizontal months", async () => {
+test("annual LTO calendar has sticky categories and twelve horizontal months", async () => {
   const matrix = page.locator(".product-calendar-table.annual-menu-matrix");
   await matrix.waitFor();
+  assert.equal(await page.getByRole("heading", { name: "LTO 新品日历 · 2026", exact: true }).count(), 1);
   assert.equal(await matrix.locator("thead [data-matrix-month]").count(), 12);
   assert.deepEqual(
     (await matrix.locator("thead [data-matrix-month]").allTextContents()).map(value => value.trim()),
@@ -100,6 +101,8 @@ test("annual matrix has sticky categories and twelve horizontal months", async (
     (await matrix.locator("tbody [data-matrix-category]").allTextContents()).map(value => value.trim()),
     ["Bakery", "Sandwich&Meal", "Cake&Dessert", "CPG"]
   );
+  assert.match(await matrix.innerText(), /蓝莓轻芝士慕斯蛋糕/);
+  assert.doesNotMatch(await matrix.innerText(), /蜂蜜芝香贝果/);
 });
 
 test("product management owns core products while LTO stays linked to schedule", async () => {
