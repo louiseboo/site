@@ -561,6 +561,12 @@
       overflow-x: auto;
       padding-bottom: 2px;
     }
+    .image-item {
+      flex: 0 0 auto;
+      display: grid;
+      gap: 6px;
+      margin: 0;
+    }
     .image-button {
       appearance: none;
       display: block;
@@ -581,6 +587,12 @@
       width: 132px;
       height: 132px;
       object-fit: cover;
+    }
+    .image-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
     }
     .section-block {
       margin: 0 0 22px;
@@ -637,6 +649,16 @@
       margin-top: 18px;
       border-top: 1px solid var(--line-soft);
       padding-top: 18px;
+    }
+    .admin-image-editor {
+      display: grid;
+      gap: 6px;
+    }
+    .admin-image-editor > span:first-child,
+    .admin-image-selection {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
     }
     .section-block h3,
     .edit-panel h3 {
@@ -1897,9 +1919,12 @@
       return `
         <div class="image-strip">
           ${imgs.map((url, index) => `
-            <button class="image-button ${index === 0 ? "main" : ""}" data-image-url="${escapeAttr(url)}" type="button">
-              <img src="${escapeAttr(url)}" alt="产品照 ${index + 1}">
-            </button>
+            <figure class="image-item">
+              <button class="image-button ${index === 0 ? "main" : ""}" data-image-url="${escapeAttr(url)}" type="button">
+                <img src="${escapeAttr(url)}" alt="产品照 ${index + 1}">
+              </button>
+              <figcaption class="image-label">图 ${index + 1}</figcaption>
+            </figure>
           `).join("")}
         </div>
       `;
@@ -1917,6 +1942,7 @@
 
     function renderSupplierEditPanel(row) {
       if (!supplierEditOpen) return "";
+      const imageCount = imageUrls(row).length;
       return `
         <div class="supplier-edit-panel">
           <div class="edit-grid">
@@ -1933,6 +1959,11 @@
             ${fieldBlock("本版调整点", fieldTextarea("version_change", row.version_change, "本版调整点", 3), "span-2")}
             ${fieldBlock("产品结构", fieldTextarea("ingredients_structure", row.ingredients_structure, "产品结构", 3), "span-2")}
             ${fieldBlock("核心原料及卖点", fieldTextarea("core_ingredients_selling_points", row.core_ingredients_selling_points, "核心原料及卖点", 3), "span-2")}
+            <label class="admin-image-editor span-2">
+              <span>新增产品照（最多 6 张）</span>
+              <input data-admin-images type="file" accept="image/*" multiple ${imageCount >= 6 || !roleCanEdit() ? "disabled" : ""}>
+              <span class="admin-image-selection" data-admin-image-selection>现有 ${imageCount} 张</span>
+            </label>
           </div>
         </div>
       `;
@@ -2198,6 +2229,62 @@
       };
     }
 
+    function selectedAdminImageFiles() {
+      const input = appPanel.querySelector("[data-admin-images]");
+      return input ? [...(input.files || [])] : [];
+    }
+
+    function fileToImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function compressAdminImage(file) {
+      const rawDataUrl = await fileToImage(file);
+      const image = new Image();
+      await new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = () => reject(new Error("图片无法读取，请使用 JPG、PNG 或 WebP 格式。"));
+        image.src = rawDataUrl;
+      });
+      const maxSide = 1400;
+      const ratio = Math.min(1, maxSide / Math.max(image.width, image.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(image.width * ratio);
+      canvas.height = Math.round(image.height * ratio);
+      canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.78));
+      return blob || file;
+    }
+
+    function blobToDataUrl(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    async function adminImagePayloads(files, existingCount) {
+      const availableSlots = Math.max(0, 6 - existingCount);
+      if (files.length > availableSlots) throw new Error(`当前已有 ${existingCount} 张图片，最多还能新增 ${availableSlots} 张。`);
+      const images = [];
+      for (const file of files) {
+        const blob = await compressAdminImage(file);
+        images.push({
+          name: file.name,
+          type: "image/jpeg",
+          dataUrl: await blobToDataUrl(blob)
+        });
+      }
+      return images;
+    }
+
     function updateVersionStagePreview() {
       const row = activeRecord();
       const preview = appPanel.querySelector("[data-version-stage-preview]");
@@ -2210,10 +2297,14 @@
 
     async function saveRow(id = activeRecordId, override = {}) {
       if (!roleCanEdit() || !id) return null;
+      const existing = activeRecord() || {};
       const payload = { ...activePayload(), ...override };
+      const imageFiles = selectedAdminImageFiles();
+      if (imageFiles.length && !cloudbaseReady) throw new Error("当前备份环境暂不支持在收件箱新增图片。");
+      const images = imageFiles.length ? await adminImagePayloads(imageFiles, imageUrls(existing).length) : [];
       let data;
       if (cloudbaseReady) {
-        const response = await cloudbaseRequest("adminUpdate", { id, payload });
+        const response = await cloudbaseRequest("adminUpdate", { id, payload, images });
         data = response.record;
       } else {
         const response = await client
@@ -2226,9 +2317,9 @@
         data = response.data;
       }
       const index = records.findIndex(row => row.id === id);
-      if (index >= 0) records[index] = data;
+      if (index >= 0) records[index] = { ...existing, ...payload, ...(data || {}), id };
       renderAll(id);
-      return data;
+      return records[index] || data;
     }
 
     async function confirmActiveRow(id = activeRecordId) {
@@ -2515,8 +2606,12 @@
           return;
         }
         if (event.target.closest("[data-save-active]")) {
+          const saveButton = event.target.closest("[data-save-active]");
+          saveButton.disabled = true;
+          saveButton.textContent = "保存中...";
           await saveRow();
           showMessage("已保存。", "success");
+          return;
         }
         if (event.target.closest("[data-confirm-active]")) {
           await confirmActiveRow();
@@ -2531,6 +2626,12 @@
     });
     appPanel.addEventListener("change", event => {
       if (["tasting_scene", "round_conclusion"].includes(event.target?.dataset?.field)) updateVersionStagePreview();
+      if (event.target?.matches("[data-admin-images]")) {
+        const currentCount = imageUrls(activeRecord() || {}).length;
+        const selectedCount = event.target.files?.length || 0;
+        const summary = appPanel.querySelector("[data-admin-image-selection]");
+        if (summary) summary.textContent = `现有 ${currentCount} 张 · 待新增 ${selectedCount} 张`;
+      }
     });
     productGroupSearch.addEventListener("input", renderProductGroupingCandidates);
     productGroupModal.addEventListener("click", async event => {

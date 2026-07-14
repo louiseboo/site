@@ -375,6 +375,13 @@ async function uploadImages(app, recordId, images = []) {
   return uploaded;
 }
 
+function mergeImagePaths(existing = [], added = []) {
+  return [
+    ...(Array.isArray(existing) ? existing : []),
+    ...(Array.isArray(added) ? added : [])
+  ].filter(Boolean).slice(0, IMAGE_LIMIT);
+}
+
 async function tempUrlForFileID(app, fileID, maxAge = 60 * 60) {
   const id = text(fileID);
   if (!id || !id.startsWith("cloud://")) throw new Error("图片 fileID 不正确。");
@@ -508,14 +515,24 @@ async function adminUpdate(collection, event, body) {
   assertAdmin(event, body);
   const id = text(body.id);
   if (!id) throw new Error("缺少记录 ID。");
+  const current = await collection.doc(id).get();
+  const existing = current.data?.[0];
+  if (!existing) throw new Error("记录不存在，请刷新收件箱后重试。");
   const normalized = normalizeAdminUpdatePayload(body.payload || {});
   const payload = {
     ...normalized,
     updated_at: new Date().toISOString()
   };
+  const requestedImages = Array.isArray(body.images) ? body.images : [];
+  if (requestedImages.length) {
+    const existingImages = Array.isArray(existing.image_paths) ? existing.image_paths : [];
+    const availableSlots = Math.max(0, IMAGE_LIMIT - existingImages.length);
+    if (!availableSlots) throw new Error(`每条记录最多保存 ${IMAGE_LIMIT} 张图片。`);
+    const uploaded = await uploadImages(getApp(), id, requestedImages.slice(0, availableSlots));
+    payload.image_paths = mergeImagePaths(existingImages, uploaded);
+  }
   await collection.doc(id).update(payload);
-  const updated = await collection.doc(id).get();
-  const record = await hydrateRecordImages(getApp(), publicRecord(updated.data?.[0] || { id, ...payload }));
+  const record = await hydrateRecordImages(getApp(), publicRecord({ ...existing, ...payload, id }));
   return { record };
 }
 
@@ -625,6 +642,7 @@ exports._private = {
   parseEventBody,
   normalizeRecordPayload,
   normalizeAdminUpdatePayload,
+  mergeImagePaths,
   validateProductGroupingRecords,
   requireFields,
   databaseWriteRecord,
