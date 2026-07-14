@@ -1819,6 +1819,7 @@
       border: 2px solid #2f281f;
       border-radius: 50%;
       background: #2f281f;
+      padding: 0;
       transform: translateX(-50%);
       cursor: pointer;
     }
@@ -1943,6 +1944,10 @@
       border: 2px solid #8a806f;
       border-radius: 50%;
       background: #fffdf8;
+    }
+    .timeline-legend i.node.actual {
+      border-color: #2f281f;
+      background: #2f281f;
     }
     .timeline-legend i.launch {
       width: 10px;
@@ -3497,7 +3502,7 @@
                   <div class="launch-subhead">
                     <div>
                       <h3>时间轴</h3>
-                      <p>每行一个档期；节点有实际日期时显示在实际线上，否则显示在计划线上。</p>
+                      <p>每行一个档期；上层节点显示计划日期，下层节点仅显示已填写的实际日期。</p>
                     </div>
                     <div class="launch-subhead-actions">
                       <button class="btn compact" data-launch-expand-all type="button">全部展开</button>
@@ -3509,10 +3514,20 @@
                   <div class="timeline-legend">
                     <span><i></i>计划周期</span>
                     <span><i class="actual"></i>实际进度</span>
-                    <span><i class="node"></i>关键节点</span>
+                    <span><i class="node"></i>计划节点</span>
+                    <span><i class="node actual"></i>实际节点</span>
                     <span><i class="launch"></i>上市日</span>
                     <span><i class="today"></i>今天</span>
                   </div>
+                </div>
+                <div class="launch-flow-panel">
+                  <div class="launch-subhead">
+                    <div>
+                      <h3>Coffee Bar 全流程</h3>
+                      <p id="launchActiveProjectLabel">选择食品后查看并完成该食品的具体任务。</p>
+                    </div>
+                  </div>
+                  <div id="coffeeBarChecklist"></div>
                 </div>
               </div>
             </div>
@@ -7066,14 +7081,23 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       persistLaunchCampaignExpansionState();
     }
 
-    function launchTimelineMarker(milestone) {
-      if (milestone?.key === "launch") {
-        return { lane: "planned", date: milestone.plannedDate || "", actualDate: "" };
-      }
-      const actualDate = milestone?.displayActualDate || milestone?.actualDate || "";
-      return actualDate
-        ? { lane: "actual", date: actualDate, actualDate }
-        : { lane: "planned", date: milestone?.plannedDate || "", actualDate: "" };
+    function launchTimelineActualDate(milestone) {
+      if (milestone?.key === "launch") return "";
+      return milestone?.displayActualDate || milestone?.actualDate || "";
+    }
+
+    function launchTimelineActualSource(milestone) {
+      if (!launchTimelineActualDate(milestone)) return "";
+      return milestone?.actualDate ? "recorded" : "planned-fallback";
+    }
+
+    function launchPlannedMilestoneTooltip(milestone) {
+      return milestone?.plannedDate ? `计划日期：${milestone.plannedDate}` : "计划日期：未定";
+    }
+
+    function launchActualMilestoneTooltip(milestone) {
+      const actualDate = launchTimelineActualDate(milestone);
+      return actualDate ? `实际日期：${actualDate}` : "";
     }
 
     function launchMainProductMilestones(project) {
@@ -7133,7 +7157,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function launchCampaignProductsHtml(campaign) {
       const products = visibleLaunchProducts(campaign.products || []);
-      const isActiveCampaign = launchItemIsActive(campaign);
       const activeProduct = products.find(product => product.id === activeLaunchProjectId);
       return `
         <div class="launch-campaign-products" data-launch-campaign-products="${escapeAttr(campaign.id)}">
@@ -7165,12 +7188,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             </table>
           </div>
           ${activeProduct ? launchProductNodeEditorHtml(activeProduct) : ""}
-          ${isActiveCampaign && activeProduct ? `
-            <div class="launch-inline-flow">
-              <div class="launch-inline-flow-head"><h4>Coffee Bar 全流程</h4></div>
-              <div id="coffeeBarChecklist"></div>
-            </div>
-          ` : ""}
         </div>
       `;
     }
@@ -7222,10 +7239,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
               <div class="timeline-track-cell ${launchItemIsActive(project) ? "active" : ""}" data-select-launch="${escapeAttr(selectTargetId)}">
                 <span class="timeline-plan-bar" style="--start:${startX}%;--end:${endX}%"></span>
                 ${actualEnd ? `<span class="timeline-actual-bar ${tone}" style="--start:${startX}%;--end:${actualEndX}%"></span>` : ""}
-                ${milestones.map(item => {
-                  const marker = launchTimelineMarker(item);
+                ${milestones.filter(item => item.plannedDate).map(item => {
                   const dotTone = item.done ? "done" : item.key === current?.key ? (launchStatusClass(item.status) || "pending") : "pending";
-                  return `<span class="timeline-dot ${marker.lane === "actual" ? "actual" : ""} ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" data-actual-date="${escapeAttr(marker.actualDate)}" data-tooltip="${escapeAttr(launchMilestoneTooltip(item))}" role="button" tabindex="0" title="${escapeAttr(launchMilestoneTitle(item))}" aria-label="${escapeAttr(launchMilestoneTitle(item))}" style="--x:${launchTimelinePosition(marker.date, minTime, maxTime)}%"></span>`;
+                  const tooltip = launchPlannedMilestoneTooltip(item);
+                  return `<button class="timeline-dot planned ${dotTone} ${item.offsetDays === 0 ? "launch" : ""}" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" data-lane="planned" data-planned-date="${escapeAttr(item.plannedDate)}" data-tooltip="${escapeAttr(tooltip)}" type="button" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" style="--x:${launchTimelinePosition(item.plannedDate, minTime, maxTime)}%"></button>`;
+                }).join("")}
+                ${milestones.filter(item => launchTimelineActualDate(item)).map(item => {
+                  const actualDate = launchTimelineActualDate(item);
+                  const tooltip = launchActualMilestoneTooltip(item);
+                  return `<button class="timeline-dot actual" data-select-launch-node="${escapeAttr(selectTargetId)}" data-milestone-key="${escapeAttr(item.key)}" data-lane="actual" data-actual-date="${escapeAttr(actualDate)}" data-actual-source="${escapeAttr(launchTimelineActualSource(item))}" data-tooltip="${escapeAttr(tooltip)}" type="button" title="${escapeAttr(tooltip)}" aria-label="${escapeAttr(tooltip)}" style="--x:${launchTimelinePosition(actualDate, minTime, maxTime)}%"></button>`;
                 }).join("")}
                 <span class="timeline-date-label ${tone}${labelEndClass}" style="--x:${endX}%">上市 ${escapeHtml(launchDateLabel(project.launchDate))}</span>
                 <span class="timeline-today" style="--today:${todayX}%"></span>
@@ -7442,8 +7464,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function renderCoffeeBarChecklist(project = activeLaunchProject()) {
       const host = document.querySelector("#coffeeBarChecklist");
+      const label = document.querySelector("#launchActiveProjectLabel");
       if (!host) return;
       if (!project) {
+        if (label) label.textContent = "选择食品后查看并完成该食品的具体任务。";
         host.innerHTML = `<div class="empty">先新增或选择一个档期项目，再勾选 Coffee Bar 全流程。</div>`;
         return;
       }
@@ -7454,8 +7478,21 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         project = products[0];
         activeLaunchProjectId = project.id;
       }
+      if (!products.length || launchProductIsPlaceholder(project)) {
+        if (label) label.textContent = `当前档期：${campaign?.name || "未命名档期"} · 暂无食品`;
+        host.innerHTML = `<div class="empty">这个档期还没有食品，请先在食品中心新增食品。</div>`;
+        return;
+      }
+      if (label) {
+        label.textContent = `当前档期：${campaign?.name || "未命名档期"} · 当前食品：${project.name || "未命名食品"}`;
+      }
       const canManageSelectedProduct = !launchProductIsPlaceholder(project) && Boolean(project.id);
       host.innerHTML = `
+        <div class="launch-product-picker launch-flow-product-picker" aria-label="选择食品">
+          ${products.map(item => `
+            <button class="launch-product-pill ${item.id === project.id ? "active" : ""}" data-select-launch-product="${escapeAttr(item.id)}" type="button" aria-pressed="${item.id === project.id ? "true" : "false"}">${escapeHtml(item.name || "未命名食品")}</button>
+          `).join("")}
+        </div>
         <div class="launch-flow-toolbar">
           <div><b>${escapeHtml(project.name || "未命名食品")}</b><span class="muted"> · ${escapeHtml(project.category || "未分类")}</span></div>
           <div class="launch-flow-actions">
@@ -8251,9 +8288,16 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         return;
       }
       const campaignKey = launchCampaignStorageKey(seed.id ? seed : campaign);
+      const placeholderProject = (state.launchProjects || []).find(project =>
+        launchProductIsPlaceholder(project) && launchCampaignStorageKey(project) === campaignKey
+      );
       state.launchProjects = (state.launchProjects || []).filter(project =>
         !(launchProductIsPlaceholder(project) && launchCampaignStorageKey(project) === campaignKey)
       );
+      const placeholderFlow = placeholderProject?.checkedFlow && Object.keys(placeholderProject.checkedFlow).length
+        ? { ...placeholderProject.checkedFlow }
+        : feishuCoffeeBarFlow({ brief: true });
+      const productNote = document.querySelector("#launchProductNote").value.trim();
       const project = migrateLaunchProject({
         id: crypto.randomUUID(),
         name,
@@ -8264,11 +8308,12 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         launchCampaign: campaign.name || seed.launchCampaign || "",
         launchCampaignId: campaign.launchCampaignId || seed.launchCampaignId || `manual-${campaign.id}`,
         owner: "Louise",
-        source: "手动补录 · Coffee Bar 全流程",
+        source: placeholderProject?.source || "手动补录 · Coffee Bar 全流程",
         plannedDates: { ...(campaign.plannedDates || seed.plannedDates || {}) },
-        actualDates: {},
-        note: document.querySelector("#launchProductNote").value.trim(),
-        checkedFlow: feishuCoffeeBarFlow({ brief: true })
+        actualDates: { ...(placeholderProject?.actualDates || {}) },
+        note: productNote || placeholderProject?.note || "",
+        issueNote: placeholderProject?.issueNote || "",
+        checkedFlow: placeholderFlow
       });
       state.launchProjects.push(project);
       activeLaunchProjectId = project.id;

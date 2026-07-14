@@ -67,35 +67,46 @@ test.after(async () => {
   await new Promise(resolveClose => server?.close(resolveClose));
 });
 
-test("timeline uses one marker per campaign milestone", async () => {
-  const duplicateKeys = await page.locator(".timeline-track-cell").evaluateAll(cells =>
+test("timeline separates planned dots above from actual dots below", async () => {
+  const markerErrors = await page.locator(".timeline-track-cell").evaluateAll(cells =>
     cells.flatMap((cell, rowIndex) => {
-      const counts = {};
-      cell.querySelectorAll("[data-milestone-key]").forEach(node => {
+      const counts = { planned: {}, actual: {} };
+      cell.querySelectorAll(".timeline-dot[data-milestone-key]").forEach(node => {
         const key = node.getAttribute("data-milestone-key");
-        counts[key] = (counts[key] || 0) + 1;
+        const lane = node.classList.contains("actual") ? "actual" : "planned";
+        counts[lane][key] = (counts[lane][key] || 0) + 1;
       });
-      return Object.entries(counts)
-        .filter(([, count]) => count > 1)
-        .map(([key, count]) => ({ rowIndex, key, count }));
+      const errors = [];
+      Object.entries(counts.planned).forEach(([key, count]) => {
+        if (count !== 1) errors.push({ rowIndex, lane: "planned", key, count });
+      });
+      Object.entries(counts.actual).forEach(([key, count]) => {
+        if (count > 1) errors.push({ rowIndex, lane: "actual", key, count });
+        if (key === "launch") errors.push({ rowIndex, lane: "actual", key, reason: "launch must remain planned-only" });
+      });
+      cell.querySelectorAll(".timeline-dot.planned").forEach(node => {
+        const tooltip = node.getAttribute("data-tooltip") || "";
+        if (!tooltip.includes("计划日期") || tooltip.includes("实际日期")) {
+          errors.push({ rowIndex, lane: "planned", tooltip });
+        }
+      });
+      cell.querySelectorAll(".timeline-dot.actual").forEach(node => {
+        const tooltip = node.getAttribute("data-tooltip") || "";
+        const actualDate = node.getAttribute("data-actual-date") || "";
+        const source = node.getAttribute("data-actual-source") || "";
+        const key = node.getAttribute("data-milestone-key");
+        const plannedDate = cell.querySelector(`.timeline-dot.planned[data-milestone-key="${key}"]`)?.getAttribute("data-planned-date") || "";
+        const invalidFallback = source === "planned-fallback" && actualDate !== plannedDate;
+        if (!actualDate || !["recorded", "planned-fallback"].includes(source) || invalidFallback || !tooltip.includes("实际日期") || tooltip.includes("计划日期")) {
+          errors.push({ rowIndex, lane: "actual", tooltip, actualDate, plannedDate, source });
+        }
+      });
+      return errors;
     })
   );
-
-  assert.deepEqual(duplicateKeys, []);
-
-  const laneErrors = await page.locator(".timeline-track-cell").evaluateAll(cells =>
-    cells.flatMap((cell, rowIndex) =>
-      Array.from(cell.querySelectorAll("[data-milestone-key]")).flatMap(node => {
-        const actualDate = node.getAttribute("data-actual-date") || "";
-        const expectedActualLane = Boolean(actualDate);
-        const onActualLane = node.classList.contains("actual");
-        return expectedActualLane === onActualLane
-          ? []
-          : [{ rowIndex, key: node.getAttribute("data-milestone-key"), actualDate, onActualLane }];
-      })
-    )
-  );
-  assert.deepEqual(laneErrors, []);
+  assert.deepEqual(markerErrors, []);
+  assert.ok(await page.locator(".timeline-dot.planned").count() > 0);
+  assert.ok(await page.locator(".timeline-dot.actual").count() > 0);
 });
 
 test("timeline campaign summaries do not list food names", async () => {
@@ -139,20 +150,59 @@ test("campaign product centers expand independently and persist", async () => {
   );
 });
 
+test("campaigns without foods do not expose an editable food workflow", async () => {
+  const emptyCampaign = page.locator(".timeline-project-info").filter({ hasText: "0 个食品" }).first();
+  assert.equal(await emptyCampaign.count(), 1);
+  await emptyCampaign.evaluate(element => element.click());
+  assert.equal(await page.locator("#coffeeBarChecklist [data-flow-check]").count(), 0);
+  assert.match(await page.locator("#coffeeBarChecklist").innerText(), /还没有食品/);
+});
+
 test("food selection opens one complete Coffee Bar flow without duplicate boards", async () => {
   assert.equal(await page.locator(".launch-list-panel").count(), 0);
-  assert.equal(await page.locator(".launch-flow-panel").count(), 0);
+  assert.equal(await page.locator(".launch-flow-panel").count(), 1);
+  assert.equal(await page.locator(".launch-inline-flow").count(), 0);
 
-  const productButtons = page.locator("[data-launch-campaign-products]:visible [data-select-launch-product]");
+  await page.locator("[data-launch-expand-all]").click();
+  const multiProductCenter = page.locator("[data-launch-campaign-products]:visible").filter({
+    has: page.locator("tbody tr:nth-child(2)")
+  }).first();
+  const productButtons = multiProductCenter.locator("[data-select-launch-product]");
   const productCount = await productButtons.count();
-  assert.ok(productCount > 0);
+  assert.ok(productCount > 1);
+  const firstProductName = (await productButtons.first().innerText()).split("\n")[0].trim();
   await productButtons.first().click();
 
   assert.equal(await page.locator("#coffeeBarChecklist").count(), 1);
+  assert.ok((await page.locator("#launchActiveProjectLabel").innerText()).includes(firstProductName));
   assert.ok(await page.locator("#coffeeBarChecklist .flow-check").count() > 0);
   assert.equal(await page.locator("#coffeeBarChecklist [data-edit-launch-product]").count(), 1);
   assert.equal(await page.locator("#coffeeBarChecklist [data-delete-launch-product]").count(), 1);
   assert.equal(await page.locator("#coffeeBarChecklist [data-open-launch-product]").count(), 0);
+
+  const flowPicker = page.locator("#coffeeBarChecklist .launch-flow-product-picker [data-select-launch-product]");
+  assert.ok(await flowPicker.count() > 1);
+  const firstProductId = await flowPicker.first().getAttribute("data-select-launch-product");
+  const secondProductId = await flowPicker.nth(1).getAttribute("data-select-launch-product");
+  let firstFlowCheck = page.locator("#coffeeBarChecklist [data-flow-check]").first();
+  if (!(await firstFlowCheck.isChecked())) await firstFlowCheck.check();
+
+  await page.locator(`#coffeeBarChecklist [data-select-launch-product="${secondProductId}"]`).click();
+  let secondFlowCheck = page.locator("#coffeeBarChecklist [data-flow-check]").first();
+  if (await secondFlowCheck.isChecked()) await secondFlowCheck.uncheck();
+
+  await page.locator(`#coffeeBarChecklist [data-select-launch-product="${firstProductId}"]`).click();
+  firstFlowCheck = page.locator("#coffeeBarChecklist [data-flow-check]").first();
+  assert.equal(await firstFlowCheck.isChecked(), true);
+  await page.locator(`#coffeeBarChecklist [data-select-launch-product="${secondProductId}"]`).click();
+  secondFlowCheck = page.locator("#coffeeBarChecklist [data-flow-check]").first();
+  assert.equal(await secondFlowCheck.isChecked(), false);
+
+  await openLaunchPage();
+  await page.locator(`[data-launch-campaign-products] [data-select-launch-product="${firstProductId}"]`).first().click();
+  assert.equal(await page.locator("#coffeeBarChecklist [data-flow-check]").first().isChecked(), true);
+  await page.locator(`#coffeeBarChecklist [data-select-launch-product="${secondProductId}"]`).click();
+  assert.equal(await page.locator("#coffeeBarChecklist [data-flow-check]").first().isChecked(), false);
 });
 
 test("food milestone actual dates remain editable and persist", async () => {
