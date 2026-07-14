@@ -7478,15 +7478,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         project = products[0];
         activeLaunchProjectId = project.id;
       }
-      if (!products.length || launchProductIsPlaceholder(project)) {
-        if (label) label.textContent = `当前档期：${campaign?.name || "未命名档期"} · 暂无食品`;
-        host.innerHTML = `<div class="empty">这个档期还没有食品，请先在食品中心新增食品。</div>`;
-        return;
-      }
+      const isPlaceholderProduct = launchProductIsPlaceholder(project);
       if (label) {
-        label.textContent = `当前档期：${campaign?.name || "未命名档期"} · 当前食品：${project.name || "未命名食品"}`;
+        label.textContent = isPlaceholderProduct
+          ? `当前档期：${campaign?.name || "未命名档期"} · 未关联食品`
+          : `当前档期：${campaign?.name || "未命名档期"} · 当前食品：${project.name || "未命名食品"}`;
       }
-      const canManageSelectedProduct = !launchProductIsPlaceholder(project) && Boolean(project.id);
+      const canManageSelectedProduct = !isPlaceholderProduct && Boolean(project.id);
       host.innerHTML = `
         <div class="launch-product-picker launch-flow-product-picker" aria-label="选择食品">
           ${products.map(item => `
@@ -7494,7 +7492,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           `).join("")}
         </div>
         <div class="launch-flow-toolbar">
-          <div><b>${escapeHtml(project.name || "未命名食品")}</b><span class="muted"> · ${escapeHtml(project.category || "未分类")}</span></div>
+          <div><b>${escapeHtml(isPlaceholderProduct ? "全流程任务" : (project.name || "未命名食品"))}</b><span class="muted"> · ${escapeHtml(project.category || "未分类")}</span></div>
           <div class="launch-flow-actions">
             ${canManageSelectedProduct ? `
               <button class="btn compact" data-edit-launch-product="${escapeAttr(project.id)}" type="button">编辑</button>

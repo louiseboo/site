@@ -150,12 +150,34 @@ test("campaign product centers expand independently and persist", async () => {
   );
 });
 
-test("campaigns without foods do not expose an editable food workflow", async () => {
+test("campaigns without foods keep the complete Coffee Bar workflow visible", async () => {
   const emptyCampaign = page.locator(".timeline-project-info").filter({ hasText: "0 个食品" }).first();
   assert.equal(await emptyCampaign.count(), 1);
   await emptyCampaign.evaluate(element => element.click());
-  assert.equal(await page.locator("#coffeeBarChecklist [data-flow-check]").count(), 0);
-  assert.match(await page.locator("#coffeeBarChecklist").innerText(), /还没有食品/);
+  const expectedFlowItems = [
+    "Brief", "初版配方确认", "初版报价", "稳定性测试", "众测", "NPC", "配方确认",
+    "产品名称确认", "中试跟产", "三方跟产", "中试", "运输测试", "中试验收", "二次中试",
+    "二次中试验收", "三方跟产验收", "ID 照", "factsheet初版稿件", "factsheet提交审核",
+    "审核Tony", "审核Dan", "factsheet发送", "规格书", "大生产", "大生产验收",
+    "烤程SOP", "Memo", "上市"
+  ];
+  const visibleFlowItems = await page.locator("#coffeeBarChecklist .flow-check").allTextContents();
+  assert.deepEqual(visibleFlowItems.map(item => item.trim()), expectedFlowItems);
+  assert.match(await page.locator("#launchActiveProjectLabel").innerText(), /未关联食品/);
+  assert.equal(await page.locator("#coffeeBarChecklist [data-edit-launch-product]").count(), 0);
+  assert.equal(await page.locator("#coffeeBarChecklist [data-delete-launch-product]").count(), 0);
+
+  const firstFlowCheck = page.locator("#coffeeBarChecklist [data-flow-check]").first();
+  if (!(await firstFlowCheck.isChecked())) await firstFlowCheck.check();
+  await page.locator("#launchIssueNote").fill("档期任务承接测试");
+  const activeProductCenter = page.locator(".timeline-project-info.active + .timeline-track-cell + .launch-campaign-products");
+  assert.equal(await activeProductCenter.count(), 1);
+  await activeProductCenter.locator("[data-open-launch-product]").click();
+  await page.locator("#launchProductName").fill("流程承接测试食品");
+  await page.locator("#saveLaunchProductBtn").click();
+  assert.match(await page.locator("#launchActiveProjectLabel").innerText(), /流程承接测试食品/);
+  assert.equal(await page.locator("#coffeeBarChecklist [data-flow-check]").first().isChecked(), true);
+  assert.equal(await page.locator("#launchIssueNote").inputValue(), "档期任务承接测试");
 });
 
 test("food selection opens one complete Coffee Bar flow without duplicate boards", async () => {
