@@ -1704,7 +1704,7 @@
     }
     .timeline-left-head,
     .timeline-months {
-      min-height: 38px;
+      min-height: 52px;
       display: flex;
       align-items: center;
       border-bottom: 1px solid var(--line);
@@ -1722,7 +1722,7 @@
     }
     .timeline-month {
       position: absolute;
-      top: 0;
+      top: 18px;
       bottom: 0;
       display: flex;
       align-items: center;
@@ -1910,7 +1910,7 @@
     .timeline-today::after {
       content: "今天";
       position: absolute;
-      top: 8px;
+      top: 22px;
       left: 5px;
       color: var(--red);
       font-size: 10px;
@@ -1961,6 +1961,24 @@
       height: 14px;
       background: var(--red);
     }
+    .timeline-holiday-marker {
+      position: absolute;
+      left: var(--x);
+      top: calc(3px + var(--lane, 0) * 9px);
+      width: 8px;
+      height: 8px;
+      padding: 0;
+      border: 1px solid #fffdf8;
+      border-radius: 2px;
+      background: var(--red);
+      box-shadow: 0 0 0 1px rgba(178, 74, 43, .35);
+      transform: translateX(-50%) rotate(45deg);
+      cursor: help;
+      z-index: 5;
+    }
+    .timeline-holiday-marker.marketing { background: var(--amber); }
+    .timeline-holiday-marker:hover,
+    .timeline-holiday-marker:focus { transform: translateX(-50%) rotate(45deg) scale(1.35); }
     .launch-campaign-products {
       grid-column: 1 / -1;
       border-bottom: 1px solid var(--line);
@@ -1991,6 +2009,105 @@
       justify-content: flex-end;
       gap: 6px;
     }
+    .launch-milestone-dashboard {
+      display: grid;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+    .launch-milestone-dashboard-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .launch-milestone-dashboard-head b { font-size: 12px; }
+    .launch-milestone-dashboard-head span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+    .launch-milestone-strip {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(142px, 1fr);
+      gap: 7px;
+      overflow-x: auto;
+      padding: 1px 1px 7px;
+      scrollbar-width: thin;
+    }
+    .launch-milestone-card {
+      min-height: 76px;
+      display: grid;
+      align-content: space-between;
+      gap: 5px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fffdf8;
+      color: var(--text);
+      padding: 9px 10px;
+      text-align: left;
+      cursor: pointer;
+    }
+    .launch-milestone-card:hover,
+    .launch-milestone-card:focus { border-color: #8a5a36; background: #f5e7d4; }
+    .launch-milestone-card.done { border-top: 3px solid var(--green); }
+    .launch-milestone-card.warn { border-top: 3px solid var(--amber); }
+    .launch-milestone-card.bad { border-top: 3px solid var(--red); }
+    .launch-milestone-card strong {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 7px;
+      font-size: 11px;
+    }
+    .launch-milestone-card strong em {
+      color: var(--accent);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 10px;
+      font-style: normal;
+      white-space: nowrap;
+    }
+    .launch-milestone-card span {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 10px;
+      font-weight: 750;
+    }
+    .launch-milestone-card small {
+      color: var(--text);
+      font-size: 10px;
+      font-weight: 850;
+    }
+    .launch-schedule-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .launch-schedule-summary div {
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fffaf0;
+    }
+    .launch-schedule-summary span,
+    .launch-schedule-summary b { display: block; }
+    .launch-schedule-summary span { color: var(--muted); font-size: 10px; font-weight: 800; }
+    .launch-schedule-summary b { margin-top: 3px; font-size: 12px; }
+    .launch-schedule-tools { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; margin-bottom: 10px; }
+    .launch-schedule-tools .field { min-width: 120px; margin: 0; }
+    .launch-schedule-grid { display: grid; gap: 7px; }
+    .launch-schedule-row {
+      display: grid;
+      grid-template-columns: minmax(130px, 1.2fr) minmax(150px, 1fr) 100px;
+      align-items: end;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fffdf8;
+    }
+    .launch-schedule-row > b { align-self: center; font-size: 12px; }
     .launch-product-overview-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
@@ -2650,6 +2767,45 @@
       line-height: 1.15;
       letter-spacing: 0;
     }
+    .calendar-detail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .calendar-detail-title { display: flex; align-items: center; gap: 9px; }
+    .calendar-linked-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      overflow: hidden;
+      background: #fffaf0;
+    }
+    .calendar-linked-summary div { padding: 9px 10px; border-right: 1px solid var(--line); }
+    .calendar-linked-summary div:last-child { border-right: 0; }
+    .calendar-linked-summary span,
+    .calendar-linked-summary b { display: block; }
+    .calendar-linked-summary span { color: var(--muted); font-size: 10px; font-weight: 800; }
+    .calendar-linked-summary b { margin-top: 3px; font-size: 12px; line-height: 1.35; }
+    .calendar-holiday-band { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+    .calendar-holiday-band > span { color: var(--muted); font-size: 10px; font-weight: 850; margin-right: 2px; }
+    .calendar-holiday-chip,
+    .calendar-element-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 25px;
+      padding: 4px 8px;
+      border: 1px solid #e2c9ae;
+      border-radius: 999px;
+      background: #fff5e9;
+      color: #62452e;
+      font-size: 10px;
+      font-weight: 850;
+      cursor: help;
+    }
+    .calendar-holiday-chip.marketing { border-color: #ecd8a7; background: #fff9e9; color: #8b6300; }
+    .calendar-element-chip { cursor: default; background: #f8f1e5; color: var(--text); }
     .calendar-detail-meta {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2708,6 +2864,14 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+    }
+    @media (max-width: 760px) {
+      .launch-schedule-summary,
+      .calendar-linked-summary { grid-template-columns: 1fr; }
+      .launch-schedule-summary div,
+      .calendar-linked-summary div { border-right: 0; border-bottom: 1px solid var(--line); }
+      .calendar-linked-summary div:last-child { border-bottom: 0; }
+      .launch-schedule-row { grid-template-columns: 1fr; }
     }
     .calendar-menu-board {
       display: grid;
@@ -4489,6 +4653,50 @@
     </div>
   </div>
 
+  <div class="modal" id="launchScheduleModal">
+    <div class="modal-card wide">
+      <div class="modal-head"><h2 id="launchScheduleModalTitle">编辑档期节点</h2><button class="btn" data-close-modal="launchScheduleModal">关闭</button></div>
+      <div class="panel-body">
+        <form class="form" id="launchScheduleForm">
+          <input id="launchScheduleCampaignId" type="hidden">
+          <div class="launch-schedule-summary">
+            <div><span>档期</span><b id="launchScheduleCampaignName">-</b></div>
+            <div><span>上市日期</span><b id="launchScheduleLaunchDate">-</b></div>
+            <div><span>编辑规则</span><b>上市日固定，其余节点可调整</b></div>
+          </div>
+          <div class="launch-schedule-tools">
+            <button class="btn compact" data-shift-launch-schedule="-30" type="button">整体提前 30 天</button>
+            <button class="btn compact" data-shift-launch-schedule="30" type="button">整体延后 30 天</button>
+            <div class="field"><label>自定义天数</label><input id="launchScheduleShiftDays" type="number" min="1" step="1" value="7"></div>
+            <button class="btn compact" data-shift-launch-schedule-custom="advance" type="button">提前</button>
+            <button class="btn compact" data-shift-launch-schedule-custom="delay" type="button">延后</button>
+            <button class="btn compact" data-reset-launch-schedule type="button">恢复默认倒推</button>
+          </div>
+          <div class="launch-schedule-grid" id="launchScheduleRows"></div>
+          <div class="row-actions"><button class="btn primary" type="submit">保存节点计划</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="productCalendarMonthModal">
+    <div class="modal-card">
+      <div class="modal-head"><h2>编辑月份信息</h2><button class="btn" data-close-modal="productCalendarMonthModal">关闭</button></div>
+      <div class="panel-body">
+        <form class="form" id="productCalendarMonthForm">
+          <input id="productCalendarMonthKey" type="hidden">
+          <div class="form two">
+            <div class="field"><label>月份</label><input id="productCalendarMonthLabel" disabled></div>
+            <div class="field"><label>上市日期（自动联动）</label><input id="productCalendarMonthLaunchDates" disabled></div>
+          </div>
+          <div class="field"><label>重点节日（中国日历自动更新）</label><textarea id="productCalendarMonthHolidays" disabled></textarea></div>
+          <div class="field"><label>档期元素</label><input id="productCalendarMonthElement" placeholder="如：莓果 / 桂花 / 节日礼赠"></div>
+          <div class="row-actions"><button class="btn primary" type="submit">保存月份信息</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div class="modal" id="launchProductModal">
     <div class="modal-card">
       <div class="modal-head"><h2 id="launchProductModalTitle">新增食品</h2><button class="btn" data-close-modal="launchProductModal">关闭</button></div>
@@ -5330,6 +5538,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     const WORKSPACE_LIST_STORAGE_KEY = "categorylab-workspace-lists-v1";
     const PRODUCT_CALENDAR_MATRIX_STORAGE_KEY = "categorylab-product-calendar-sq-matrix-v1";
     const PRODUCT_CALENDAR_MENU_STORAGE_KEY = "categorylab-product-calendar-menu-products-v1";
+    const PRODUCT_CALENDAR_MONTH_META_STORAGE_KEY = "categorylab-product-calendar-month-meta-v1";
     const LAUNCH_TIMELINE_HIDE_DONE_STORAGE_KEY = "categorylab-launch-timeline-hide-done-v1";
     const LAUNCH_CAMPAIGN_EXPANSION_STORAGE_KEY = "categorylab-launch-campaign-expansion-v1";
     const WORKSPACE_LIST_CLEANUP_KEY = "categorylab-workspace-lists-cleanup-v1";
@@ -5834,7 +6043,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     let productCalendarSelectedKey = "";
     let productCalendarMatrix = loadProductCalendarMatrix();
     let productCalendarMenuProducts = loadProductCalendarMenuProducts();
+    let productCalendarMonthMeta = loadProductCalendarMonthMeta();
     let editingMenuProductId = null;
+    let editingLaunchScheduleCampaignId = "";
 
     const els = {
       pageTitle: document.querySelector("#pageTitle"),
@@ -6345,6 +6556,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         feishuStatus,
         calendarCompleted: Boolean(project.calendarCompleted) || feishuStatus === "已完成",
         plannedDates: { ...(project.plannedDates || {}) },
+        milestoneOffsets: { ...(project.milestoneOffsets || {}) },
         actualDates,
         checkedFlow: Object.fromEntries(coffeeBarFlowItems.map(item => [
           item,
@@ -6577,6 +6789,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         const feishuStatuses = uniqueClean(sortedItems.map(project => project.feishuStatus));
         const launchYears = uniqueClean(sortedItems.map(launchYearValue));
         const plannedDates = {};
+        const milestoneOffsets = {};
         const actualDates = {};
         launchMilestoneTemplates.forEach(template => {
           const planned = uniqueClean(sortedItems.map(project => {
@@ -6584,6 +6797,14 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             return plannedDates[template.key] || addDays(project.launchDate, template.offsetDays);
           }));
           if (planned.length) plannedDates[template.key] = planned[0];
+          const offsets = uniqueClean(sortedItems.map(project => {
+            const stored = Number(project.milestoneOffsets?.[template.key]);
+            if (Number.isFinite(stored)) return String(stored);
+            const date = project.plannedDates?.[template.key];
+            const derived = date && project.launchDate ? dayDiff(date, project.launchDate) : template.offsetDays;
+            return Number.isFinite(derived) ? String(derived) : "";
+          }));
+          if (offsets.length) milestoneOffsets[template.key] = Number(offsets[0]);
           const dateKeys = [template.key, ...(template.actualKeys || [])].filter(Boolean);
           const milestoneProducts = displayItems.length ? displayItems : sortedItems;
           const productDates = milestoneProducts.map(project => {
@@ -6613,6 +6834,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           calendarCompleted: sortedItems.length > 0 && sortedItems.every(project => Boolean(project.calendarCompleted)),
           note: displayItems.map(project => project.name).join("、"),
           plannedDates,
+          milestoneOffsets,
           actualDates,
           checkedFlow,
           products: sortedItems
@@ -6827,6 +7049,81 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       localStorage.setItem(PRODUCT_CALENDAR_MENU_STORAGE_KEY, JSON.stringify(productCalendarMenuProducts));
     }
 
+    function loadProductCalendarMonthMeta() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(PRODUCT_CALENDAR_MONTH_META_STORAGE_KEY));
+        return saved && typeof saved === "object" && !Array.isArray(saved) ? saved : {};
+      } catch (error) {
+        return {};
+      }
+    }
+
+    function persistProductCalendarMonthMeta() {
+      localStorage.setItem(PRODUCT_CALENDAR_MONTH_META_STORAGE_KEY, JSON.stringify(productCalendarMonthMeta));
+    }
+
+    const productCalendarHolidayCache = new Map();
+
+    function productCalendarNthWeekday(year, monthIndex, weekday, occurrence) {
+      const first = new Date(year, monthIndex, 1);
+      const day = 1 + ((weekday - first.getDay() + 7) % 7) + (occurrence - 1) * 7;
+      return formatDateInput(new Date(year, monthIndex, day));
+    }
+
+    function productCalendarLunarDate(year, lunarMonth, lunarDay) {
+      const formatter = new Intl.DateTimeFormat("zh-CN-u-ca-chinese", {
+        month: "numeric",
+        day: "numeric",
+        timeZone: "Asia/Shanghai"
+      });
+      const cursor = new Date(year, 0, 1, 12);
+      const end = new Date(year, 11, 31, 12);
+      while (cursor <= end) {
+        const parts = Object.fromEntries(formatter.formatToParts(cursor).map(part => [part.type, part.value]));
+        if (Number(parts.month) === lunarMonth && Number(parts.day) === lunarDay) return formatDateInput(cursor);
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      return "";
+    }
+
+    function productCalendarHolidayEvents(yearValue = productCalendarYear) {
+      const year = Number(yearValue);
+      if (!Number.isFinite(year)) return [];
+      if (productCalendarHolidayCache.has(year)) return productCalendarHolidayCache.get(year).map(item => ({ ...item }));
+      const fixed = [
+        ["元旦", 1, 1, "statutory"],
+        ["情人节", 2, 14, "marketing"],
+        ["妇女节", 3, 8, "marketing"],
+        ["劳动节", 5, 1, "statutory"],
+        ["儿童节", 6, 1, "marketing"],
+        ["建党节", 7, 1, "marketing"],
+        ["教师节", 9, 10, "marketing"],
+        ["国庆节", 10, 1, "statutory"],
+        ["双11", 11, 11, "marketing"],
+        ["圣诞节", 12, 25, "marketing"]
+      ].map(([name, month, day, type]) => ({
+        name,
+        date: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+        type
+      }));
+      const qingmingDay = Math.floor((year % 100) * 0.2422 + 4.81) - Math.floor((year % 100) / 4);
+      const dynamic = [
+        { name: "春节", date: productCalendarLunarDate(year, 1, 1), type: "statutory" },
+        { name: "元宵节", date: productCalendarLunarDate(year, 1, 15), type: "marketing" },
+        { name: "清明节", date: `${year}-04-${String(qingmingDay).padStart(2, "0")}`, type: "statutory" },
+        { name: "母亲节", date: productCalendarNthWeekday(year, 4, 0, 2), type: "marketing" },
+        { name: "端午节", date: productCalendarLunarDate(year, 5, 5), type: "statutory" },
+        { name: "父亲节", date: productCalendarNthWeekday(year, 5, 0, 3), type: "marketing" },
+        { name: "七夕", date: productCalendarLunarDate(year, 7, 7), type: "marketing" },
+        { name: "中秋节", date: productCalendarLunarDate(year, 8, 15), type: "statutory" }
+      ];
+      const events = [...fixed, ...dynamic]
+        .filter(event => event.date)
+        .sort((left, right) => left.date.localeCompare(right.date) || left.name.localeCompare(right.name));
+      productCalendarHolidayCache.set(year, events);
+      return events.map(item => ({ ...item }));
+    }
+
     function navViewKey(view) {
       return {
         materials: "development",
@@ -7001,17 +7298,21 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function calculateLaunchMilestones(project) {
       const today = formatDateInput(new Date());
       return launchMilestoneTemplates.map(template => {
-        const plannedDate = project?.plannedDates?.[template.key] || addDays(project.launchDate, template.offsetDays);
+        const storedOffset = Number(project?.milestoneOffsets?.[template.key]);
+        const configuredOffset = Number.isFinite(storedOffset) ? storedOffset : template.offsetDays;
+        const plannedDate = project?.plannedDates?.[template.key] || addDays(project.launchDate, configuredOffset);
+        const derivedOffset = plannedDate && project?.launchDate ? dayDiff(plannedDate, project.launchDate) : configuredOffset;
+        const offsetDays = Number.isFinite(derivedOffset) ? derivedOffset : configuredOffset;
         const actualDate = launchMilestoneActualDate(project, template);
         const flowDone = launchMilestoneFlowDone(project, template);
         const launchDatePassed = template.key === "launch" && project.launchDate && dayDiff(project.launchDate, today) <= 0;
         const completedByCalendar = Boolean(project.calendarCompleted) || project.feishuStatus === "已完成";
         const displayActualDate = actualDate || ((flowDone || completedByCalendar || launchDatePassed) ? plannedDate : "");
-        const expectedDays = Math.abs(template.offsetDays);
+        const expectedDays = Math.abs(offsetDays);
         const daysFromToday = plannedDate ? dayDiff(plannedDate, today) : "";
         const done = completedByCalendar || Boolean(actualDate) || flowDone || launchDatePassed;
         const status = done ? "已完成" : (Number.isFinite(daysFromToday) && daysFromToday < 0 ? "逾期" : (Number.isFinite(daysFromToday) && daysFromToday <= 7 ? "临近" : "待完成"));
-        return { ...template, plannedDate, actualDate, displayActualDate, expectedDays, done, status };
+        return { ...template, offsetDays, plannedDate, actualDate, displayActualDate, expectedDays, done, status };
       });
     }
 
@@ -7243,6 +7544,19 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return items;
     }
 
+    function launchTimelineHolidayEvents(minTime, maxTime) {
+      const startYear = new Date(minTime).getFullYear();
+      const endYear = new Date(maxTime).getFullYear();
+      const events = [];
+      for (let year = startYear; year <= endYear; year += 1) {
+        events.push(...productCalendarHolidayEvents(year));
+      }
+      return events.filter(event => {
+        const date = parseDateInput(event.date);
+        return date && date.getTime() >= minTime && date.getTime() <= maxTime;
+      });
+    }
+
     function launchActualProgressEnd(project, milestones) {
       const actualDates = milestones.map(item => item.displayActualDate).filter(Boolean);
       if (actualDates.length) {
@@ -7365,6 +7679,33 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       `;
     }
 
+    function launchMilestoneOffsetLabel(offsetDays) {
+      const value = Number(offsetDays);
+      if (!Number.isFinite(value) || value === 0) return "上市日";
+      return value < 0 ? `T-${Math.abs(value)}` : `T+${value}`;
+    }
+
+    function launchMilestoneDashboardHtml(campaign) {
+      const milestones = calculateLaunchMilestones(campaign);
+      return `
+        <section class="launch-milestone-dashboard">
+          <div class="launch-milestone-dashboard-head">
+            <div><b>档期节点</b><span>按计划日期倒推；特殊档期可单独调整。</span></div>
+            <button class="btn compact" data-edit-launch-schedule="${escapeAttr(campaign.id)}" type="button">编辑节点计划</button>
+          </div>
+          <div class="launch-milestone-strip" aria-label="${escapeAttr(campaign.name || "档期")}节点">
+            ${milestones.map(milestone => `
+              <button class="launch-milestone-card ${escapeAttr(launchStatusClass(milestone.status))}" data-edit-launch-milestone="${escapeAttr(campaign.id)}" data-milestone-key="${escapeAttr(milestone.key)}" type="button">
+                <strong>${escapeHtml(milestone.shortLabel)}<em>${escapeHtml(launchMilestoneOffsetLabel(milestone.offsetDays))}</em></strong>
+                <span>计划 ${escapeHtml(milestone.plannedDate || "未定")}</span>
+                <small>${milestone.displayActualDate ? `实际 ${escapeHtml(milestone.displayActualDate)}` : escapeHtml(milestone.status)}</small>
+              </button>
+            `).join("")}
+          </div>
+        </section>
+      `;
+    }
+
     function launchCampaignProductsHtml(campaign) {
       const products = visibleLaunchProducts(campaign.products || []);
       const activeProduct = products.find(product => product.id === activeLaunchProjectId);
@@ -7381,6 +7722,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
               <button class="btn compact" data-delete-launch-campaign="${escapeAttr(campaign.id)}" type="button">删除档期</button>
             </div>
           </div>
+          ${launchMilestoneDashboardHtml(campaign)}
           <div class="launch-product-overview-wrap">
             <table class="launch-product-overview">
               <thead><tr><th>食品</th><th>众测</th><th>NPC</th><th>中试</th><th>大生产</th></tr></thead>
@@ -7414,11 +7756,13 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const { minTime, maxTime, today } = launchTimelineRange(projects);
       const todayX = launchTimelinePosition(today, minTime, maxTime);
       const months = launchTimelineMonths(minTime, maxTime);
+      const holidayEvents = launchTimelineHolidayEvents(minTime, maxTime);
       host.innerHTML = `
         <div class="launch-timeline-grid">
           <div class="timeline-left-head">档期 / 品类</div>
           <div class="timeline-months">
             ${months.map(item => `<span class="timeline-month" style="left:${item.x}%">${escapeHtml(item.label)}</span>`).join("")}
+            ${holidayEvents.map((event, index) => `<button class="timeline-holiday-marker ${escapeAttr(event.type)}" style="--x:${launchTimelinePosition(event.date, minTime, maxTime)}%;--lane:${index % 2}" title="${escapeAttr(`${event.name} · ${event.date}`)}" aria-label="${escapeAttr(`${event.name} ${event.date}`)}" type="button"></button>`).join("")}
             <span class="timeline-today" style="--today:${todayX}%"></span>
           </div>
           ${projects.map(project => {
@@ -7991,6 +8335,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function productCalendarDecoratedPeriods() {
       const year = productCalendarYear;
+      const holidayEvents = productCalendarHolidayEvents(year);
       const launchPeriods = productCalendarLaunchPeriods(year);
       const sourcePeriods = launchPeriods.length
         ? launchPeriods
@@ -7998,8 +8343,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const buckets = Array.from({ length: 12 }, (_, monthIndex) => {
         const range = productCalendarMonthRange(year, monthIndex);
         const status = productCalendarStatus(range);
+        const key = `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+        const holidays = holidayEvents.filter(event => parseDateInput(event.date)?.getMonth() === monthIndex);
         return {
-          key: `${year}-${String(monthIndex + 1).padStart(2, "0")}`,
+          key,
           year,
           monthIndex,
           monthLabel: productCalendarMonthLabel(monthIndex),
@@ -8011,8 +8358,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           statusLabel: productCalendarStatusLabel(status),
           sourcePeriods: [],
           sourceNames: [],
-          holiday: "",
-          element: "",
+          holiday: holidays.map(event => event.name).join(" / "),
+          holidays,
+          element: productCalendarMonthMeta[key]?.element || "",
           focus: "",
           sku: {},
           menuItems: [],
@@ -8036,6 +8384,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         });
       return buckets.map(period => ({
         ...period,
+        element: productCalendarMonthMeta[period.key]?.element || period.element || "",
         skuEntries: productCalendarUniqueMenuItems([
           ...(period.menuItems || []),
           ...productCalendarSkuEntries({ sku: period.sku, focus: period.focus }, true)
@@ -8201,15 +8550,30 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       });
       const sources = period.sourceNames || [];
       const sourcePeriods = period.sourcePeriods || [];
+      const launchDates = uniqueTextValues(sourcePeriods.map(source => source.launchDate || source.start || productCalendarDateRange(source).start));
+      const holidays = period.holidays || [];
+      const elements = uniqueTextValues(String(period.element || "").split(/[\/\n]+/));
       return `
         <aside class="calendar-detail-panel">
-          <span class="calendar-status-pill ${escapeAttr(period.status)}">${escapeHtml(period.statusLabel)}</span>
-          <h3>${escapeHtml(period.name)}</h3>
-          <div class="calendar-detail-meta">
-            <div><span>月份</span><b>${escapeHtml(productCalendarPeriodRange(period))}</b></div>
-            <div><span>档期数量</span><b>${sources.length || 0}</b></div>
-            <div><span>重点节日</span><b>${productCalendarCell(period.holiday)}</b></div>
-            <div><span>档期元素</span><b>${productCalendarCell(period.element)}</b></div>
+          <div class="calendar-detail-head">
+            <div class="calendar-detail-title">
+              <h3>${escapeHtml(period.name)}</h3>
+              <span class="calendar-status-pill ${escapeAttr(period.status)}">${escapeHtml(period.statusLabel)}</span>
+            </div>
+            <button class="btn compact" data-edit-product-calendar-month="${escapeAttr(period.key)}" type="button">编辑月份</button>
+          </div>
+          <div class="calendar-linked-summary">
+            <div><span>上市日期</span><b>${escapeHtml(launchDates.map(launchDateLabel).join(" / ") || "未排期")}</b></div>
+            <div><span>档期</span><b>${sources.length || 0}</b></div>
+            <div><span>食品</span><b>${period.skuEntries.length || 0}</b></div>
+          </div>
+          <div class="calendar-holiday-band">
+            <span>重点节日</span>
+            ${holidays.map(event => `<i class="calendar-holiday-chip ${escapeAttr(event.type)}" data-holiday-date="${escapeAttr(event.date)}" title="${escapeAttr(`${event.name} · ${event.date}`)}">${escapeHtml(event.name)}</i>`).join("") || `<i class="calendar-element-chip">本月无重点节日</i>`}
+          </div>
+          <div class="calendar-holiday-band">
+            <span>档期元素</span>
+            ${elements.map(element => `<i class="calendar-element-chip">${escapeHtml(element)}</i>`).join("") || `<i class="calendar-element-chip">待补充</i>`}
           </div>
           <div class="calendar-sku-section">
             <span>当月档期</span>
@@ -8243,6 +8607,32 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           </div>
         </aside>
       `;
+    }
+
+    function openProductCalendarMonthModal(periodKey = "") {
+      const period = productCalendarDecoratedPeriods().find(item => item.key === periodKey);
+      if (!period) return;
+      const launchDates = uniqueTextValues((period.sourcePeriods || []).map(source => source.launchDate || source.start || productCalendarDateRange(source).start));
+      document.querySelector("#productCalendarMonthKey").value = period.key;
+      document.querySelector("#productCalendarMonthLabel").value = `${period.year} / ${period.monthLabel}`;
+      document.querySelector("#productCalendarMonthLaunchDates").value = launchDates.join(" / ") || "未排期";
+      document.querySelector("#productCalendarMonthHolidays").value = (period.holidays || []).map(event => `${event.name} ${event.date}`).join("\n") || "本月无重点节日";
+      document.querySelector("#productCalendarMonthElement").value = productCalendarMonthMeta[period.key]?.element || period.element || "";
+      openModal("productCalendarMonthModal");
+    }
+
+    function saveProductCalendarMonth(event) {
+      event.preventDefault();
+      const key = document.querySelector("#productCalendarMonthKey").value;
+      if (!key) return;
+      productCalendarMonthMeta[key] = {
+        ...(productCalendarMonthMeta[key] || {}),
+        element: document.querySelector("#productCalendarMonthElement").value.trim()
+      };
+      persistProductCalendarMonthMeta();
+      productCalendarSelectedKey = key;
+      closeModal("productCalendarMonthModal");
+      renderProductCalendar();
     }
 
     function productCalendarMenuTier(item = {}) {
@@ -8626,6 +9016,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         owner: "Louise",
         source: placeholderProject?.source || "手动补录 · Coffee Bar 全流程",
         plannedDates: { ...(campaign.plannedDates || seed.plannedDates || {}) },
+        milestoneOffsets: { ...(campaign.milestoneOffsets || seed.milestoneOffsets || {}) },
         actualDates: { ...(placeholderProject?.actualDates || {}) },
         note: productNote || placeholderProject?.note || "",
         issueNote: placeholderProject?.issueNote || "",
@@ -8660,6 +9051,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           owner: "Louise",
           source: project.source || "手动补录 · Coffee Bar 全流程",
           plannedDates: { ...(campaign.plannedDates || project.plannedDates || {}) },
+          milestoneOffsets: { ...(campaign.milestoneOffsets || project.milestoneOffsets || {}) },
           actualDates: { ...(campaign.actualDates || project.actualDates || {}) },
           note: campaign.note || project.note || "",
           checkedFlow: {}
@@ -8718,6 +9110,97 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       renderLaunchTimeline(timelineProjects, { hiddenDoneCount });
       syncLaunchTimelineDoneToggle(hiddenDoneCount);
       renderCoffeeBarChecklist(activeProject);
+      renderProductCalendar();
+    }
+
+    function renderLaunchScheduleRows(campaign, dates = null) {
+      const host = document.querySelector("#launchScheduleRows");
+      if (!host || !campaign) return;
+      const milestones = calculateLaunchMilestones(campaign);
+      const values = dates || Object.fromEntries(milestones.map(item => [item.key, item.plannedDate]));
+      host.innerHTML = milestones.map(milestone => {
+        const plannedDate = values[milestone.key] || milestone.plannedDate || "";
+        const offset = plannedDate && campaign.launchDate ? dayDiff(plannedDate, campaign.launchDate) : milestone.offsetDays;
+        const locked = milestone.key === "launch";
+        return `
+          <div class="launch-schedule-row" data-launch-schedule-row="${escapeAttr(milestone.key)}">
+            <b>${escapeHtml(milestone.label)}</b>
+            <label class="field"><span>计划日期</span><input type="date" data-launch-schedule-date="${escapeAttr(milestone.key)}" value="${escapeAttr(locked ? campaign.launchDate : plannedDate)}" ${locked ? "disabled" : ""}></label>
+            <label class="field"><span>距上市</span><input type="number" data-launch-schedule-offset="${escapeAttr(milestone.key)}" value="${escapeAttr(String(locked ? 0 : offset))}" ${locked ? "disabled" : ""}></label>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function openLaunchScheduleModal(campaignId = "", milestoneKey = "") {
+      const campaign = launchCampaignById(campaignId);
+      if (!campaign) return;
+      editingLaunchScheduleCampaignId = campaign.id;
+      document.querySelector("#launchScheduleCampaignId").value = campaign.id;
+      document.querySelector("#launchScheduleCampaignName").textContent = campaign.name || "未命名档期";
+      document.querySelector("#launchScheduleLaunchDate").textContent = campaign.launchDate || "未定";
+      document.querySelector("#launchScheduleModalTitle").textContent = "编辑档期节点";
+      renderLaunchScheduleRows(campaign);
+      openModal("launchScheduleModal");
+      if (milestoneKey) document.querySelector(`[data-launch-schedule-date="${milestoneKey}"]`)?.focus();
+    }
+
+    function shiftLaunchScheduleInputs(days = 0) {
+      const campaign = launchCampaignById(editingLaunchScheduleCampaignId);
+      if (!campaign || !Number.isFinite(Number(days))) return;
+      document.querySelectorAll("[data-launch-schedule-date]").forEach(input => {
+        if (input.disabled || !input.value) return;
+        input.value = addDays(input.value, Number(days));
+        const key = input.dataset.launchScheduleDate;
+        const offsetInput = document.querySelector(`[data-launch-schedule-offset="${key}"]`);
+        if (offsetInput) offsetInput.value = String(dayDiff(input.value, campaign.launchDate));
+      });
+    }
+
+    function resetLaunchScheduleInputs() {
+      const campaign = launchCampaignById(editingLaunchScheduleCampaignId);
+      if (!campaign) return;
+      const defaults = launchPlannedDatesForLaunchDate(campaign.launchDate);
+      renderLaunchScheduleRows(campaign, defaults);
+    }
+
+    function syncLaunchScheduleRow(changedInput) {
+      const campaign = launchCampaignById(editingLaunchScheduleCampaignId);
+      if (!campaign || !changedInput) return;
+      const key = changedInput.dataset.launchScheduleDate || changedInput.dataset.launchScheduleOffset;
+      if (!key || key === "launch") return;
+      const dateInput = document.querySelector(`[data-launch-schedule-date="${key}"]`);
+      const offsetInput = document.querySelector(`[data-launch-schedule-offset="${key}"]`);
+      if (!dateInput || !offsetInput) return;
+      if (changedInput.matches("[data-launch-schedule-date]")) {
+        offsetInput.value = String(dayDiff(dateInput.value, campaign.launchDate));
+      } else {
+        const offset = Number(offsetInput.value);
+        if (Number.isFinite(offset)) dateInput.value = addDays(campaign.launchDate, offset);
+      }
+    }
+
+    function saveLaunchSchedule(event) {
+      event.preventDefault();
+      const campaign = launchCampaignById(editingLaunchScheduleCampaignId || document.querySelector("#launchScheduleCampaignId").value);
+      if (!campaign) return;
+      const plannedDates = { launch: campaign.launchDate };
+      const milestoneOffsets = { launch: 0 };
+      launchMilestoneTemplates.forEach(template => {
+        if (template.key === "launch") return;
+        const date = document.querySelector(`[data-launch-schedule-date="${template.key}"]`)?.value || "";
+        const offset = Number(document.querySelector(`[data-launch-schedule-offset="${template.key}"]`)?.value);
+        plannedDates[template.key] = date;
+        milestoneOffsets[template.key] = Number.isFinite(offset) ? offset : dayDiff(date, campaign.launchDate);
+      });
+      (campaign.products || []).forEach(project => {
+        project.plannedDates = { ...plannedDates };
+        project.milestoneOffsets = { ...milestoneOffsets };
+      });
+      persist();
+      closeModal("launchScheduleModal");
+      editingLaunchScheduleCampaignId = "";
+      renderLaunchProjects();
       renderProductCalendar();
     }
 
@@ -13067,6 +13550,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector(`#${id}`)?.addEventListener("change", renderBakeRecords);
     });
     document.querySelector("#launchProjectForm")?.addEventListener("submit", saveLaunchProject);
+    document.querySelector("#launchScheduleForm")?.addEventListener("submit", saveLaunchSchedule);
+    document.querySelector("#launchScheduleRows")?.addEventListener("change", event => syncLaunchScheduleRow(event.target));
+    document.querySelector("#productCalendarMonthForm")?.addEventListener("submit", saveProductCalendarMonth);
     document.querySelector("#clearLaunchFormBtn")?.addEventListener("click", () => { clearLaunchForm(); renderCoffeeBarChecklist(); });
     document.querySelector("#openLaunchProjectModalBtn")?.addEventListener("click", () => openLaunchProjectModal());
     document.querySelector("#launchProductForm")?.addEventListener("submit", saveLaunchProduct);
@@ -13221,6 +13707,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         renderProductCalendar();
         return;
       }
+      const editProductCalendarMonth = event.target.closest("[data-edit-product-calendar-month]");
+      if (editProductCalendarMonth) {
+        openProductCalendarMonthModal(editProductCalendarMonth.dataset.editProductCalendarMonth);
+        return;
+      }
       const productCalendarClear = event.target.closest("[data-product-calendar-clear]");
       if (productCalendarClear) {
         productCalendarStatusFilter = "";
@@ -13283,6 +13774,32 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const editLaunch = event.target.closest("[data-edit-launch]");
       if (editLaunch) {
         openLaunchProjectModal(editLaunch.dataset.editLaunch);
+        return;
+      }
+      const editLaunchSchedule = event.target.closest("[data-edit-launch-schedule]");
+      if (editLaunchSchedule) {
+        openLaunchScheduleModal(editLaunchSchedule.dataset.editLaunchSchedule);
+        return;
+      }
+      const editLaunchMilestone = event.target.closest("[data-edit-launch-milestone]");
+      if (editLaunchMilestone) {
+        openLaunchScheduleModal(editLaunchMilestone.dataset.editLaunchMilestone, editLaunchMilestone.dataset.milestoneKey);
+        return;
+      }
+      const shiftLaunchSchedule = event.target.closest("[data-shift-launch-schedule]");
+      if (shiftLaunchSchedule) {
+        shiftLaunchScheduleInputs(Number(shiftLaunchSchedule.dataset.shiftLaunchSchedule));
+        return;
+      }
+      const shiftLaunchScheduleCustom = event.target.closest("[data-shift-launch-schedule-custom]");
+      if (shiftLaunchScheduleCustom) {
+        const days = Math.max(1, Number(document.querySelector("#launchScheduleShiftDays")?.value) || 1);
+        shiftLaunchScheduleInputs(shiftLaunchScheduleCustom.dataset.shiftLaunchScheduleCustom === "advance" ? -days : days);
+        return;
+      }
+      const resetLaunchSchedule = event.target.closest("[data-reset-launch-schedule]");
+      if (resetLaunchSchedule) {
+        resetLaunchScheduleInputs();
         return;
       }
       const editLaunchProduct = event.target.closest("[data-edit-launch-product]");
