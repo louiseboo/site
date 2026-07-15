@@ -116,6 +116,24 @@ test("product management owns core products while LTO stays linked to schedule",
   assert.ok(await manager.locator('[data-menu-product-type="core"] [data-delete-menu-product]').count() > 0);
 });
 
+test("menu offer fields use controlled choices while add-on remains editable", async () => {
+  await page.locator("[data-open-menu-product]").click();
+  assert.deepEqual(
+    await page.locator("#menuProductBreakfastOffer option").evaluateAll(options => options.map(option => option.value)),
+    ["", "+1元", "+4元"]
+  );
+  assert.deepEqual(
+    await page.locator("#menuProductMealOffer option").evaluateAll(options => options.map(option => option.value)),
+    ["", "+1元", "+4元", "+9元"]
+  );
+  assert.equal(await page.locator("#menuProductAddOnOffer").evaluate(element => element.tagName), "INPUT");
+  assert.equal(
+    await page.evaluate(() => window.normalizeOfferChoice("+1 元", ["+1元", "+4元"])),
+    "+1元"
+  );
+  await page.locator('[data-close-modal="menuProductModal"]').click();
+});
+
 test("managed core product can be added, edited, deactivated, and deleted", async () => {
   const productName = "菜单联动测试产品";
   await page.locator("[data-open-menu-product]").click();
@@ -123,7 +141,7 @@ test("managed core product can be added, edited, deactivated, and deleted", asyn
   await page.locator("#menuProductGroup").selectOption("Bakery");
   await page.locator("#menuProductType").selectOption("core");
   await page.locator("#menuProductPrice").fill("21");
-  await page.locator("#menuProductBreakfastOffer").fill("+1元");
+  await page.locator("#menuProductBreakfastOffer").selectOption("+1元");
   await page.locator("#menuProductForm button[type=submit]").click();
 
   let row = page.locator(".calendar-product-manager-table tbody tr", { hasText: productName });

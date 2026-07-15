@@ -200,6 +200,15 @@ test("food management is centralized in the product center", async () => {
   await multiProductCenter.locator("tbody [data-edit-launch-product]").first().click();
   assert.equal(await page.locator("#launchProductModal").getAttribute("class"), "modal open");
   assert.equal(await page.locator("#launchProductName").inputValue(), firstProductName);
+  assert.deepEqual(
+    await page.locator("#launchProductBreakfastOffer option").evaluateAll(options => options.map(option => option.value)),
+    ["", "+1元", "+4元"]
+  );
+  assert.deepEqual(
+    await page.locator("#launchProductMealOffer option").evaluateAll(options => options.map(option => option.value)),
+    ["", "+1元", "+4元", "+9元"]
+  );
+  assert.equal(await page.locator("#launchProductAddOnOffer").evaluate(element => element.tagName), "INPUT");
   await page.locator('[data-close-modal="launchProductModal"]').click();
   await productButtons.first().click();
 

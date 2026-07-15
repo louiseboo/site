@@ -4749,8 +4749,8 @@
           <div class="form four">
             <div class="field"><label>菜单属性</label><select id="launchProductMenuType"><option value="lto">LTO</option><option value="core">Core</option><option value="seasonal">Seasonal Core</option></select></div>
             <div class="field"><label>售价</label><input id="launchProductPrice" inputmode="decimal" placeholder="如：22"></div>
-            <div class="field"><label>早餐随心搭</label><input id="launchProductBreakfastOffer" placeholder="如：+4元"></div>
-            <div class="field"><label>正餐随心搭</label><input id="launchProductMealOffer" placeholder="如：+9元"></div>
+            <div class="field"><label>早餐随心搭</label><select id="launchProductBreakfastOffer"><option value="">未设置</option><option value="+1元">+1 元</option><option value="+4元">+4 元</option></select></div>
+            <div class="field"><label>正餐随心搭</label><select id="launchProductMealOffer"><option value="">未设置</option><option value="+1元">+1 元</option><option value="+4元">+4 元</option><option value="+9元">+9 元</option></select></div>
           </div>
           <div class="field"><label>加价购</label><input id="launchProductAddOnOffer" placeholder="如：+6.9元"></div>
           <div class="field"><label>备注</label><textarea id="launchProductNote" placeholder="供应商、当前风险、需要补充的资料"></textarea></div>
@@ -4772,8 +4772,8 @@
           <div class="form four">
             <div class="field"><label>菜单属性</label><select id="menuProductType"><option value="core">Core</option><option value="seasonal">Seasonal Core</option></select></div>
             <div class="field"><label>售价</label><input id="menuProductPrice" inputmode="decimal"></div>
-            <div class="field"><label>早餐随心搭</label><input id="menuProductBreakfastOffer" placeholder="如：+1元"></div>
-            <div class="field"><label>正餐随心搭</label><input id="menuProductMealOffer" placeholder="如：+9元"></div>
+            <div class="field"><label>早餐随心搭</label><select id="menuProductBreakfastOffer"><option value="">未设置</option><option value="+1元">+1 元</option><option value="+4元">+4 元</option></select></div>
+            <div class="field"><label>正餐随心搭</label><select id="menuProductMealOffer"><option value="">未设置</option><option value="+1元">+1 元</option><option value="+4元">+4 元</option><option value="+9元">+9 元</option></select></div>
           </div>
           <div class="form two">
             <div class="field"><label>加价购</label><input id="menuProductAddOnOffer" placeholder="如：+6.9元"></div>
@@ -8806,6 +8806,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       `;
     }
 
+    function normalizeOfferChoice(value = "", allowed = []) {
+      const compact = String(value || "").replace(/\s+/g, "");
+      return allowed.includes(compact) ? compact : "";
+    }
+
     function clearMenuProductForm() {
       editingMenuProductId = null;
       document.querySelector("#menuProductForm")?.reset();
@@ -8826,8 +8831,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         document.querySelector("#menuProductGroup").value = product.group;
         document.querySelector("#menuProductType").value = product.menuType;
         document.querySelector("#menuProductPrice").value = product.price || "";
-        document.querySelector("#menuProductBreakfastOffer").value = product.breakfastOffer || "";
-        document.querySelector("#menuProductMealOffer").value = product.mealOffer || "";
+        document.querySelector("#menuProductBreakfastOffer").value = normalizeOfferChoice(product.breakfastOffer, ["+1元", "+4元"]);
+        document.querySelector("#menuProductMealOffer").value = normalizeOfferChoice(product.mealOffer, ["+1元", "+4元", "+9元"]);
         document.querySelector("#menuProductAddOnOffer").value = product.addOnOffer || "";
         document.querySelector("#menuProductActive").value = product.active === false ? "0" : "1";
         document.querySelector("#menuProductModalTitle").textContent = "编辑核心产品";
@@ -8978,8 +8983,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         document.querySelector("#launchProductCategory").value = product.category || product.categories?.[0] || "烘焙";
         document.querySelector("#launchProductMenuType").value = product.menuType || "lto";
         document.querySelector("#launchProductPrice").value = product.price || "";
-        document.querySelector("#launchProductBreakfastOffer").value = product.breakfastOffer || "";
-        document.querySelector("#launchProductMealOffer").value = product.mealOffer || "";
+        document.querySelector("#launchProductBreakfastOffer").value = normalizeOfferChoice(product.breakfastOffer, ["+1元", "+4元"]);
+        document.querySelector("#launchProductMealOffer").value = normalizeOfferChoice(product.mealOffer, ["+1元", "+4元", "+9元"]);
         document.querySelector("#launchProductAddOnOffer").value = product.addOnOffer || "";
         document.querySelector("#launchProductNote").value = product.note || "";
         const title = document.querySelector("#launchProductModalTitle");
