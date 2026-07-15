@@ -7784,7 +7784,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           </div>
           <div class="launch-milestone-strip" aria-label="${escapeAttr(campaign.name || "档期")}节点">
             ${milestones.map(milestone => `
-              <button class="launch-milestone-card ${escapeAttr(launchStatusClass(milestone.status))}" ${products.length && launchTrackedMilestoneKeys.includes(milestone.key) ? `data-open-launch-actuals="${escapeAttr(campaign.id)}"` : `data-edit-launch-schedule="${escapeAttr(campaign.id)}"`} data-milestone-key="${escapeAttr(milestone.key)}" type="button">
+              <button class="launch-milestone-card ${escapeAttr(launchStatusClass(milestone.status))}" data-edit-launch-schedule="${escapeAttr(campaign.id)}" data-milestone-key="${escapeAttr(milestone.key)}" type="button" aria-label="编辑${escapeAttr(milestone.shortLabel)}节点">
                 <strong>${escapeHtml(milestone.shortLabel)}<em>${escapeHtml(launchMilestoneOffsetLabel(milestone.offsetDays))}</em></strong>
                 <span>计划 ${escapeHtml(milestone.plannedDate || "未定")}</span>
                 <small>${milestone.displayActualDate ? `实际 ${escapeHtml(milestone.displayActualDate)}` : escapeHtml(milestone.status)}</small>

@@ -128,6 +128,21 @@ test("timeline shows holiday markers and a seven-node campaign dashboard", async
   assert.equal(await strip.evaluate(element => getComputedStyle(element).overflowX), "auto");
 });
 
+test("all campaign milestone cards open the same schedule editor", async () => {
+  await openLaunchPage();
+  await page.locator("[data-launch-expand-all]").click();
+  const strip = page.locator(".launch-milestone-strip").first();
+  await strip.waitFor();
+
+  assert.equal(await strip.locator("[data-edit-launch-schedule]").count(), 7);
+  assert.equal(await strip.locator("[data-open-launch-actuals]").count(), 0);
+
+  await strip.locator('[data-milestone-key="consumer"]').click();
+  await page.locator("#launchScheduleModal.open").waitFor();
+  assert.equal(await page.locator('[data-launch-schedule-date="consumer"]').evaluate(element => element === document.activeElement), true);
+  await page.locator('[data-close-modal="launchScheduleModal"]').click();
+});
+
 test("node filters include campaigns that also have a more urgent node", async () => {
   const result = await page.evaluate(() => {
     const today = formatDateInput(new Date());
