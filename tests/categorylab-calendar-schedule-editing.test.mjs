@@ -106,7 +106,7 @@ test("month detail links launch dates and counts, and month elements persist", a
   await page.locator("#productCalendarMonthForm button[type=submit]").click();
 });
 
-test("timeline shows holiday markers and a four-node dashboard", async () => {
+test("timeline shows holiday markers and a seven-node campaign dashboard", async () => {
   await openLaunchPage();
   const markers = page.locator(".timeline-holiday-marker");
   assert.ok(await markers.count() > 0);
@@ -114,25 +114,33 @@ test("timeline shows holiday markers and a four-node dashboard", async () => {
   assert.match(firstMarkerTitle || "", /重点节日.*\d{4}-\d{2}-\d{2}/);
 
   const firstNodeTooltip = await page.locator(".timeline-dot.planned").first().getAttribute("data-tooltip");
-  assert.match(firstNodeTooltip || "", /众测|NPC|中试|大生产/);
+  assert.match(firstNodeTooltip || "", /原型开发|众测|NPC|中试|大生产|到仓|上市/);
   assert.match(firstNodeTooltip || "", /计划日期/);
 
   await page.locator("[data-launch-expand-all]").click();
   const strip = page.locator(".launch-milestone-strip").first();
   await strip.waitFor();
-  assert.equal(await strip.locator("[data-open-launch-actuals][data-milestone-key]").count(), 4);
-  assert.doesNotMatch(await strip.innerText(), /原型开发|到仓|上市/);
-  assert.match(await strip.innerText(), /众测/);
-  assert.match(await strip.innerText(), /T-118/);
+  assert.equal(await strip.locator("[data-milestone-key]").count(), 7);
+  assert.match(await strip.innerText(), /原型开发/);
+  assert.match(await strip.innerText(), /到仓/);
+  assert.match(await strip.innerText(), /上市/);
+  assert.match(await strip.innerText(), /T-187/);
   assert.equal(await strip.evaluate(element => getComputedStyle(element).overflowX), "auto");
 });
 
-test("campaign schedule editor can shift the four key milestones together", async () => {
+test("campaign schedule editor keeps all seven planned nodes and campaign actual dates", async () => {
   await openLaunchPage();
   await page.locator("[data-launch-expand-all]").click();
-  const editButton = page.locator("[data-edit-launch-schedule]").first();
+  const editButton = page.locator(".btn[data-edit-launch-schedule]").first();
   const campaignId = await editButton.getAttribute("data-edit-launch-schedule");
   await editButton.click();
+  assert.equal(await page.locator("[data-launch-schedule-row]").count(), 7);
+  assert.equal(await page.locator("[data-launch-campaign-actual]").count(), 2);
+  assert.equal(await page.locator("[data-launch-actual-summary]").count(), 4);
+  const prototypeActualInput = page.locator('[data-launch-campaign-actual="prototype"]');
+  const originalPrototypeActual = await prototypeActualInput.inputValue();
+  const replacementPrototypeActual = originalPrototypeActual === "2026-01-02" ? "2026-01-03" : "2026-01-02";
+  await prototypeActualInput.fill(replacementPrototypeActual);
   const consumerInput = page.locator('[data-launch-schedule-date="consumer"]');
   const original = await consumerInput.inputValue();
   const expected = await page.evaluate(value => window.addDays(value, -30), original);
@@ -142,9 +150,11 @@ test("campaign schedule editor can shift the four key milestones together", asyn
 
   await openLaunchPage();
   await page.locator("[data-launch-expand-all]").click();
-  await page.locator(`[data-edit-launch-schedule="${campaignId}"]`).click();
+  await page.locator(`.btn[data-edit-launch-schedule="${campaignId}"]`).click();
   assert.equal(await page.locator('[data-launch-schedule-date="consumer"]').inputValue(), expected);
+  assert.equal(await page.locator('[data-launch-campaign-actual="prototype"]').inputValue(), replacementPrototypeActual);
 
   await page.locator("[data-reset-launch-schedule]").click();
+  await page.locator('[data-launch-campaign-actual="prototype"]').fill(originalPrototypeActual);
   await page.locator("#launchScheduleForm button[type=submit]").click();
 });

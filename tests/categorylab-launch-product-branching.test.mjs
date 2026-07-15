@@ -116,7 +116,7 @@ test("timeline campaign summaries do not list food names", async () => {
   assert.ok(summaries.every(summary => !summary.includes("蓝莓轻芝士慕斯蛋糕")));
 });
 
-test("campaign completion tracks only the four product milestones", async () => {
+test("campaign keeps seven milestones and aggregates product nodes by the latest actual date", async () => {
   const result = await page.evaluate(() => {
     const campaign = window.buildLaunchCampaigns([
       {
@@ -124,14 +124,16 @@ test("campaign completion tracks only the four product milestones", async () => 
         name: "食品 A",
         launchCampaignId: "tracked-campaign",
         launchCampaign: "四节点测试档期",
-        launchDate: "2026-10-01",
+        launchDate: "2026-07-01",
         plannedDates: {},
         checkedFlow: {},
         actualDates: {
+          prototype: "2026-01-05",
           consumer: "2026-06-01",
           npc: "2026-06-10",
           pilot: "2026-07-01",
-          mass: "2026-08-01"
+          mass: "2026-06-20",
+          warehouse: "2026-06-25"
         }
       },
       {
@@ -139,14 +141,16 @@ test("campaign completion tracks only the four product milestones", async () => 
         name: "食品 B",
         launchCampaignId: "tracked-campaign",
         launchCampaign: "四节点测试档期",
-        launchDate: "2026-10-01",
+        launchDate: "2026-07-01",
         plannedDates: {},
         checkedFlow: {},
         actualDates: {
+          prototype: "2026-01-05",
           consumer: "2026-06-03",
           npc: "2026-06-12",
           pilot: "2026-07-03",
-          mass: "2026-08-03"
+          mass: "2026-06-23",
+          warehouse: "2026-06-25"
         }
       }
     ])[0];
@@ -160,24 +164,30 @@ test("campaign completion tracks only the four product milestones", async () => 
     };
   });
 
-  assert.deepEqual(result.keys, ["consumer", "npc", "pilot", "mass"]);
-  assert.equal(result.done, 4);
-  assert.equal(result.total, 4);
+  assert.deepEqual(result.keys, ["prototype", "consumer", "npc", "pilot", "mass", "warehouse", "launch"]);
+  assert.equal(result.done, 7);
+  assert.equal(result.total, 7);
   assert.equal(result.status, "已完结");
   assert.equal(result.aggregateDates.consumer, "2026-06-03");
-  assert.equal(result.aggregateDates.mass, "2026-08-03");
+  assert.equal(result.aggregateDates.mass, "2026-06-23");
 });
 
-test("launch dashboard shows four milestones and exposes actual date editing", async () => {
+test("launch dashboard keeps seven milestones with separate campaign and product actual editing", async () => {
   await page.locator("[data-launch-expand-all]").click();
   const dashboard = page.locator("[data-launch-campaign-products]:visible .launch-milestone-dashboard").first();
-  assert.equal(await dashboard.locator(".launch-milestone-card").count(), 4);
+  assert.equal(await dashboard.locator(".launch-milestone-card").count(), 7);
   assert.deepEqual(
     (await dashboard.locator(".launch-milestone-card strong").allTextContents()).map(value => value.replace(/T-?\d+|上市日/g, "").trim()),
-    ["众测", "NPC", "中试", "大生产"]
+    ["原型开发", "众测", "NPC", "中试", "大生产", "到仓", "上市"]
   );
   await dashboard.locator(".btn[data-open-launch-actuals]").click();
   assert.equal(await page.locator(".launch-product-node-editor [data-launch-actual]:visible").count(), 1);
+
+  await dashboard.locator('[data-milestone-key="prototype"]').click();
+  assert.equal(await page.locator('#launchScheduleModal.open [data-launch-campaign-actual="prototype"]').count(), 1);
+  assert.equal(await page.locator('#launchScheduleModal [data-launch-campaign-actual="warehouse"]').count(), 1);
+  assert.equal(await page.locator('#launchScheduleModal [data-launch-actual-summary]').count(), 4);
+  await page.locator('[data-close-modal="launchScheduleModal"]').click();
 });
 
 test("July source campaign is completed and an empty campaign can be completed manually", async () => {
@@ -189,8 +199,8 @@ test("July source campaign is completed and an empty campaign can be completed m
     };
   });
   assert.equal(july.status, "已完结");
-  assert.equal(july.completion.done, 4);
-  assert.equal(july.completion.total, 4);
+  assert.equal(july.completion.done, 7);
+  assert.equal(july.completion.total, 7);
 
   const emptyCampaign = await page.evaluate(() => {
     const campaign = window.buildLaunchCampaigns(state.launchProjects || []).find(item =>

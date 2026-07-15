@@ -2138,7 +2138,7 @@
     .launch-schedule-grid { display: grid; gap: 7px; }
     .launch-schedule-row {
       display: grid;
-      grid-template-columns: minmax(130px, 1.2fr) minmax(150px, 1fr) 100px;
+      grid-template-columns: minmax(130px, 1.1fr) minmax(145px, 1fr) 90px minmax(165px, 1fr);
       align-items: end;
       gap: 8px;
       padding: 8px 10px;
@@ -2147,6 +2147,24 @@
       background: #fffdf8;
     }
     .launch-schedule-row > b { align-self: center; font-size: 12px; }
+    .launch-schedule-actual-summary {
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 38px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #faf5eb;
+    }
+    .launch-schedule-actual-summary span,
+    .launch-schedule-actual-summary small {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+    .launch-schedule-actual-summary b { margin: 2px 0; font-size: 12px; }
     .launch-product-overview-wrap {
       overflow-x: auto;
       border: 1px solid var(--line);
@@ -6863,7 +6881,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           if (productDates.length && productDates.every(Boolean)) {
             actualDates[template.key] = dates.slice().sort((a, b) => timeValue(a) - timeValue(b)).at(-1) || "";
           }
-          milestoneCompletion[template.key] = productMilestones.length > 0 && productMilestones.every(item => Boolean(item?.done));
+          milestoneCompletion[template.key] = productMilestones.length > 0 && (
+            launchTrackedMilestoneKeys.includes(template.key)
+              ? productDates.every(Boolean)
+              : productMilestones.every(item => Boolean(item?.done))
+          );
         });
         const checkedFlow = Object.fromEntries(coffeeBarFlowItems.map(item => [
           item,
@@ -7377,7 +7399,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function launchCompletion(project) {
-      const milestones = launchMainProductMilestones(project);
+      const milestones = calculateLaunchMilestones(project);
       const done = milestones.filter(item => item.done).length;
       const flowDone = Object.values(project.checkedFlow || {}).filter(Boolean).length;
       return { milestones, done, total: milestones.length, flowDone, flowTotal: coffeeBarFlowItems.length };
@@ -7458,7 +7480,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return pending[0] || metrics.milestones[metrics.milestones.length - 1] || null;
     }
 
-    function launchSelectedMilestone(project, milestones = launchMainProductMilestones(project)) {
+    function launchSelectedMilestone(project, milestones = calculateLaunchMilestones(project)) {
       if (launchItemIsActive(project) && activeLaunchMilestoneKey) {
         return milestones.find(item => item.key === activeLaunchMilestoneKey) || launchCurrentMilestone(project);
       }
@@ -7466,7 +7488,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function launchProjectSearchText(project) {
-      const milestones = launchMainProductMilestones(project).map(item => [item.label, item.status, item.plannedDate, item.actualDate].join(" "));
+      const milestones = calculateLaunchMilestones(project).map(item => [item.label, item.status, item.plannedDate, item.actualDate].join(" "));
       const productsText = visibleLaunchProducts(project.products || []).map(item => [item.name, item.category, item.owner, item.note].join(" ")).join(" ");
       return [project.name, project.category, project.owner, project.note, productsText, launchStatusText(project), ...milestones].join(" ").toLowerCase();
     }
@@ -7493,7 +7515,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function renderLaunchFilterCounts(projects = state.launchProjects || []) {
       const host = document.querySelector("#launchDashboard");
       if (!host) return;
-      const allMilestones = projects.flatMap(project => launchMainProductMilestones(project));
+      const allMilestones = projects.flatMap(project => calculateLaunchMilestones(project));
       const doneCount = projects.filter(project => launchProjectStatus(project) === "已完结").length;
       const ongoingCount = projects.length - doneCount;
       const overdueNodes = allMilestones.filter(item => item.status === "逾期").length;
@@ -7564,14 +7586,12 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const today = parseDateInput(formatDateInput(new Date()));
       const dates = [today];
       (projects || []).forEach(project => {
-        launchMainProductMilestones(project).forEach(item => {
+        calculateLaunchMilestones(project).forEach(item => {
           const planned = parseDateInput(item.plannedDate);
           const actual = parseDateInput(item.actualDate);
           if (planned) dates.push(planned);
           if (actual) dates.push(actual);
         });
-        const launch = parseDateInput(project.launchDate);
-        if (launch) dates.push(launch);
       });
       const minDate = new Date(Math.min(...dates.map(date => date.getTime())));
       const maxDate = new Date(Math.max(...dates.map(date => date.getTime())));
@@ -7743,20 +7763,20 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function launchMilestoneDashboardHtml(campaign) {
-      const milestones = launchMainProductMilestones(campaign);
+      const milestones = calculateLaunchMilestones(campaign);
       const products = visibleLaunchProducts(campaign.products || []);
       return `
         <section class="launch-milestone-dashboard">
           <div class="launch-milestone-dashboard-head">
-            <div><b>四个关键节点</b><span>档期汇总看完成情况，实际日期按食品分别填写。</span></div>
+            <div><b>档期节点</b><span>保留完整 7 节点；产品节点取所有食品最后完成日期。</span></div>
             <div class="launch-milestone-dashboard-actions">
-              ${products.length ? `<button class="btn compact primary" data-open-launch-actuals="${escapeAttr(campaign.id)}" type="button">填写实际日期</button>` : ""}
-              <button class="btn compact" data-edit-launch-schedule="${escapeAttr(campaign.id)}" type="button">编辑计划日期</button>
+              ${products.length ? `<button class="btn compact primary" data-open-launch-actuals="${escapeAttr(campaign.id)}" type="button">填写产品实际日期</button>` : ""}
+              <button class="btn compact" data-edit-launch-schedule="${escapeAttr(campaign.id)}" type="button">编辑档期节点</button>
             </div>
           </div>
           <div class="launch-milestone-strip" aria-label="${escapeAttr(campaign.name || "档期")}节点">
             ${milestones.map(milestone => `
-              <button class="launch-milestone-card ${escapeAttr(launchStatusClass(milestone.status))}" ${products.length ? `data-open-launch-actuals="${escapeAttr(campaign.id)}"` : `data-edit-launch-schedule="${escapeAttr(campaign.id)}"`} data-milestone-key="${escapeAttr(milestone.key)}" type="button">
+              <button class="launch-milestone-card ${escapeAttr(launchStatusClass(milestone.status))}" ${products.length && launchTrackedMilestoneKeys.includes(milestone.key) ? `data-open-launch-actuals="${escapeAttr(campaign.id)}"` : `data-edit-launch-schedule="${escapeAttr(campaign.id)}"`} data-milestone-key="${escapeAttr(milestone.key)}" type="button">
                 <strong>${escapeHtml(milestone.shortLabel)}<em>${escapeHtml(launchMilestoneOffsetLabel(milestone.offsetDays))}</em></strong>
                 <span>计划 ${escapeHtml(milestone.plannedDate || "未定")}</span>
                 <small>${milestone.displayActualDate ? `实际 ${escapeHtml(milestone.displayActualDate)}` : escapeHtml(milestone.status)}</small>
@@ -7831,7 +7851,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             <span class="timeline-today" style="--today:${todayX}%"></span>
           </div>
           ${projects.map(project => {
-            const milestones = launchMainProductMilestones(project);
+            const milestones = calculateLaunchMilestones(project);
             const current = launchSelectedMilestone(project, milestones);
             const completion = launchCompletion(project);
             const tone = launchGroupTone(launchProjectGroupKey(project));
@@ -7979,7 +7999,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
             ${group.key === "done" ? `<button class="launch-group-toggle" data-toggle-launch-done type="button">${launchDoneCollapsed ? "展开" : "合并"}</button>` : ""}
           </div>
           ${group.key === "done" && launchDoneCollapsed ? "" : group.items.map(project => {
-            const milestones = launchMainProductMilestones(project);
+            const milestones = calculateLaunchMilestones(project);
             const current = launchSelectedMilestone(project, milestones) || milestones[0];
             const completion = launchCompletion(project);
             const tone = launchGroupTone(group.key);
@@ -9204,17 +9224,25 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     function renderLaunchScheduleRows(campaign, dates = null) {
       const host = document.querySelector("#launchScheduleRows");
       if (!host || !campaign) return;
-      const milestones = launchMainProductMilestones(campaign);
+      const milestones = calculateLaunchMilestones(campaign);
       const values = dates || Object.fromEntries(milestones.map(item => [item.key, item.plannedDate]));
       host.innerHTML = milestones.map(milestone => {
         const plannedDate = values[milestone.key] || milestone.plannedDate || "";
         const offset = plannedDate && campaign.launchDate ? dayDiff(plannedDate, campaign.launchDate) : milestone.offsetDays;
         const locked = milestone.key === "launch";
+        const productLinked = launchTrackedMilestoneKeys.includes(milestone.key);
+        const campaignActualEditable = ["prototype", "warehouse"].includes(milestone.key);
+        const actualControl = campaignActualEditable
+          ? `<label class="field"><span>档期实际日期</span><input type="date" data-launch-campaign-actual="${escapeAttr(milestone.key)}" value="${escapeAttr(milestone.actualDate || "")}"></label>`
+          : productLinked
+            ? `<div class="launch-schedule-actual-summary" data-launch-actual-summary="${escapeAttr(milestone.key)}"><span>档期实际日期</span><b>${escapeHtml(milestone.actualDate || "待食品完成")}</b><small>取所有食品最晚日期</small></div>`
+            : `<div class="launch-schedule-actual-summary"><span>上市日期</span><b>${escapeHtml(campaign.launchDate || "未定")}</b><small>固定，不填写实际日期</small></div>`;
         return `
           <div class="launch-schedule-row" data-launch-schedule-row="${escapeAttr(milestone.key)}">
             <b>${escapeHtml(milestone.label)}</b>
             <label class="field"><span>计划日期</span><input type="date" data-launch-schedule-date="${escapeAttr(milestone.key)}" value="${escapeAttr(locked ? campaign.launchDate : plannedDate)}" ${locked ? "disabled" : ""}></label>
             <label class="field"><span>距上市</span><input type="number" data-launch-schedule-offset="${escapeAttr(milestone.key)}" value="${escapeAttr(String(locked ? 0 : offset))}" ${locked ? "disabled" : ""}></label>
+            ${actualControl}
           </div>
         `;
       }).join("");
@@ -9230,7 +9258,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#launchScheduleModalTitle").textContent = "编辑档期节点";
       renderLaunchScheduleRows(campaign);
       openModal("launchScheduleModal");
-      if (milestoneKey) document.querySelector(`[data-launch-schedule-date="${milestoneKey}"]`)?.focus();
+      if (milestoneKey) {
+        const target = document.querySelector(`[data-launch-campaign-actual="${milestoneKey}"]`)
+          || document.querySelector(`[data-launch-schedule-date="${milestoneKey}"]`);
+        target?.focus();
+      }
     }
 
     function shiftLaunchScheduleInputs(days = 0) {
@@ -9274,15 +9306,21 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (!campaign) return;
       const plannedDates = { ...(campaign.plannedDates || {}), launch: campaign.launchDate };
       const milestoneOffsets = { ...(campaign.milestoneOffsets || {}), launch: 0 };
-      launchMainProductMilestones(campaign).forEach(template => {
+      launchMilestoneTemplates.forEach(template => {
+        if (template.key === "launch") return;
         const date = document.querySelector(`[data-launch-schedule-date="${template.key}"]`)?.value || "";
         const offset = Number(document.querySelector(`[data-launch-schedule-offset="${template.key}"]`)?.value);
         plannedDates[template.key] = date;
         milestoneOffsets[template.key] = Number.isFinite(offset) ? offset : dayDiff(date, campaign.launchDate);
       });
+      const campaignActualDates = Object.fromEntries(["prototype", "warehouse"].map(key => [
+        key,
+        document.querySelector(`[data-launch-campaign-actual="${key}"]`)?.value || ""
+      ]));
       (campaign.products || []).forEach(project => {
         project.plannedDates = { ...(project.plannedDates || {}), ...plannedDates };
         project.milestoneOffsets = { ...(project.milestoneOffsets || {}), ...milestoneOffsets };
+        project.actualDates = { ...(project.actualDates || {}), ...campaignActualDates };
       });
       persist();
       closeModal("launchScheduleModal");
