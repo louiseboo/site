@@ -128,6 +128,45 @@ test("timeline shows holiday markers and a seven-node campaign dashboard", async
   assert.equal(await strip.evaluate(element => getComputedStyle(element).overflowX), "auto");
 });
 
+test("node filters include campaigns that also have a more urgent node", async () => {
+  const result = await page.evaluate(() => {
+    const today = formatDateInput(new Date());
+    const project = {
+      id: "mixed-node-status",
+      name: "混合节点状态档期",
+      launchCampaign: "混合节点状态档期",
+      launchCampaignId: "mixed-node-status",
+      launchYear: "FY26",
+      launchDate: addDays(today, 120),
+      plannedDates: {
+        prototype: addDays(today, -2),
+        consumer: addDays(today, 3),
+        npc: addDays(today, 30),
+        pilot: addDays(today, 50),
+        mass: addDays(today, 70),
+        warehouse: addDays(today, 90),
+        launch: addDays(today, 120)
+      },
+      actualDates: {},
+      checkedFlow: {}
+    };
+    const previousFilter = launchStatusFilter;
+    launchStatusFilter = "upcoming";
+    const upcomingMatches = filteredLaunchProjects([project]).length;
+    launchStatusFilter = "overdue";
+    const overdueMatches = filteredLaunchProjects([project]).length;
+    launchStatusFilter = previousFilter;
+    const metrics = launchMetrics(project);
+    return { upcomingMatches, overdueMatches, upcoming: metrics.upcoming, overdue: metrics.overdue, group: launchProjectGroupKey(project) };
+  });
+
+  assert.equal(result.group, "overdue");
+  assert.equal(result.upcoming, 1);
+  assert.equal(result.overdue, 1);
+  assert.equal(result.upcomingMatches, 1);
+  assert.equal(result.overdueMatches, 1);
+});
+
 test("campaign schedule editor keeps all seven planned nodes and campaign actual dates", async () => {
   await openLaunchPage();
   await page.locator("[data-launch-expand-all]").click();

@@ -7493,15 +7493,23 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return [project.name, project.category, project.owner, project.note, productsText, launchStatusText(project), ...milestones].join(" ").toLowerCase();
     }
 
+    function launchProjectMatchesFilter(project, filter = "") {
+      if (!filter) return true;
+      const groupKey = launchProjectGroupKey(project);
+      if (filter === "done") return groupKey === "done";
+      if (filter === "active") return groupKey !== "done";
+      const metrics = launchMetrics(project);
+      if (filter === "overdue") return metrics.overdue > 0;
+      if (filter === "upcoming") return metrics.upcoming > 0;
+      return groupKey === filter;
+    }
+
     function filteredLaunchProjects(projects = state.launchProjects || []) {
       const query = (document.querySelector("#launchSearch")?.value || "").trim().toLowerCase();
       return (projects || [])
         .filter(project => {
-          const groupKey = launchProjectGroupKey(project);
           const passYear = !launchYearFilter || launchYearValue(project) === launchYearFilter;
-          const passFilter = !launchStatusFilter
-            || groupKey === launchStatusFilter
-            || (launchStatusFilter === "active" && groupKey !== "done");
+          const passFilter = launchProjectMatchesFilter(project, launchStatusFilter);
           return passYear && passFilter && (!query || launchProjectSearchText(project).includes(query));
         })
         .sort((a, b) => {
