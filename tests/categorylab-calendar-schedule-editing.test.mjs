@@ -106,7 +106,7 @@ test("month detail links launch dates and counts, and month elements persist", a
   await page.locator("#productCalendarMonthForm button[type=submit]").click();
 });
 
-test("timeline shows holiday markers and a scrollable seven-node dashboard", async () => {
+test("timeline shows holiday markers and a four-node dashboard", async () => {
   await openLaunchPage();
   const markers = page.locator(".timeline-holiday-marker");
   assert.ok(await markers.count() > 0);
@@ -114,19 +114,20 @@ test("timeline shows holiday markers and a scrollable seven-node dashboard", asy
   assert.match(firstMarkerTitle || "", /重点节日.*\d{4}-\d{2}-\d{2}/);
 
   const firstNodeTooltip = await page.locator(".timeline-dot.planned").first().getAttribute("data-tooltip");
-  assert.match(firstNodeTooltip || "", /原型开发|众测|NPC|中试|大生产|到仓|上市/);
+  assert.match(firstNodeTooltip || "", /众测|NPC|中试|大生产/);
   assert.match(firstNodeTooltip || "", /计划日期/);
 
   await page.locator("[data-launch-expand-all]").click();
   const strip = page.locator(".launch-milestone-strip").first();
   await strip.waitFor();
-  assert.equal(await strip.locator("[data-edit-launch-milestone]").count(), 7);
-  assert.match(await strip.innerText(), /原型开发/);
-  assert.match(await strip.innerText(), /T-187/);
+  assert.equal(await strip.locator("[data-open-launch-actuals][data-milestone-key]").count(), 4);
+  assert.doesNotMatch(await strip.innerText(), /原型开发|到仓|上市/);
+  assert.match(await strip.innerText(), /众测/);
+  assert.match(await strip.innerText(), /T-118/);
   assert.equal(await strip.evaluate(element => getComputedStyle(element).overflowX), "auto");
 });
 
-test("campaign schedule editor can shift every pre-launch milestone together", async () => {
+test("campaign schedule editor can shift the four key milestones together", async () => {
   await openLaunchPage();
   await page.locator("[data-launch-expand-all]").click();
   const editButton = page.locator("[data-edit-launch-schedule]").first();

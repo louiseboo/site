@@ -116,6 +116,108 @@ test("timeline campaign summaries do not list food names", async () => {
   assert.ok(summaries.every(summary => !summary.includes("蓝莓轻芝士慕斯蛋糕")));
 });
 
+test("campaign completion tracks only the four product milestones", async () => {
+  const result = await page.evaluate(() => {
+    const campaign = window.buildLaunchCampaigns([
+      {
+        id: "tracked-food-a",
+        name: "食品 A",
+        launchCampaignId: "tracked-campaign",
+        launchCampaign: "四节点测试档期",
+        launchDate: "2026-10-01",
+        plannedDates: {},
+        checkedFlow: {},
+        actualDates: {
+          consumer: "2026-06-01",
+          npc: "2026-06-10",
+          pilot: "2026-07-01",
+          mass: "2026-08-01"
+        }
+      },
+      {
+        id: "tracked-food-b",
+        name: "食品 B",
+        launchCampaignId: "tracked-campaign",
+        launchCampaign: "四节点测试档期",
+        launchDate: "2026-10-01",
+        plannedDates: {},
+        checkedFlow: {},
+        actualDates: {
+          consumer: "2026-06-03",
+          npc: "2026-06-12",
+          pilot: "2026-07-03",
+          mass: "2026-08-03"
+        }
+      }
+    ])[0];
+    const completion = window.launchCompletion(campaign);
+    return {
+      keys: completion.milestones.map(item => item.key),
+      done: completion.done,
+      total: completion.total,
+      status: window.launchProjectStatus(campaign),
+      aggregateDates: campaign.actualDates
+    };
+  });
+
+  assert.deepEqual(result.keys, ["consumer", "npc", "pilot", "mass"]);
+  assert.equal(result.done, 4);
+  assert.equal(result.total, 4);
+  assert.equal(result.status, "已完结");
+  assert.equal(result.aggregateDates.consumer, "2026-06-03");
+  assert.equal(result.aggregateDates.mass, "2026-08-03");
+});
+
+test("launch dashboard shows four milestones and exposes actual date editing", async () => {
+  await page.locator("[data-launch-expand-all]").click();
+  const dashboard = page.locator("[data-launch-campaign-products]:visible .launch-milestone-dashboard").first();
+  assert.equal(await dashboard.locator(".launch-milestone-card").count(), 4);
+  assert.deepEqual(
+    (await dashboard.locator(".launch-milestone-card strong").allTextContents()).map(value => value.replace(/T-?\d+|上市日/g, "").trim()),
+    ["众测", "NPC", "中试", "大生产"]
+  );
+  await dashboard.locator(".btn[data-open-launch-actuals]").click();
+  assert.equal(await page.locator(".launch-product-node-editor [data-launch-actual]:visible").count(), 1);
+});
+
+test("July source campaign is completed and an empty campaign can be completed manually", async () => {
+  const july = await page.evaluate(() => {
+    const campaign = window.buildLaunchCampaigns(state.launchProjects || []).find(item => item.name === "7月：埃塞利姆古吉");
+    return {
+      status: window.launchProjectStatus(campaign),
+      completion: window.launchCompletion(campaign)
+    };
+  });
+  assert.equal(july.status, "已完结");
+  assert.equal(july.completion.done, 4);
+  assert.equal(july.completion.total, 4);
+
+  const emptyCampaign = await page.evaluate(() => {
+    const campaign = window.buildLaunchCampaigns(state.launchProjects || []).find(item =>
+      item.name === "9月：桂花2" && window.visibleLaunchProducts(item.products || []).length === 0
+    );
+    return campaign ? { id: campaign.id, name: campaign.name } : null;
+  });
+  assert.ok(emptyCampaign);
+  await page.evaluate(id => window.openLaunchProjectModal(id), emptyCampaign.id);
+  await page.locator("#launchCompletionStatus").selectOption("done");
+  await page.locator("#launchProjectForm button[type=submit]").click();
+  assert.equal(
+    await page.evaluate(name => {
+      const campaign = window.buildLaunchCampaigns(state.launchProjects || []).find(item => item.name === name);
+      return window.launchProjectStatus(campaign);
+    }, emptyCampaign.name),
+    "已完结"
+  );
+
+  await page.evaluate(name => {
+    const campaign = window.buildLaunchCampaigns(state.launchProjects || []).find(item => item.name === name);
+    (campaign?.products || []).forEach(product => { product.calendarCompleted = false; });
+    persist();
+    renderLaunchProjects();
+  }, emptyCampaign.name);
+});
+
 test("campaign product centers expand independently and persist", async () => {
   assert.equal(await page.locator("[data-launch-expand-all]").count(), 1);
   assert.equal(await page.locator("[data-launch-collapse-all]").count(), 1);
