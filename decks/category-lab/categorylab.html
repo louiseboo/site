@@ -2169,7 +2169,8 @@
       font-size: 11px;
       font-weight: 800;
     }
-    .launch-product-overview th:first-child { width: 28%; }
+    .launch-product-overview th:first-child { width: 25%; }
+    .launch-product-overview th:last-child { width: 104px; }
     .launch-product-overview tbody tr {
       cursor: pointer;
     }
@@ -2194,6 +2195,12 @@
       color: var(--muted);
       font-size: 10px;
       font-weight: 700;
+    }
+    .launch-product-row-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
     }
     .launch-product-node {
       display: grid;
@@ -7759,7 +7766,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           ${launchMilestoneDashboardHtml(campaign)}
           <div class="launch-product-overview-wrap">
             <table class="launch-product-overview">
-              <thead><tr><th>食品</th><th>众测</th><th>NPC</th><th>中试</th><th>大生产</th></tr></thead>
+              <thead><tr><th>食品</th><th>众测</th><th>NPC</th><th>中试</th><th>大生产</th><th>操作</th></tr></thead>
               <tbody>
                 ${products.map(product => `
                   <tr class="${product.id === activeLaunchProjectId ? "active" : ""}">
@@ -7768,8 +7775,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
                     <td>${launchProductNodeHtml(product, "npc")}</td>
                     <td>${launchProductNodeHtml(product, "pilot")}</td>
                     <td>${launchProductNodeHtml(product, "mass")}</td>
+                    <td><div class="launch-product-row-actions"><button class="btn compact" data-edit-launch-product="${escapeAttr(product.id)}" type="button">编辑</button><button class="btn compact danger" data-delete-launch-product="${escapeAttr(product.id)}" type="button">删除</button></div></td>
                   </tr>
-                `).join("") || `<tr><td colspan="5"><div class="empty">这个档期还没有食品。</div></td></tr>`}
+                `).join("") || `<tr><td colspan="6"><div class="empty">这个档期还没有食品。</div></td></tr>`}
               </tbody>
             </table>
           </div>
@@ -8075,7 +8083,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           ? `当前档期：${campaign?.name || "未命名档期"} · 未关联食品`
           : `当前档期：${campaign?.name || "未命名档期"} · 当前食品：${project.name || "未命名食品"}`;
       }
-      const canManageSelectedProduct = !isPlaceholderProduct && Boolean(project.id);
       host.innerHTML = `
         <div class="launch-product-picker launch-flow-product-picker" aria-label="选择食品">
           ${products.map(item => `
@@ -8084,12 +8091,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         </div>
         <div class="launch-flow-toolbar">
           <div><b>${escapeHtml(isPlaceholderProduct ? "全流程任务" : (project.name || "未命名食品"))}</b><span class="muted"> · ${escapeHtml(project.category || "未分类")}</span></div>
-          <div class="launch-flow-actions">
-            ${canManageSelectedProduct ? `
-              <button class="btn compact" data-edit-launch-product="${escapeAttr(project.id)}" type="button">编辑</button>
-              <button class="btn compact" data-delete-launch-product="${escapeAttr(project.id)}" type="button">删除</button>
-            ` : ""}
-          </div>
         </div>
         <div class="checkbox-grid">
           ${coffeeBarFlowItems.map(item => `

@@ -127,7 +127,7 @@ test("campaign product centers expand independently and persist", async () => {
   const tables = page.locator(".launch-product-overview");
   assert.ok(await tables.count() > 0);
   const headerRows = await tables.locator("thead tr").allTextContents();
-  assert.ok(headerRows.every(row => row.replace(/\s+/g, "") === "食品众测NPC中试大生产"));
+  assert.ok(headerRows.every(row => row.replace(/\s+/g, "") === "食品众测NPC中试大生产操作"));
 
   await page.locator("[data-launch-collapse-all]").click();
   assert.equal(await page.locator("[data-launch-campaign-products]:visible").count(), 0);
@@ -180,7 +180,7 @@ test("campaigns without foods keep the complete Coffee Bar workflow visible", as
   assert.equal(await page.locator("#launchIssueNote").inputValue(), "档期任务承接测试");
 });
 
-test("food selection opens one complete Coffee Bar flow without duplicate boards", async () => {
+test("food management is centralized in the product center", async () => {
   assert.equal(await page.locator(".launch-list-panel").count(), 0);
   assert.equal(await page.locator(".launch-flow-panel").count(), 1);
   assert.equal(await page.locator(".launch-inline-flow").count(), 0);
@@ -192,14 +192,22 @@ test("food selection opens one complete Coffee Bar flow without duplicate boards
   const productButtons = multiProductCenter.locator("[data-select-launch-product]");
   const productCount = await productButtons.count();
   assert.ok(productCount > 1);
+  assert.equal(await multiProductCenter.locator("[data-open-launch-product]").count(), 1);
+  assert.equal(await multiProductCenter.locator("tbody [data-edit-launch-product]").count(), productCount);
+  assert.equal(await multiProductCenter.locator("tbody [data-delete-launch-product]").count(), productCount);
+
   const firstProductName = (await productButtons.first().innerText()).split("\n")[0].trim();
+  await multiProductCenter.locator("tbody [data-edit-launch-product]").first().click();
+  assert.equal(await page.locator("#launchProductModal").getAttribute("class"), "modal open");
+  assert.equal(await page.locator("#launchProductName").inputValue(), firstProductName);
+  await page.locator('[data-close-modal="launchProductModal"]').click();
   await productButtons.first().click();
 
   assert.equal(await page.locator("#coffeeBarChecklist").count(), 1);
   assert.ok((await page.locator("#launchActiveProjectLabel").innerText()).includes(firstProductName));
   assert.ok(await page.locator("#coffeeBarChecklist .flow-check").count() > 0);
-  assert.equal(await page.locator("#coffeeBarChecklist [data-edit-launch-product]").count(), 1);
-  assert.equal(await page.locator("#coffeeBarChecklist [data-delete-launch-product]").count(), 1);
+  assert.equal(await page.locator("#coffeeBarChecklist [data-edit-launch-product]").count(), 0);
+  assert.equal(await page.locator("#coffeeBarChecklist [data-delete-launch-product]").count(), 0);
   assert.equal(await page.locator("#coffeeBarChecklist [data-open-launch-product]").count(), 0);
 
   const flowPicker = page.locator("#coffeeBarChecklist .launch-flow-product-picker [data-select-launch-product]");
