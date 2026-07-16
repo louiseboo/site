@@ -382,6 +382,53 @@ function mergeImagePaths(existing = [], added = []) {
   ].filter(Boolean).slice(0, IMAGE_LIMIT);
 }
 
+function imagePathKey(image = {}, index = 0) {
+  return text(image.fileID || image.path || image.publicUrl || image.url) || `legacy:${index}`;
+}
+
+function reconcileImagePaths(existing = [], uploaded = [], order) {
+  if (!Array.isArray(order)) return mergeImagePaths(existing, uploaded);
+  const existingByKey = new Map(
+    (Array.isArray(existing) ? existing : []).map((image, index) => [imagePathKey(image, index), image])
+  );
+  const next = [];
+  const usedExisting = new Set();
+  const usedUploaded = new Set();
+
+  order.forEach(item => {
+    if (next.length >= IMAGE_LIMIT || !item) return;
+    if (item.kind === "existing") {
+      const key = text(item.key);
+      if (!key || usedExisting.has(key) || !existingByKey.has(key)) return;
+      usedExisting.add(key);
+      next.push(existingByKey.get(key));
+      return;
+    }
+    if (item.kind === "new") {
+      const index = Number(item.index);
+      if (!Number.isInteger(index) || index < 0 || index >= uploaded.length || usedUploaded.has(index)) return;
+      usedUploaded.add(index);
+      if (uploaded[index]) next.push(uploaded[index]);
+    }
+  });
+
+  return next;
+}
+
+function imageFileIDs(images = []) {
+  return [...new Set((Array.isArray(images) ? images : []).map(image => text(image?.fileID)).filter(Boolean))];
+}
+
+async function deleteImageFilesQuietly(app, images = []) {
+  const fileList = imageFileIDs(images);
+  if (!fileList.length) return;
+  try {
+    await app.deleteFile({ fileList });
+  } catch (error) {
+    console.warn("图片文件清理失败：", error?.message || error);
+  }
+}
+
 async function tempUrlForFileID(app, fileID, maxAge = 60 * 60) {
   const id = text(fileID);
   if (!id || !id.startsWith("cloud://")) throw new Error("图片 fileID 不正确。");
@@ -524,14 +571,35 @@ async function adminUpdate(collection, event, body) {
     updated_at: new Date().toISOString()
   };
   const requestedImages = Array.isArray(body.images) ? body.images : [];
+  const imageOrder = Array.isArray(body.imageOrder) ? body.imageOrder : null;
+  const existingImages = Array.isArray(existing.image_paths) ? existing.image_paths : [];
+  let uploaded = [];
   if (requestedImages.length) {
-    const existingImages = Array.isArray(existing.image_paths) ? existing.image_paths : [];
-    const availableSlots = Math.max(0, IMAGE_LIMIT - existingImages.length);
-    if (!availableSlots) throw new Error(`每条记录最多保存 ${IMAGE_LIMIT} 张图片。`);
-    const uploaded = await uploadImages(getApp(), id, requestedImages.slice(0, availableSlots));
-    payload.image_paths = mergeImagePaths(existingImages, uploaded);
+    const uploadLimit = imageOrder
+      ? IMAGE_LIMIT
+      : Math.max(0, IMAGE_LIMIT - existingImages.length);
+    if (!uploadLimit) throw new Error(`每条记录最多保存 ${IMAGE_LIMIT} 张图片。`);
+    uploaded = await uploadImages(getApp(), id, requestedImages.slice(0, uploadLimit));
   }
-  await collection.doc(id).update(payload);
+  if (imageOrder || uploaded.length) {
+    payload.image_paths = reconcileImagePaths(existingImages, uploaded, imageOrder);
+    if (payload.image_paths.length > IMAGE_LIMIT) {
+      await deleteImageFilesQuietly(getApp(), uploaded);
+      throw new Error(`每条记录最多保存 ${IMAGE_LIMIT} 张图片。`);
+    }
+  }
+  try {
+    await collection.doc(id).update(payload);
+  } catch (error) {
+    await deleteImageFilesQuietly(getApp(), uploaded);
+    throw error;
+  }
+  if (Object.hasOwn(payload, "image_paths")) {
+    const retainedFileIDs = new Set(imageFileIDs(payload.image_paths));
+    const removedExisting = existingImages.filter(image => image?.fileID && !retainedFileIDs.has(image.fileID));
+    const unusedUploaded = uploaded.filter(image => image?.fileID && !retainedFileIDs.has(image.fileID));
+    await deleteImageFilesQuietly(getApp(), [...removedExisting, ...unusedUploaded]);
+  }
   const record = await hydrateRecordImages(getApp(), publicRecord({ ...existing, ...payload, id }));
   return { record };
 }
@@ -643,6 +711,7 @@ exports._private = {
   normalizeRecordPayload,
   normalizeAdminUpdatePayload,
   mergeImagePaths,
+  reconcileImagePaths,
   validateProductGroupingRecords,
   requireFields,
   databaseWriteRecord,

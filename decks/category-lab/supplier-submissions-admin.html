@@ -652,13 +652,90 @@
     }
     .admin-image-editor {
       display: grid;
-      gap: 6px;
+      gap: 10px;
     }
-    .admin-image-editor > span:first-child,
+    .admin-image-editor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .admin-image-editor-head > span:first-child,
     .admin-image-selection {
       color: var(--muted);
       font-size: 11px;
       font-weight: 700;
+    }
+    .admin-image-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+      gap: 10px;
+    }
+    .admin-image-card {
+      min-width: 0;
+      margin: 0;
+      border: 1px solid var(--line-soft);
+      border-radius: 6px;
+      background: var(--panel);
+      padding: 6px;
+    }
+    .admin-image-preview {
+      width: 100%;
+      min-height: 0;
+      border: 0;
+      background: #eee7da;
+      padding: 0;
+      overflow: hidden;
+      cursor: zoom-in;
+    }
+    .admin-image-preview img {
+      display: block;
+      width: 100%;
+      height: 88px;
+      object-fit: cover;
+    }
+    .admin-image-card figcaption {
+      margin: 6px 0;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .admin-image-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+    }
+    .admin-image-actions button {
+      min-height: 28px;
+      padding: 4px 6px;
+      font-size: 11px;
+    }
+    .admin-image-actions .single-action {
+      grid-column: 1 / -1;
+    }
+    .admin-image-add {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      justify-self: start;
+      min-height: 34px;
+      border: 1px solid var(--button-line);
+      border-radius: 5px;
+      background: var(--panel);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 10px;
+    }
+    .admin-image-add.disabled {
+      cursor: not-allowed;
+      opacity: .48;
+    }
+    .admin-image-add input,
+    .admin-image-replace-input {
+      display: none;
     }
     .section-block h3,
     .edit-panel h3 {
@@ -1140,6 +1217,8 @@
     let statusFilter = "待处理";
     let sortMode = "submitted";
     let supplierEditOpen = false;
+    let adminImageDraft = null;
+    let adminImageReplaceKey = "";
     const expandedProductGroupKeys = new Set();
     const collapsedProductGroupKeys = new Set();
     let groupingSourceKey = "";
@@ -1216,6 +1295,69 @@
       return Array.isArray(row.image_paths)
         ? row.image_paths.map(image => cloudbaseImageUrl(image.fileID) || image.publicUrl || image.url).filter(Boolean)
         : [];
+    }
+
+    function imagePathKey(image = {}, index = 0) {
+      return String(image.fileID || image.path || image.publicUrl || image.url || `legacy:${index}`).trim();
+    }
+
+    function clearAdminImageDraft() {
+      (adminImageDraft?.items || []).forEach(item => {
+        if (item.kind === "new" && item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      });
+      adminImageDraft = null;
+      adminImageReplaceKey = "";
+    }
+
+    function resetAdminImageDraft(row = activeRecord()) {
+      clearAdminImageDraft();
+      if (!row) return null;
+      const images = Array.isArray(row.image_paths) ? row.image_paths : [];
+      adminImageDraft = {
+        recordId: row.id,
+        items: images.map((image, index) => ({
+          draftKey: `existing:${index}`,
+          kind: "existing",
+          sourceKey: imagePathKey(image, index),
+          previewUrl: cloudbaseImageUrl(image.fileID) || image.publicUrl || image.url || ""
+        }))
+      };
+      return adminImageDraft;
+    }
+
+    function ensureAdminImageDraft(row = activeRecord()) {
+      if (!row) return null;
+      if (!adminImageDraft || adminImageDraft.recordId !== row.id) return resetAdminImageDraft(row);
+      return adminImageDraft;
+    }
+
+    function newAdminImageItem(file) {
+      return {
+        draftKey: `new:${crypto.randomUUID()}`,
+        kind: "new",
+        file,
+        previewUrl: URL.createObjectURL(file)
+      };
+    }
+
+    function adminImageSavePlan(row = activeRecord()) {
+      const draft = ensureAdminImageDraft(row) || { items: [] };
+      const newItems = draft.items.filter(item => item.kind === "new");
+      const newIndexes = new Map(newItems.map((item, index) => [item.draftKey, index]));
+      return {
+        files: newItems.map(item => item.file),
+        retainedCount: draft.items.filter(item => item.kind === "existing").length,
+        imageOrder: draft.items.map(item => item.kind === "existing"
+          ? { kind: "existing", key: item.sourceKey }
+          : { kind: "new", index: newIndexes.get(item.draftKey) })
+      };
+    }
+
+    function adminImageDraftChanged(row = activeRecord()) {
+      if (!row || !adminImageDraft || adminImageDraft.recordId !== row.id) return false;
+      const original = (Array.isArray(row.image_paths) ? row.image_paths : []).map(imagePathKey);
+      const current = adminImageDraft.items.map(item => item.kind === "existing" ? item.sourceKey : item.draftKey);
+      return original.length !== current.length || original.some((key, index) => key !== current[index]);
     }
 
     async function cloudbaseRequest(action, payload = {}) {
@@ -1940,9 +2082,77 @@
       return `<div class="fact-item"><span>${escapeHtml(label)}</span><b>${escapeHtml(compactText(value))}</b></div>`;
     }
 
+    function adminImageEditorHtml(row) {
+      const draft = ensureAdminImageDraft(row) || { items: [] };
+      const canAdd = roleCanEdit() && draft.items.length < 6;
+      return `
+        <div class="admin-image-editor span-2" data-admin-image-editor>
+          <div class="admin-image-editor-head">
+            <span>产品照片</span>
+            <span class="admin-image-selection">${draft.items.length} / 6 张</span>
+          </div>
+          ${draft.items.length ? `
+            <div class="admin-image-grid">
+              ${draft.items.map((item, index) => `
+                <figure class="admin-image-card">
+                  <button class="admin-image-preview" data-image-url="${escapeAttr(item.previewUrl)}" type="button">
+                    <img src="${escapeAttr(item.previewUrl)}" alt="产品照 ${index + 1}">
+                  </button>
+                  <figcaption>图 ${index + 1}${item.kind === "new" ? " · 待保存" : ""}</figcaption>
+                  <div class="admin-image-actions">
+                    ${item.kind === "existing" ? `<button data-replace-admin-image-key="${escapeAttr(item.draftKey)}" type="button" ${roleCanEdit() ? "" : "disabled"}>更换</button>` : ""}
+                    <button class="danger ${item.kind === "new" ? "single-action" : ""}" data-remove-admin-image-key="${escapeAttr(item.draftKey)}" type="button" ${roleCanEdit() ? "" : "disabled"}>删除</button>
+                  </div>
+                </figure>
+              `).join("")}
+            </div>
+          ` : ""}
+          <label class="admin-image-add ${canAdd ? "" : "disabled"}">
+            新增产品照
+            <input data-admin-images type="file" accept="image/*" multiple ${canAdd ? "" : "disabled"}>
+          </label>
+          <input class="admin-image-replace-input" data-admin-image-replace type="file" accept="image/*" ${roleCanEdit() ? "" : "disabled"}>
+        </div>
+      `;
+    }
+
+    function refreshAdminImageEditor() {
+      const editor = appPanel.querySelector("[data-admin-image-editor]");
+      const row = activeRecord();
+      if (editor && row) editor.outerHTML = adminImageEditorHtml(row);
+    }
+
+    function addAdminImages(files = []) {
+      const draft = ensureAdminImageDraft();
+      const selected = [...files].filter(file => file?.type?.startsWith("image/"));
+      if (!draft || !selected.length) return;
+      const available = Math.max(0, 6 - draft.items.length);
+      if (selected.length > available) throw new Error(`每条记录最多保存 6 张图片，当前还能新增 ${available} 张。`);
+      draft.items.push(...selected.map(newAdminImageItem));
+      refreshAdminImageEditor();
+    }
+
+    function replaceAdminImage(draftKey, file) {
+      const draft = ensureAdminImageDraft();
+      const index = draft?.items.findIndex(item => item.draftKey === draftKey) ?? -1;
+      if (!draft || index < 0 || !file?.type?.startsWith("image/")) throw new Error("请选择有效的图片文件。");
+      const current = draft.items[index];
+      if (current.kind === "new" && current.previewUrl) URL.revokeObjectURL(current.previewUrl);
+      draft.items.splice(index, 1, newAdminImageItem(file));
+      refreshAdminImageEditor();
+    }
+
+    function removeAdminImage(draftKey) {
+      const draft = ensureAdminImageDraft();
+      const index = draft?.items.findIndex(item => item.draftKey === draftKey) ?? -1;
+      if (!draft || index < 0) return;
+      const [removed] = draft.items.splice(index, 1);
+      if (removed.kind === "new" && removed.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+      refreshAdminImageEditor();
+    }
+
     function renderSupplierEditPanel(row) {
       if (!supplierEditOpen) return "";
-      const imageCount = imageUrls(row).length;
       return `
         <div class="supplier-edit-panel">
           <div class="edit-grid">
@@ -1959,11 +2169,7 @@
             ${fieldBlock("本版调整点", fieldTextarea("version_change", row.version_change, "本版调整点", 3), "span-2")}
             ${fieldBlock("产品结构", fieldTextarea("ingredients_structure", row.ingredients_structure, "产品结构", 3), "span-2")}
             ${fieldBlock("核心原料及卖点", fieldTextarea("core_ingredients_selling_points", row.core_ingredients_selling_points, "核心原料及卖点", 3), "span-2")}
-            <label class="admin-image-editor span-2">
-              <span>新增产品照（最多 6 张）</span>
-              <input data-admin-images type="file" accept="image/*" multiple ${imageCount >= 6 || !roleCanEdit() ? "disabled" : ""}>
-              <span class="admin-image-selection" data-admin-image-selection>现有 ${imageCount} 张</span>
-            </label>
+            ${adminImageEditorHtml(row)}
           </div>
         </div>
       `;
@@ -2078,11 +2284,15 @@
     function renderAll(preferredId = activeRecordId) {
       renderCounts();
       ensureActive(preferredId);
+      if (!supplierEditOpen || (adminImageDraft && adminImageDraft.recordId !== activeRecordId)) {
+        clearAdminImageDraft();
+      }
       renderList();
       renderDetail();
     }
 
     function resetInMemoryState() {
+      clearAdminImageDraft();
       profile = null;
       records = [];
       activeRecordId = "";
@@ -2229,11 +2439,6 @@
       };
     }
 
-    function selectedAdminImageFiles() {
-      const input = appPanel.querySelector("[data-admin-images]");
-      return input ? [...(input.files || [])] : [];
-    }
-
     function fileToImage(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -2299,12 +2504,20 @@
       if (!roleCanEdit() || !id) return null;
       const existing = activeRecord() || {};
       const payload = { ...activePayload(), ...override };
-      const imageFiles = selectedAdminImageFiles();
-      if (imageFiles.length && !cloudbaseReady) throw new Error("当前备份环境暂不支持在收件箱新增图片。");
-      const images = imageFiles.length ? await adminImagePayloads(imageFiles, imageUrls(existing).length) : [];
+      const imagePlan = adminImageSavePlan(existing);
+      const imageChanged = adminImageDraftChanged(existing);
+      if (imageChanged && !cloudbaseReady) throw new Error("当前备份环境暂不支持修改收件箱图片。");
+      const images = imagePlan.files.length
+        ? await adminImagePayloads(imagePlan.files, imagePlan.retainedCount)
+        : [];
       let data;
       if (cloudbaseReady) {
-        const response = await cloudbaseRequest("adminUpdate", { id, payload, images });
+        const response = await cloudbaseRequest("adminUpdate", {
+          id,
+          payload,
+          images,
+          imageOrder: imagePlan.imageOrder
+        });
         data = response.record;
       } else {
         const response = await client
@@ -2318,6 +2531,8 @@
       }
       const index = records.findIndex(row => row.id === id);
       if (index >= 0) records[index] = { ...existing, ...payload, ...(data || {}), id };
+      if (supplierEditOpen) resetAdminImageDraft(records[index] || data);
+      else clearAdminImageDraft();
       renderAll(id);
       return records[index] || data;
     }
@@ -2594,6 +2809,17 @@
           renderAll(activeRecordId);
           return;
         }
+        const removeImageButton = event.target.closest("[data-remove-admin-image-key]");
+        if (removeImageButton) {
+          removeAdminImage(removeImageButton.dataset.removeAdminImageKey);
+          return;
+        }
+        const replaceImageButton = event.target.closest("[data-replace-admin-image-key]");
+        if (replaceImageButton) {
+          adminImageReplaceKey = replaceImageButton.dataset.replaceAdminImageKey;
+          appPanel.querySelector("[data-admin-image-replace]")?.click();
+          return;
+        }
         const imageButton = event.target.closest("[data-image-url]");
         if (imageButton) {
           lightboxImage.src = imageButton.dataset.imageUrl;
@@ -2602,6 +2828,8 @@
         }
         if (event.target.closest("[data-toggle-supplier-edit]")) {
           supplierEditOpen = !supplierEditOpen;
+          if (supplierEditOpen) resetAdminImageDraft(activeRecord());
+          else clearAdminImageDraft();
           renderDetail();
           return;
         }
@@ -2625,12 +2853,22 @@
       }
     });
     appPanel.addEventListener("change", event => {
-      if (["tasting_scene", "round_conclusion"].includes(event.target?.dataset?.field)) updateVersionStagePreview();
-      if (event.target?.matches("[data-admin-images]")) {
-        const currentCount = imageUrls(activeRecord() || {}).length;
-        const selectedCount = event.target.files?.length || 0;
-        const summary = appPanel.querySelector("[data-admin-image-selection]");
-        if (summary) summary.textContent = `现有 ${currentCount} 张 · 待新增 ${selectedCount} 张`;
+      try {
+        if (["tasting_scene", "round_conclusion"].includes(event.target?.dataset?.field)) updateVersionStagePreview();
+        if (event.target?.matches("[data-admin-images]")) {
+          addAdminImages(event.target.files || []);
+          event.target.value = "";
+          return;
+        }
+        if (event.target?.matches("[data-admin-image-replace]")) {
+          const file = event.target.files?.[0];
+          if (file && adminImageReplaceKey) replaceAdminImage(adminImageReplaceKey, file);
+          adminImageReplaceKey = "";
+          event.target.value = "";
+        }
+      } catch (error) {
+        adminImageReplaceKey = "";
+        showMessage(error.message || "图片处理失败。", "error");
       }
     });
     productGroupSearch.addEventListener("input", renderProductGroupingCandidates);
