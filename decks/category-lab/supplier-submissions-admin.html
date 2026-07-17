@@ -327,6 +327,49 @@
       border-right: 1px solid currentColor;
       padding-right: 8px;
     }
+    .campaign-group-bar,
+    .product-type-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .campaign-group-bar {
+      min-height: 40px;
+      border-left: 3px solid #9b7642;
+      background: #fffaf0;
+      padding: 8px 14px 8px 13px;
+      color: #493820;
+    }
+    .campaign-group-bar strong {
+      font-family: var(--serif);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .campaign-group-bar span,
+    .product-type-bar span {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 10.5px;
+      font-weight: 650;
+    }
+    .product-type-bar {
+      min-height: 32px;
+      background: #f5f2eb;
+      padding: 6px 15px 6px 18px;
+      color: var(--ink-soft);
+    }
+    .product-type-bar strong {
+      font-size: 11.5px;
+      font-weight: 800;
+    }
+    .campaign-group-section + .campaign-group-section {
+      border-top: 1px solid var(--line);
+    }
+    .product-type-section + .product-type-section {
+      border-top: 1px solid var(--line-soft);
+    }
     .product-group {
       border-bottom: 1px solid var(--line);
     }
@@ -1182,9 +1225,8 @@
       </div>
       <label class="sort-control">排序
         <select id="sortSelect">
-          <option value="submitted">按提交时间 ↓</option>
-          <option value="category">按类型 / 类别</option>
-          <option value="campaign">按最近档期</option>
+          <option value="workflow">工作流顺序</option>
+          <option value="recent" selected>最近更新</option>
         </select>
       </label>
     </div>
@@ -1322,7 +1364,7 @@
     let profile = null;
     let activeRecordId = "";
     let statusFilter = "待处理";
-    let sortMode = "submitted";
+    let sortMode = "recent";
     let supplierEditOpen = false;
     let adminImageDraft = null;
     let adminImageReplaceKey = "";
@@ -1810,18 +1852,43 @@
       return createdTime(b) - createdTime(a);
     }
 
+    function defaultSortModeForStatus(filter = statusFilter) {
+      return ["已确认", "已导入"].includes(filter) ? "workflow" : "recent";
+    }
+
+    function compareGroupIdentity(a, b) {
+      return optionRank(PRODUCT_TYPE_ORDER, latestGroupValue(a, "product_type")) - optionRank(PRODUCT_TYPE_ORDER, latestGroupValue(b, "product_type")) ||
+        String(a.name || "").localeCompare(String(b.name || ""), "zh-CN") ||
+        String(a.supplier || "").localeCompare(String(b.supplier || ""), "zh-CN") ||
+        groupingTime(b.latest) - groupingTime(a.latest);
+    }
+
+    function campaignGroupIdentity(value = {}) {
+      const row = campaignRecord(value);
+      const campaign = String(row.campaign || "").trim();
+      return campaign ? `${effectiveCampaignYear(row)}::${campaign}` : "";
+    }
+
+    function compareWorkflowGroups(a, b) {
+      const categoryOrder = ["campaign", "proposal", "uncategorized"];
+      const aCategory = testCategorySectionKey(a);
+      const bCategory = testCategorySectionKey(b);
+      const categoryDifference = optionRank(categoryOrder, aCategory) - optionRank(categoryOrder, bCategory);
+      if (categoryDifference) return categoryDifference;
+      if (aCategory === "campaign") {
+        const aCampaign = campaignGroupIdentity(a);
+        const bCampaign = campaignGroupIdentity(b);
+        if (aCampaign !== bCampaign) {
+          if (!aCampaign || !bCampaign) return aCampaign ? -1 : 1;
+          const campaignDifference = compareCampaignLaunchOrder(a, b);
+          if (campaignDifference) return campaignDifference;
+        }
+      }
+      return compareGroupIdentity(a, b);
+    }
+
     function sortRecords(rows) {
-      const sorted = [...rows];
-      if (sortMode === "category") {
-        return sorted.sort((a, b) =>
-          optionRank(PRODUCT_TYPE_ORDER, a.product_type) - optionRank(PRODUCT_TYPE_ORDER, b.product_type) ||
-          compareSubmittedDesc(a, b)
-        );
-      }
-      if (sortMode === "campaign") {
-        return sorted.sort(compareCampaignLaunchOrder);
-      }
-      return sorted.sort(compareSubmittedDesc);
+      return [...rows].sort(compareSubmittedDesc);
     }
 
     function recordMatchesStatusFilter(row, filter = statusFilter) {
@@ -1868,15 +1935,7 @@
       const matchingRecords = visibleRecords();
       const tabRecords = records.filter(row => recordMatchesStatusFilter(row));
       const groups = buildVisibleProductGroups(records, tabRecords, matchingRecords);
-      if (sortMode === "category") {
-        return groups.sort((a, b) =>
-          optionRank(PRODUCT_TYPE_ORDER, latestGroupValue(a, "product_type")) - optionRank(PRODUCT_TYPE_ORDER, latestGroupValue(b, "product_type")) ||
-          groupingTime(b.latest) - groupingTime(a.latest)
-        );
-      }
-      if (sortMode === "campaign") {
-        return groups.sort(compareCampaignLaunchOrder);
-      }
+      if (sortMode === "workflow") return groups.sort(compareWorkflowGroups);
       return groups.sort((a, b) => groupingTime(b.latest) - groupingTime(a.latest));
     }
 
@@ -1925,9 +1984,6 @@
     }
 
     function buildTestCategorySections(groups = [], filter = statusFilter) {
-      if (!["待处理", "已确认"].includes(filter)) {
-        return [{ key: "all", label: "", note: "", groups: [...groups] }];
-      }
       const definitions = [
         { key: "campaign", label: "档期测试" },
         { key: "proposal", label: "新品提案" },
@@ -1938,12 +1994,11 @@
       return definitions
         .map(definition => {
           const sectionGroups = [...buckets.get(definition.key)];
-          if (filter === "已确认" && definition.key === "campaign") {
-            sectionGroups.sort(compareCampaignLaunchOrder);
-          }
           return {
             ...definition,
-            note: filter === "已确认" && definition.key === "campaign" ? "按最近档期" : "",
+            note: definition.key === "campaign" && ["已确认", "已导入"].includes(filter)
+              ? "档期 → 类型 → 产品 → 版本"
+              : "类型 → 产品 → 版本",
             groups: sectionGroups
           };
         })
@@ -1967,6 +2022,9 @@
     }
 
     function visibleProductSections() {
+      if (sortMode === "recent") {
+        return [{ key: "recent", label: "", note: "", groups: visibleProductGroups() }];
+      }
       return buildTestCategorySections(visibleProductGroups());
     }
 
@@ -2044,7 +2102,7 @@
         group.pendingCount ? `${group.pendingCount} 待处理` : "",
         group.confirmedCount ? `${group.confirmedCount} 已确认` : ""
       ].filter(Boolean).join(" · ");
-      const confirmedCampaign = statusFilter === "已确认" && sectionKey === "campaign";
+      const confirmedCampaign = statusFilter === "已确认" && sectionKey === "campaign" && sortMode !== "workflow";
       const groupCampaignRecord = campaignRecord(group);
       const campaignText = confirmedCampaign
         ? ` · 档期：${effectiveCampaignYear(groupCampaignRecord)} · ${compactText(groupCampaignRecord.campaign, "未选择")}`
@@ -2084,6 +2142,69 @@
       `;
     }
 
+    function productTypeSections(groups = []) {
+      const buckets = new Map();
+      groups.forEach(group => {
+        const type = String(latestGroupValue(group, "product_type") || "未分类").trim();
+        if (!buckets.has(type)) buckets.set(type, []);
+        buckets.get(type).push(group);
+      });
+      return [...buckets.entries()]
+        .map(([type, typeGroups]) => ({
+          type,
+          groups: typeGroups.sort(compareGroupIdentity)
+        }))
+        .sort((a, b) =>
+          optionRank(PRODUCT_TYPE_ORDER, a.type) - optionRank(PRODUCT_TYPE_ORDER, b.type) ||
+          a.type.localeCompare(b.type, "zh-CN")
+        );
+    }
+
+    function campaignGroupSections(groups = []) {
+      const buckets = new Map();
+      groups.forEach(group => {
+        const row = campaignRecord(group);
+        const campaign = String(row.campaign || "").trim();
+        const year = campaign ? effectiveCampaignYear(row) : "";
+        const key = campaign ? `${year}::${campaign}` : "unassigned";
+        const bucket = buckets.get(key) || { key, year, campaign, groups: [] };
+        bucket.groups.push(group);
+        buckets.set(key, bucket);
+      });
+      return [...buckets.values()].sort((a, b) => {
+        if (!a.campaign || !b.campaign) return a.campaign ? -1 : b.campaign ? 1 : 0;
+        return compareCampaignLaunchOrder(a.groups[0], b.groups[0]);
+      });
+    }
+
+    function productTypeSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
+      return productTypeSections(groups).map(typeSection => `
+        <div class="product-type-section" data-product-type-section="${escapeAttr(typeSection.type)}">
+          <header class="product-type-bar" data-product-type-group><strong>${escapeHtml(typeSection.type)}</strong><span>${typeSection.groups.length} 个产品</span></header>
+          ${typeSection.groups.map(group => productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus)).join("")}
+        </div>
+      `).join("");
+    }
+
+    function workflowSectionHtml(section, activeGroupKey, showProcessingStatus) {
+      const shouldGroupCampaigns = section.key === "campaign" && ["已确认", "已导入"].includes(statusFilter);
+      if (!shouldGroupCampaigns) {
+        return productTypeSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus);
+      }
+      return campaignGroupSections(section.groups).map(campaignSection => {
+        const recordCount = campaignSection.groups.reduce((total, group) => total + group.records.length, 0);
+        const label = campaignSection.campaign
+          ? `${campaignSection.year}｜${campaignSection.campaign}`
+          : "待补充档期";
+        return `
+          <div class="campaign-group-section" data-campaign-group-section="${escapeAttr(campaignSection.key)}">
+            <header class="campaign-group-bar" data-campaign-group><strong>${escapeHtml(label)}</strong><span>${campaignSection.groups.length} 个产品 · ${recordCount} 条记录</span></header>
+            ${productTypeSectionsHtml(campaignSection.groups, section.key, activeGroupKey, showProcessingStatus)}
+          </div>
+        `;
+      }).join("");
+    }
+
     function renderList() {
       const groups = visibleProductGroupsInDisplayOrder();
       if (!groups.length) {
@@ -2107,9 +2228,11 @@
         return `
           <section class="test-category-section ${section.key}-category-section">
             ${sectionBar}
-            ${section.groups.map(group => productGroupListHtml(group, section.key, activeGroupKey, showProcessingStatus)).join("")}
-          </section>
-        `;
+          ${sortMode === "workflow"
+            ? workflowSectionHtml(section, activeGroupKey, showProcessingStatus)
+            : section.groups.map(group => productGroupListHtml(group, section.key, activeGroupKey, showProcessingStatus)).join("")}
+        </section>
+      `;
       }).join("");
     }
 
@@ -3047,7 +3170,7 @@
     exportBtn.addEventListener("click", exportCsv);
     searchInput.addEventListener("input", renderList);
     sortSelect.addEventListener("change", () => {
-      sortMode = sortSelect.value || "submitted";
+      sortMode = sortSelect.value || "recent";
       renderList();
     });
     document.querySelectorAll("[data-status-filter]").forEach(button => {
@@ -3056,6 +3179,8 @@
         if (nextFilter === statusFilter) return;
         await runWithUnsavedGuard(async () => {
           statusFilter = nextFilter;
+          sortMode = defaultSortModeForStatus(statusFilter);
+          sortSelect.value = sortMode;
           expandedProductGroupKeys.clear();
           collapsedProductGroupKeys.clear();
           supplierEditOpen = false;
