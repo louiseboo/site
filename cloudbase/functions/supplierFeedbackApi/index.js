@@ -94,6 +94,7 @@ function normalizeRecordPayload(payload = {}) {
     sample_date: nullableText(payload.sample_date),
     product_type: nullableText(payload.product_type),
     test_category: nullableText(payload.test_category),
+    campaign_year: nullableText(payload.campaign_year),
     campaign: nullableText(payload.campaign),
     version_change: nullableText(payload.version_change),
     finished_spec: nullableText(payload.finished_spec),
@@ -121,6 +122,7 @@ function sanitizePublicSubmissionPayload(payload = {}) {
   delete normalized.round_conclusion;
   delete normalized.next_step_direction;
   delete normalized.key_blocker;
+  delete normalized.campaign_year;
   delete normalized.campaign;
   return normalized;
 }

@@ -787,24 +787,65 @@
       font-size: 13px;
       font-weight: 400;
     }
-    .combobox {
+    .campaign-picker {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      gap: 8px;
+    }
+    .campaign-combobox {
       position: relative;
-      display: block;
+      min-width: 0;
     }
-    .combobox::after {
-      content: "⌄";
-      position: absolute;
-      top: 50%;
-      right: 12px;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1;
-      pointer-events: none;
-      transform: translateY(-58%);
-    }
-    .combobox input {
+    .campaign-combobox input {
       width: 100%;
-      padding-right: 34px;
+      padding-right: 36px;
+    }
+    .campaign-options-toggle {
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      width: 34px;
+      min-height: calc(100% - 2px);
+      border: 0;
+      border-left: 1px solid var(--line);
+      border-radius: 0 5px 5px 0;
+      background: var(--panel);
+      color: var(--muted);
+      padding: 0;
+    }
+    .campaign-options {
+      position: absolute;
+      top: calc(100% + 5px);
+      right: 0;
+      left: 0;
+      z-index: 12;
+      max-height: 230px;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+      border-radius: 5px;
+      background: var(--panel);
+    }
+    .campaign-options button {
+      display: block;
+      width: 100%;
+      min-height: 36px;
+      border: 0;
+      border-bottom: 1px solid var(--line-soft);
+      border-radius: 0;
+      background: transparent;
+      color: var(--ink);
+      padding: 8px 10px;
+      text-align: left;
+      white-space: normal;
+    }
+    .campaign-options button:last-child { border-bottom: 0; }
+    .campaign-options button:hover,
+    .campaign-options button.active { background: var(--paper); }
+    .campaign-options-empty {
+      margin: 0;
+      color: var(--faint);
+      font-size: 12px;
+      padding: 10px;
     }
     .meta-sidebar {
       border-left: 1px solid var(--line);
@@ -987,6 +1028,38 @@
       object-fit: contain;
       background: #fff;
     }
+    .unsaved-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: grid;
+      place-items: center;
+      background: rgba(43, 38, 32, .54);
+      padding: 22px;
+    }
+    .unsaved-dialog {
+      width: min(440px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      padding: 24px;
+    }
+    .unsaved-dialog h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 20px;
+    }
+    .unsaved-dialog p {
+      margin: 10px 0 22px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .unsaved-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
     @media (max-width: 1100px) {
       .workspace {
         grid-template-columns: 360px minmax(0, 1fr);
@@ -1019,6 +1092,8 @@
         align-items: stretch;
         flex-direction: column;
       }
+      .campaign-picker { grid-template-columns: 84px minmax(0, 1fr); }
+      .unsaved-actions { grid-template-columns: 1fr; }
       .top-actions {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -1109,7 +1184,7 @@
         <select id="sortSelect">
           <option value="submitted">按提交时间 ↓</option>
           <option value="category">按类型 / 类别</option>
-          <option value="campaign">按档期名称</option>
+          <option value="campaign">按最近档期</option>
         </select>
       </label>
     </div>
@@ -1148,6 +1223,18 @@
     <img id="lightboxImage" alt="产品照片放大预览">
   </div>
 
+  <div class="unsaved-modal hidden" id="unsavedChangesModal" role="dialog" aria-modal="true" aria-labelledby="unsavedChangesTitle">
+    <div class="unsaved-dialog">
+      <h2 id="unsavedChangesTitle">有尚未保存的修改</h2>
+      <p>离开当前记录前，是否保存本次修改？</p>
+      <div class="unsaved-actions">
+        <button type="button" data-unsaved-cancel>继续编辑</button>
+        <button class="danger" type="button" data-unsaved-discard>放弃修改</button>
+        <button class="primary" type="button" data-unsaved-save>保存修改</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./supabase-config.js"></script>
   <script src="./cloudbase-config.js"></script>
@@ -1171,6 +1258,13 @@
       "0924 Q4三明治换新",
       "1105 迪克森少校 1",
       "1208 迪克森少校 2"
+    ];
+    const CAMPAIGN_YEARS = ["2026", "2027"];
+    const EDITABLE_RECORD_FIELDS = [
+      "product_name", "supplier_name", "version_label", "sample_date", "product_type", "test_category",
+      "campaign_year", "campaign", "version_change", "finished_spec", "length_mm", "width_mm", "height_mm",
+      "ingredients_structure", "quote_rmb", "core_ingredients_selling_points", "tasting_scene", "tasting_feedback",
+      "round_conclusion", "next_step_direction", "key_blocker"
     ];
     const PRODUCT_TYPE_ORDER = ["烘焙", "蛋糕", "三明治", "预包装食品"];
     const config = window.CATEGORYLAB_SUPABASE || {};
@@ -1200,6 +1294,7 @@
     const lightbox = document.querySelector("#lightbox");
     const lightboxImage = document.querySelector("#lightboxImage");
     const lightboxClose = document.querySelector("#lightboxClose");
+    const unsavedChangesModal = document.querySelector("#unsavedChangesModal");
     const productGroupModal = document.querySelector("#productGroupModal");
     const productGroupCurrent = document.querySelector("#productGroupCurrent");
     const productGroupSearch = document.querySelector("#productGroupSearch");
@@ -1219,6 +1314,10 @@
     let supplierEditOpen = false;
     let adminImageDraft = null;
     let adminImageReplaceKey = "";
+    let unsavedDecisionResolve = null;
+    let unsavedDecisionPromise = null;
+    let historyGuardInstalled = false;
+    let historyExitInProgress = false;
     const expandedProductGroupKeys = new Set();
     const collapsedProductGroupKeys = new Set();
     let groupingSourceKey = "";
@@ -1392,15 +1491,6 @@
       return `<select data-field="${escapeAttr(field)}" ${roleCanEdit() ? "" : "disabled"}>${optionHtml(options, selected || "")}</select>`;
     }
 
-    function fieldCombobox(field, options, value, placeholder = "请输入或选择") {
-      const listId = `${field}-options`;
-      const optionList = options
-        .filter(Boolean)
-        .map(option => `<option value="${escapeAttr(option)}"></option>`)
-        .join("");
-      return `<span class="combobox"><input data-field="${escapeAttr(field)}" list="${escapeAttr(listId)}" value="${escapeAttr(value || "")}" placeholder="${escapeAttr(placeholder)}" autocomplete="off" ${roleCanEdit() ? "" : "disabled"}><datalist id="${escapeAttr(listId)}">${optionList}</datalist></span>`;
-    }
-
     function fieldBlock(label, control, extraClass = "") {
       return `<label class="field-label ${extraClass}"><span>${escapeHtml(label)}</span>${control}</label>`;
     }
@@ -1423,9 +1513,97 @@
       }
     }
 
-    function campaignOptions(current = "") {
-      const savedCampaigns = records.map(row => String(row.campaign || "").trim()).filter(Boolean);
-      return [...new Set([...CAMPAIGN_OPTIONS, ...savedCampaigns, String(current || "").trim()].filter(Boolean))];
+    function normalizeCampaignYear(value) {
+      const raw = String(value || "").trim();
+      const fourDigit = raw.match(/^(20(?:26|27))(?:\D|$)/);
+      if (fourDigit) return fourDigit[1];
+      const shortYear = raw.match(/^(?:FY\s*)?(26|27)(?:\D|$)/i);
+      return shortYear ? `20${shortYear[1]}` : "";
+    }
+
+    function effectiveCampaignYear(row = {}) {
+      return normalizeCampaignYear(row.campaign_year || row.campaignYear || row.launchYear || row.launchDate) || CAMPAIGN_YEARS[0];
+    }
+
+    function categoryLabCampaignOptions(year) {
+      const projects = categoryLabData()?.launchProjects;
+      if (!Array.isArray(projects)) return [];
+      return projects
+        .filter(project => effectiveCampaignYear(project) === year)
+        .map(project => String(project.launchCampaign || project.campaign || "").trim())
+        .filter(Boolean);
+    }
+
+    function campaignOptions(year, current = "") {
+      const selectedYear = normalizeCampaignYear(year) || CAMPAIGN_YEARS[0];
+      const savedCampaigns = records
+        .filter(row => effectiveCampaignYear(row) === selectedYear)
+        .map(row => String(row.campaign || "").trim())
+        .filter(Boolean);
+      return [...new Set([
+        ...CAMPAIGN_OPTIONS,
+        ...categoryLabCampaignOptions(selectedYear),
+        ...savedCampaigns,
+        String(current || "").trim()
+      ].filter(Boolean))];
+    }
+
+    function campaignOptionButtons(year, current = "", query = "") {
+      const normalizedQuery = String(query || "").trim().toLowerCase();
+      const options = campaignOptions(year, current).filter(option => !normalizedQuery || option.toLowerCase().includes(normalizedQuery));
+      if (!options.length) return `<p class="campaign-options-empty">没有匹配档期，可直接输入并保存。</p>`;
+      return options.map(option => `
+        <button class="${option === current ? "active" : ""}" data-campaign-option="${escapeAttr(option)}" type="button">${escapeHtml(option)}</button>
+      `).join("");
+    }
+
+    function campaignPickerField(row = {}) {
+      const year = effectiveCampaignYear(row);
+      const campaign = String(row.campaign || "").trim();
+      return `
+        <div class="field-label">
+          <span>档期年份 / 名称</span>
+          <div class="campaign-picker">
+            <select data-field="campaign_year" data-campaign-year ${roleCanEdit() ? "" : "disabled"}>
+              ${CAMPAIGN_YEARS.map(option => `<option value="${option}" ${option === year ? "selected" : ""}>${option} 年</option>`).join("")}
+            </select>
+            <div class="campaign-combobox" data-campaign-combobox>
+              <input data-field="campaign" value="${escapeAttr(campaign)}" placeholder="输入或选择档期名称" autocomplete="off" ${roleCanEdit() ? "" : "disabled"}>
+              <button class="campaign-options-toggle" data-toggle-campaign-options type="button" aria-label="展开档期列表" aria-expanded="false" ${roleCanEdit() ? "" : "disabled"}>▾</button>
+              <div class="campaign-options hidden" data-campaign-options>${campaignOptionButtons(year, campaign)}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function campaignPickerNodes() {
+      const combobox = appPanel.querySelector("[data-campaign-combobox]");
+      return {
+        combobox,
+        input: combobox?.querySelector('[data-field="campaign"]') || null,
+        year: appPanel.querySelector("[data-campaign-year]"),
+        options: combobox?.querySelector("[data-campaign-options]") || null,
+        toggle: combobox?.querySelector("[data-toggle-campaign-options]") || null
+      };
+    }
+
+    function setCampaignOptionsOpen(open) {
+      const { options, toggle } = campaignPickerNodes();
+      if (!options || !toggle) return;
+      options.classList.toggle("hidden", !open);
+      toggle.setAttribute("aria-expanded", String(open));
+    }
+
+    function refreshCampaignOptions({ open = true, filter = false } = {}) {
+      const { input, year, options } = campaignPickerNodes();
+      if (!input || !year || !options) return;
+      options.innerHTML = campaignOptionButtons(year.value, input.value.trim(), filter ? input.value : "");
+      setCampaignOptionsOpen(open);
+    }
+
+    function closeCampaignOptions() {
+      setCampaignOptionsOpen(false);
     }
 
     function isImportedToCategoryLab(row) {
@@ -1647,10 +1825,7 @@
         );
       }
       if (sortMode === "campaign") {
-        return sorted.sort((a, b) =>
-          optionRank(CAMPAIGN_OPTIONS, a.campaign) - optionRank(CAMPAIGN_OPTIONS, b.campaign) ||
-          compareSubmittedDesc(a, b)
-        );
+        return sorted.sort(compareCampaignLaunchOrder);
       }
       return sorted.sort(compareSubmittedDesc);
     }
@@ -1671,6 +1846,7 @@
           deriveVersionStage(row, records),
           row.product_type,
           row.test_category,
+          row.campaign_year,
           row.campaign,
           row.version_change,
           row.finished_spec,
@@ -1705,10 +1881,7 @@
         );
       }
       if (sortMode === "campaign") {
-        return groups.sort((a, b) =>
-          optionRank(CAMPAIGN_OPTIONS, latestGroupValue(a, "campaign")) - optionRank(CAMPAIGN_OPTIONS, latestGroupValue(b, "campaign")) ||
-          groupingTime(b.latest) - groupingTime(a.latest)
-        );
+        return groups.sort(compareCampaignLaunchOrder);
       }
       return groups.sort((a, b) => groupingTime(b.latest) - groupingTime(a.latest));
     }
@@ -1720,14 +1893,47 @@
       return "uncategorized";
     }
 
-    function compareCampaignLaunchOrder(a, b, campaignOptions = CAMPAIGN_OPTIONS) {
-      const campaignDifference = optionRank(campaignOptions, latestGroupValue(a, "campaign"))
-        - optionRank(campaignOptions, latestGroupValue(b, "campaign"));
-      if (campaignDifference) return campaignDifference;
-      return groupingTime(b.latest) - groupingTime(a.latest);
+    function campaignRecord(value = {}) {
+      if (!Array.isArray(value.records)) return value;
+      return [...value.records]
+        .sort((a, b) => groupingUpdateTime(b) - groupingUpdateTime(a))
+        .find(row => String(row.campaign || "").trim()) || value.latest || {};
     }
 
-    function buildTestCategorySections(groups = [], filter = statusFilter, campaignOptions = CAMPAIGN_OPTIONS) {
+    function campaignLaunchTimestamp(value = {}) {
+      const row = campaignRecord(value);
+      const match = String(row.campaign || "").trim().match(/^(\d{2})(\d{2})\b/);
+      if (!match) return NaN;
+      const year = Number(effectiveCampaignYear(row));
+      const month = Number(match[1]);
+      const day = Number(match[2]);
+      if (!Number.isInteger(year) || month < 1 || month > 12 || day < 1 || day > 31) return NaN;
+      const timestamp = Date.UTC(year, month - 1, day);
+      const date = new Date(timestamp);
+      return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+        ? timestamp
+        : NaN;
+    }
+
+    function compareCampaignLaunchOrder(a, b, now = new Date()) {
+      const aTime = campaignLaunchTimestamp(a);
+      const bTime = campaignLaunchTimestamp(b);
+      const aValid = Number.isFinite(aTime);
+      const bValid = Number.isFinite(bTime);
+      if (aValid !== bValid) return aValid ? -1 : 1;
+      if (aValid && bValid) {
+        const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+        const aUpcoming = aTime >= today;
+        const bUpcoming = bTime >= today;
+        if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
+        if (aTime !== bTime) return aUpcoming ? aTime - bTime : bTime - aTime;
+      }
+      const aLatest = a.latest || a;
+      const bLatest = b.latest || b;
+      return groupingTime(bLatest) - groupingTime(aLatest);
+    }
+
+    function buildTestCategorySections(groups = [], filter = statusFilter) {
       if (!["待处理", "已确认"].includes(filter)) {
         return [{ key: "all", label: "", note: "", groups: [...groups] }];
       }
@@ -1742,11 +1948,11 @@
         .map(definition => {
           const sectionGroups = [...buckets.get(definition.key)];
           if (filter === "已确认" && definition.key === "campaign") {
-            sectionGroups.sort((a, b) => compareCampaignLaunchOrder(a, b, campaignOptions));
+            sectionGroups.sort(compareCampaignLaunchOrder);
           }
           return {
             ...definition,
-            note: filter === "已确认" && definition.key === "campaign" ? "按上市顺序" : "",
+            note: filter === "已确认" && definition.key === "campaign" ? "按最近档期" : "",
             groups: sectionGroups
           };
         })
@@ -1780,7 +1986,7 @@
     function syncUrl() {
       const url = new URL(location.href);
       url.searchParams.delete("id");
-      history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+      history.replaceState(history.state, "", `${url.pathname}${url.search}${url.hash}`);
     }
 
     function ensureActive(preferredId = activeRecordId) {
@@ -1848,8 +2054,9 @@
         group.confirmedCount ? `${group.confirmedCount} 已确认` : ""
       ].filter(Boolean).join(" · ");
       const confirmedCampaign = statusFilter === "已确认" && sectionKey === "campaign";
+      const groupCampaignRecord = campaignRecord(group);
       const campaignText = confirmedCampaign
-        ? ` · 档期：${compactText(latestGroupValue(group, "campaign"), "未选择")}`
+        ? ` · 档期：${effectiveCampaignYear(groupCampaignRecord)} · ${compactText(groupCampaignRecord.campaign, "未选择")}`
         : "";
       return `
         <section class="product-group ${isActiveGroup ? "active" : ""} ${isExpanded ? "" : "collapsed"}" data-product-group-key="${escapeAttr(group.key)}">
@@ -2234,7 +2441,7 @@
           <h3>产品经理补充测试结果</h3>
           <div class="edit-grid">
             ${fieldBlock("报价（元，含税含运）", fieldInput("quote_rmb", row.quote_rmb, "线下确认后填写"))}
-            ${fieldBlock("档期名称", fieldCombobox("campaign", campaignOptions(row.campaign), row.campaign, "输入或选择档期名称"))}
+            ${campaignPickerField(row)}
             ${fieldBlock("测试场景 / 反馈来源", fieldSelect("tasting_scene", ["", "前期打磨测试", "众测后优化", "中试后优化", "上市后优化"], row.tasting_scene))}
             ${fieldBlock("本轮结论", fieldSelect("round_conclusion", ["", "继续调整", "暂停", "通过且储备", "通过且进入众测", "通过且进入中试", "通过且进入大生产"], row.round_conclusion))}
             <div class="version-stage-preview span-2" data-version-stage-preview>${versionStage ? `自动识别版本阶段：${escapeHtml(versionStage)}` : "尚未识别版本阶段。进入众测、中试或大生产后自动标记。"}</div>
@@ -2266,6 +2473,7 @@
           ${kv("送样时间", row.sample_date)}
           ${kv("类型", row.product_type)}
           ${kv("测试类别", row.test_category)}
+          ${kv("档期年份", effectiveCampaignYear(row))}
           ${kv("档期名称", row.campaign)}
           ${kv("版本", row.version_label)}
           ${versionStage ? kv("版本阶段", versionStage) : ""}
@@ -2322,6 +2530,7 @@
     function showAppShell() {
       loginPanel.classList.add("hidden");
       appPanel.classList.remove("hidden");
+      installHistoryGuard();
     }
 
     async function logout() {
@@ -2421,6 +2630,7 @@
         sample_date: detailValue("sample_date", row.sample_date || "").trim() || null,
         product_type: detailValue("product_type", row.product_type || "").trim(),
         test_category: detailValue("test_category", row.test_category || "").trim(),
+        campaign_year: normalizeCampaignYear(detailValue("campaign_year", effectiveCampaignYear(row))) || effectiveCampaignYear(row),
         campaign: detailValue("campaign", row.campaign || "").trim(),
         version_change: detailValue("version_change", row.version_change || "").trim(),
         finished_spec: detailValue("finished_spec", row.finished_spec || "").trim(),
@@ -2437,6 +2647,83 @@
         key_blocker: detailValue("key_blocker", row.key_blocker || "").trim(),
         status: row.status || "待处理"
       };
+    }
+
+    function comparableRecordValue(value) {
+      return value === null || value === undefined ? "" : String(value).trim();
+    }
+
+    function hasUnsavedChanges() {
+      const row = activeRecord();
+      if (!row || appPanel.classList.contains("hidden")) return false;
+      const payload = activePayload();
+      const fieldsChanged = EDITABLE_RECORD_FIELDS.some(field => {
+        const original = field === "campaign_year" ? effectiveCampaignYear(row) : row[field];
+        return comparableRecordValue(payload[field]) !== comparableRecordValue(original);
+      });
+      return fieldsChanged || adminImageDraftChanged(row);
+    }
+
+    function requestUnsavedDecision() {
+      if (!hasUnsavedChanges()) return Promise.resolve("continue");
+      if (unsavedDecisionPromise) return unsavedDecisionPromise;
+      unsavedChangesModal.classList.remove("hidden");
+      unsavedDecisionPromise = new Promise(resolve => {
+        unsavedDecisionResolve = resolve;
+      });
+      return unsavedDecisionPromise;
+    }
+
+    function resolveUnsavedDecision(decision) {
+      if (!unsavedDecisionResolve) return;
+      const resolve = unsavedDecisionResolve;
+      unsavedDecisionResolve = null;
+      unsavedDecisionPromise = null;
+      unsavedChangesModal.classList.add("hidden");
+      resolve(decision);
+    }
+
+    async function runWithUnsavedGuard(action) {
+      if (!hasUnsavedChanges()) {
+        await action();
+        return true;
+      }
+      const decision = await requestUnsavedDecision();
+      if (decision === "cancel") return false;
+      if (decision === "save") {
+        try {
+          await saveRow();
+          showMessage("修改已保存。", "success");
+        } catch (error) {
+          showMessage(error.message || "保存失败，已保留当前修改。", "error");
+          return false;
+        }
+      } else {
+        clearAdminImageDraft();
+      }
+      await action();
+      return true;
+    }
+
+    function installHistoryGuard() {
+      if (historyGuardInstalled) return;
+      historyGuardInstalled = true;
+      history.replaceState({ ...(history.state || {}), categorylabInboxBase: true }, "", location.href);
+      history.pushState({ categorylabInboxGuard: true }, "", location.href);
+    }
+
+    async function handleHistoryBack() {
+      if (!historyGuardInstalled || historyExitInProgress || history.state?.categorylabInboxGuard) return;
+      history.pushState({ categorylabInboxGuard: true }, "", location.href);
+      if (!hasUnsavedChanges()) {
+        historyExitInProgress = true;
+        history.go(-2);
+        return;
+      }
+      await runWithUnsavedGuard(async () => {
+        historyExitInProgress = true;
+        history.go(-2);
+      });
     }
 
     function fileToImage(file) {
@@ -2554,6 +2841,7 @@
         id: `supplier-${row.id}`,
         time: row.created_at ? dateText(row.created_at) : new Date().toLocaleString("zh-CN"),
         category: row.product_type || "",
+        campaignYear: effectiveCampaignYear(row),
         campaign: row.campaign || "",
         project: row.product_name || "",
         supplier: row.supplier_name || "",
@@ -2589,7 +2877,7 @@
           row.followup_code ? `提交编号：${row.followup_code}` : "",
           row.product_type ? `产品类型：${row.product_type}` : "",
           row.test_category ? `测试类别：${row.test_category}` : "",
-          row.campaign ? `档期名称：${row.campaign}` : "",
+          row.campaign ? `档期：${effectiveCampaignYear(row)} · ${row.campaign}` : "",
           row.length_mm || row.width_mm || row.height_mm ? `尺寸（mm）：长 ${row.length_mm || "-"} / 宽 ${row.width_mm || "-"} / 高 ${row.height_mm || "-"}` : "",
           row.version_change ? `本版调整点：${row.version_change}` : "",
           row.core_ingredients_selling_points ? `核心原料及卖点：${row.core_ingredients_selling_points}` : "",
@@ -2659,6 +2947,7 @@
         "送样时间",
         "产品类型",
         "测试类别",
+        "档期年份",
         "档期名称",
         "本版调整点",
         "产品规格（g）",
@@ -2686,6 +2975,7 @@
         row.sample_date,
         row.product_type,
         row.test_category,
+        effectiveCampaignYear(row),
         row.campaign,
         row.version_change,
         row.finished_spec,
@@ -2714,15 +3004,17 @@
       URL.revokeObjectURL(url);
     }
 
-    function moveSelection(delta) {
+    async function moveSelection(delta) {
       const rows = visibleProductGroupsInDisplayOrder().flatMap(group => group.records);
       if (!rows.length) return;
       const index = Math.max(0, rows.findIndex(row => row.id === activeRecordId));
       const next = rows[Math.min(rows.length - 1, Math.max(0, index + delta))];
-      if (next) {
+      if (!next || next.id === activeRecordId) return;
+      await runWithUnsavedGuard(async () => {
         activeRecordId = next.id;
+        supplierEditOpen = false;
         renderAll(next.id);
-      }
+      });
     }
 
     loginForm.addEventListener("submit", async event => {
@@ -2759,23 +3051,28 @@
 
     sessionLogoutBtn.addEventListener("click", logout);
     unlockBtn.addEventListener("click", () => boot({ unlock: true }).catch(error => showMessage(error.message || "加载失败。", "error")));
-    logoutBtn.addEventListener("click", logout);
-    loadBtn.addEventListener("click", loadRecords);
+    logoutBtn.addEventListener("click", () => runWithUnsavedGuard(logout));
+    loadBtn.addEventListener("click", () => runWithUnsavedGuard(loadRecords));
     exportBtn.addEventListener("click", exportCsv);
-    searchInput.addEventListener("input", () => renderAll(""));
+    searchInput.addEventListener("input", renderList);
     sortSelect.addEventListener("change", () => {
       sortMode = sortSelect.value || "submitted";
-      renderAll(activeRecordId);
+      renderList();
     });
     document.querySelectorAll("[data-status-filter]").forEach(button => {
-      button.addEventListener("click", () => {
-        statusFilter = button.dataset.statusFilter;
-        expandedProductGroupKeys.clear();
-        collapsedProductGroupKeys.clear();
-        renderAll("");
+      button.addEventListener("click", async () => {
+        const nextFilter = button.dataset.statusFilter;
+        if (nextFilter === statusFilter) return;
+        await runWithUnsavedGuard(async () => {
+          statusFilter = nextFilter;
+          expandedProductGroupKeys.clear();
+          collapsedProductGroupKeys.clear();
+          supplierEditOpen = false;
+          renderAll("");
+        });
       });
     });
-    listEl.addEventListener("click", event => {
+    listEl.addEventListener("click", async event => {
       const groupToggle = event.target.closest("[data-product-group-toggle]");
       if (groupToggle) {
         const key = groupToggle.dataset.productGroupToggle;
@@ -2783,10 +3080,12 @@
         const isActiveGroup = group?.records.some(row => row.id === activeRecordId);
         if (group && !isActiveGroup) {
           const latestVersion = group.records[group.records.length - 1] || group.latest;
-          activeRecordId = latestVersion?.id || "";
-          supplierEditOpen = false;
-          setProductGroupExpanded(key, true);
-          renderAll(activeRecordId);
+          await runWithUnsavedGuard(async () => {
+            activeRecordId = latestVersion?.id || "";
+            supplierEditOpen = false;
+            setProductGroupExpanded(key, true);
+            renderAll(activeRecordId);
+          });
           return;
         }
         const shouldExpand = groupToggle.getAttribute("aria-expanded") !== "true";
@@ -2795,18 +3094,36 @@
         return;
       }
       const item = event.target.closest("[data-record-id]");
-      if (!item) return;
-      activeRecordId = item.dataset.recordId;
-      supplierEditOpen = false;
-      renderAll(activeRecordId);
+      if (!item || item.dataset.recordId === activeRecordId) return;
+      await runWithUnsavedGuard(async () => {
+        activeRecordId = item.dataset.recordId;
+        supplierEditOpen = false;
+        renderAll(activeRecordId);
+      });
     });
     appPanel.addEventListener("click", async event => {
       try {
+        const campaignToggle = event.target.closest("[data-toggle-campaign-options]");
+        if (campaignToggle) {
+          const open = campaignToggle.getAttribute("aria-expanded") !== "true";
+          refreshCampaignOptions({ open });
+          return;
+        }
+        const campaignOption = event.target.closest("[data-campaign-option]");
+        if (campaignOption) {
+          const input = campaignPickerNodes().input;
+          if (input) input.value = campaignOption.dataset.campaignOption || "";
+          closeCampaignOptions();
+          return;
+        }
         const versionButton = event.target.closest("[data-version-record-id]");
         if (versionButton) {
-          activeRecordId = versionButton.dataset.versionRecordId;
-          supplierEditOpen = false;
-          renderAll(activeRecordId);
+          if (versionButton.dataset.versionRecordId === activeRecordId) return;
+          await runWithUnsavedGuard(async () => {
+            activeRecordId = versionButton.dataset.versionRecordId;
+            supplierEditOpen = false;
+            renderAll(activeRecordId);
+          });
           return;
         }
         const removeImageButton = event.target.closest("[data-remove-admin-image-key]");
@@ -2827,18 +3144,32 @@
           return;
         }
         if (event.target.closest("[data-toggle-supplier-edit]")) {
-          supplierEditOpen = !supplierEditOpen;
-          if (supplierEditOpen) resetAdminImageDraft(activeRecord());
-          else clearAdminImageDraft();
-          renderDetail();
+          if (!supplierEditOpen) {
+            supplierEditOpen = true;
+            resetAdminImageDraft(activeRecord());
+            renderDetail();
+          } else {
+            await runWithUnsavedGuard(async () => {
+              supplierEditOpen = false;
+              clearAdminImageDraft();
+              renderDetail();
+            });
+          }
           return;
         }
         if (event.target.closest("[data-save-active]")) {
           const saveButton = event.target.closest("[data-save-active]");
           saveButton.disabled = true;
           saveButton.textContent = "保存中...";
-          await saveRow();
-          showMessage("已保存。", "success");
+          try {
+            await saveRow();
+            showMessage("已保存。", "success");
+          } finally {
+            if (saveButton.isConnected) {
+              saveButton.disabled = false;
+              saveButton.textContent = "保存修改";
+            }
+          }
           return;
         }
         if (event.target.closest("[data-confirm-active]")) {
@@ -2846,14 +3177,21 @@
           showMessage("已确认。", "success");
         }
         if (event.target.closest("[data-import-active]")) await importToCategoryLab();
-        if (event.target.closest("[data-open-product-grouping]")) openProductGroupingModal();
+        if (event.target.closest("[data-open-product-grouping]")) await runWithUnsavedGuard(async () => openProductGroupingModal());
         if (event.target.closest("[data-delete-active]")) await deleteRow();
       } catch (error) {
         showMessage(error.message || "操作失败。", "error");
       }
     });
+    appPanel.addEventListener("input", event => {
+      if (event.target?.matches('[data-field="campaign"]')) refreshCampaignOptions({ open: true, filter: true });
+    });
     appPanel.addEventListener("change", event => {
       try {
+        if (event.target?.matches("[data-campaign-year]")) {
+          refreshCampaignOptions({ open: true });
+          return;
+        }
         if (["tasting_scene", "round_conclusion"].includes(event.target?.dataset?.field)) updateVersionStagePreview();
         if (event.target?.matches("[data-admin-images]")) {
           addAdminImages(event.target.files || []);
@@ -2896,15 +3234,31 @@
     lightbox.addEventListener("click", event => {
       if (event.target === lightbox) lightbox.classList.add("hidden");
     });
+    unsavedChangesModal.addEventListener("click", event => {
+      if (event.target === unsavedChangesModal || event.target.closest("[data-unsaved-cancel]")) resolveUnsavedDecision("cancel");
+      else if (event.target.closest("[data-unsaved-discard]")) resolveUnsavedDecision("discard");
+      else if (event.target.closest("[data-unsaved-save]")) resolveUnsavedDecision("save");
+    });
+    document.addEventListener("click", event => {
+      if (!event.target.closest("[data-campaign-combobox]")) closeCampaignOptions();
+    });
+    window.addEventListener("beforeunload", event => {
+      if (!hasUnsavedChanges()) return;
+      event.preventDefault();
+      event.returnValue = "";
+    });
+    window.addEventListener("popstate", () => {
+      handleHistoryBack().catch(error => showMessage(error.message || "返回操作失败。", "error"));
+    });
     document.addEventListener("keydown", async event => {
       const tag = event.target?.tagName;
       if (["INPUT", "TEXTAREA", "SELECT"].includes(tag)) return;
       if (event.key === "ArrowDown") {
         event.preventDefault();
-        moveSelection(1);
+        await moveSelection(1);
       } else if (event.key === "ArrowUp") {
         event.preventDefault();
-        moveSelection(-1);
+        await moveSelection(-1);
       } else if (event.key === "Enter" && activeRecordId && roleCanEdit()) {
         event.preventDefault();
         try {
