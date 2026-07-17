@@ -1241,24 +1241,36 @@
   <script>
     const TABLE = "supplier_feedback_records";
     const CATEGORYLAB_STORAGE_KEY = "burger-bom-tool-v1";
-    const CAMPAIGN_OPTIONS = [
-      "0106 Q1 烘焙换新",
-      "0106 Q2 三明治换新",
-      "0226 芝士分子周年庆",
-      "0326 创世巨星",
-      "0326 Q2烘焙换新",
-      "0326 Q2三明治换新",
-      "0430 云南档期 1",
-      "0528 云南档期 2",
-      "0702 Q3烘焙换新",
-      "0702 Q3三明治换新",
-      "0806 桂花档期",
-      "0924 大航海家",
-      "0924 Q4烘焙换新",
-      "0924 Q4三明治换新",
-      "1105 迪克森少校 1",
-      "1208 迪克森少校 2"
-    ];
+    const CAMPAIGN_OPTIONS_BY_YEAR = {
+      "2026": [
+        "01月｜CNY",
+        "02月｜情人节",
+        "03月｜芝士分子周年庆",
+        "04月｜创世巨星",
+        "05月｜云南档期 1",
+        "06月｜云南档期 2",
+        "07月｜埃塞利姆古吉",
+        "08月｜桂花档期 1",
+        "09月｜桂花档期 2",
+        "10月｜大航海家",
+        "11月｜迪克森少校 1",
+        "12月｜迪克森少校 2"
+      ],
+      "2027": [
+        "01月｜CNY（含烘焙 / 三明治换新）",
+        "02月｜优胜美地",
+        "03月｜芝士分子周年庆",
+        "04月｜摘星档期（含烘焙 / 三明治换新）",
+        "05月｜云南档期 1",
+        "06月｜云瑰档期 2",
+        "07月｜埃塞（含烘焙 / 三明治换新）",
+        "08月｜桂花档期 1",
+        "09月｜桂花档期 2",
+        "10月｜大航海家（含烘焙 / 三明治换新）",
+        "11月｜迪克森少校 1",
+        "12月｜迪克森少校 2"
+      ]
+    };
     const CAMPAIGN_YEARS = ["2026", "2027"];
     const EDITABLE_RECORD_FIELDS = [
       "product_name", "supplier_name", "version_label", "sample_date", "product_type", "test_category",
@@ -1525,33 +1537,15 @@
       return normalizeCampaignYear(row.campaign_year || row.campaignYear || row.launchYear || row.launchDate) || CAMPAIGN_YEARS[0];
     }
 
-    function categoryLabCampaignOptions(year) {
-      const projects = categoryLabData()?.launchProjects;
-      if (!Array.isArray(projects)) return [];
-      return projects
-        .filter(project => effectiveCampaignYear(project) === year)
-        .map(project => String(project.launchCampaign || project.campaign || "").trim())
-        .filter(Boolean);
-    }
-
-    function campaignOptions(year, current = "") {
+    function campaignOptions(year) {
       const selectedYear = normalizeCampaignYear(year) || CAMPAIGN_YEARS[0];
-      const savedCampaigns = records
-        .filter(row => effectiveCampaignYear(row) === selectedYear)
-        .map(row => String(row.campaign || "").trim())
-        .filter(Boolean);
-      return [...new Set([
-        ...CAMPAIGN_OPTIONS,
-        ...categoryLabCampaignOptions(selectedYear),
-        ...savedCampaigns,
-        String(current || "").trim()
-      ].filter(Boolean))];
+      return [...(CAMPAIGN_OPTIONS_BY_YEAR[selectedYear] || [])];
     }
 
     function campaignOptionButtons(year, current = "", query = "") {
       const normalizedQuery = String(query || "").trim().toLowerCase();
-      const options = campaignOptions(year, current).filter(option => !normalizedQuery || option.toLowerCase().includes(normalizedQuery));
-      if (!options.length) return `<p class="campaign-options-empty">没有匹配档期，可直接输入并保存。</p>`;
+      const options = campaignOptions(year).filter(option => !normalizedQuery || option.toLowerCase().includes(normalizedQuery));
+      if (!options.length) return `<p class="campaign-options-empty">没有匹配档期，可直接输入；不会加入公共档期。</p>`;
       return options.map(option => `
         <button class="${option === current ? "active" : ""}" data-campaign-option="${escapeAttr(option)}" type="button">${escapeHtml(option)}</button>
       `).join("");
@@ -1902,17 +1896,14 @@
 
     function campaignLaunchTimestamp(value = {}) {
       const row = campaignRecord(value);
-      const match = String(row.campaign || "").trim().match(/^(\d{2})(\d{2})\b/);
-      if (!match) return NaN;
+      const campaign = String(row.campaign || "").trim();
+      const standardMatch = campaign.match(/^(\d{2})月/);
+      const legacyMatch = campaign.match(/^(\d{2})(\d{2})\b/);
+      const oldLabelMatch = campaign.match(/^(\d{1,2})月[：:]/);
+      const month = Number(standardMatch?.[1] || legacyMatch?.[1] || oldLabelMatch?.[1]);
       const year = Number(effectiveCampaignYear(row));
-      const month = Number(match[1]);
-      const day = Number(match[2]);
-      if (!Number.isInteger(year) || month < 1 || month > 12 || day < 1 || day > 31) return NaN;
-      const timestamp = Date.UTC(year, month - 1, day);
-      const date = new Date(timestamp);
-      return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
-        ? timestamp
-        : NaN;
+      if (!Number.isInteger(year) || month < 1 || month > 12) return NaN;
+      return Date.UTC(year, month - 1, 1);
     }
 
     function compareCampaignLaunchOrder(a, b, now = new Date()) {

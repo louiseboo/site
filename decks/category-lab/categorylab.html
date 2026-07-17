@@ -5425,24 +5425,37 @@
       ["蛋糕", "Mstand", "2026-05-29", "抹茶双重芝士蛋糕", "最长直径：96.7mm\n高度：高度41.3mm", "38元", "1. 抹茶风味赛道整体表现分化，能在原料专业性与产品呈现上做到高水准的品牌仍属少数，品类机会点显著；\n2. M Stand蛋糕在视觉审美与风味层次上优于星巴克，整体定位偏甜，与其目标受众匹配；"],
       ["蛋糕", "Mstand", "2026-05-29", "泰茶可可蛋糕", "最长直径：80mm\n高度：高度40mm", "38元", ""]
     ];
-    const campaignOptions = [
-      "0106 Q1 烘焙换新",
-      "0106 Q2 三明治换新",
-      "0226 芝士分子周年庆",
-      "0326 创世巨星",
-      "0326 Q2烘焙换新",
-      "0326 Q2三明治换新",
-      "0430 云南档期 1",
-      "0528 云南档期 2",
-      "0702 Q3烘焙换新",
-      "0702 Q3三明治换新",
-      "0806 桂花档期",
-      "0924 大航海家",
-      "0924 Q4烘焙换新",
-      "0924 Q4三明治换新",
-      "1105 迪克森少校 1",
-      "1208 迪克森少校 2"
-    ];
+    const standardCampaignsByYear = {
+      "FY26": [
+        "01月｜CNY",
+        "02月｜情人节",
+        "03月｜芝士分子周年庆",
+        "04月｜创世巨星",
+        "05月｜云南档期 1",
+        "06月｜云南档期 2",
+        "07月｜埃塞利姆古吉",
+        "08月｜桂花档期 1",
+        "09月｜桂花档期 2",
+        "10月｜大航海家",
+        "11月｜迪克森少校 1",
+        "12月｜迪克森少校 2"
+      ],
+      "FY27": [
+        "01月｜CNY（含烘焙 / 三明治换新）",
+        "02月｜优胜美地",
+        "03月｜芝士分子周年庆",
+        "04月｜摘星档期（含烘焙 / 三明治换新）",
+        "05月｜云南档期 1",
+        "06月｜云瑰档期 2",
+        "07月｜埃塞（含烘焙 / 三明治换新）",
+        "08月｜桂花档期 1",
+        "09月｜桂花档期 2",
+        "10月｜大航海家（含烘焙 / 三明治换新）",
+        "11月｜迪克森少校 1",
+        "12月｜迪克森少校 2"
+      ]
+    };
+    const campaignOptions = [...new Set(Object.values(standardCampaignsByYear).flat())];
     const productCalendarSkuRows = [
       { group: "Bakery", tier: "+1元", key: "bakeryPlus1" },
       { group: "Bakery", tier: "+4元", key: "bakeryPlus4" },
@@ -5821,15 +5834,63 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       });
     }
 
+    function scheduleCampaignMonth(name = "") {
+      const rangeMatch = String(name || "").trim().match(/^(\d{1,2})-\d{1,2}月/);
+      const monthMatch = String(name || "").trim().match(/^(\d{1,2})月/);
+      const month = Number(rangeMatch?.[1] || monthMatch?.[1]);
+      return month >= 1 && month <= 12 ? String(month).padStart(2, "0") : "";
+    }
+
+    function standardCampaignDefinition(year = "", month = "") {
+      const normalizedMonth = String(month || "").padStart(2, "0");
+      const label = standardCampaignsByYear[year]?.[Number(normalizedMonth) - 1] || "";
+      return label ? {
+        year,
+        month: normalizedMonth,
+        label,
+        id: `feishu-standard-${String(year).toLowerCase()}-${normalizedMonth}`
+      } : null;
+    }
+
+    function standardCampaignForScheduleRow(row = {}) {
+      return standardCampaignDefinition(row.year, scheduleCampaignMonth(row.name));
+    }
+
+    function standardizedFeishuScheduleRows() {
+      const sourceRows = feishuScheduleRows.map(item => {
+        const row = feishuScheduleRecord(item);
+        row.id = feishuScheduleId(row);
+        return row;
+      });
+      const represented = new Set(sourceRows.map(row => {
+        const campaign = standardCampaignForScheduleRow(row);
+        return campaign ? `${campaign.year}:${campaign.month}` : "";
+      }).filter(Boolean));
+      const missingRows = Object.entries(standardCampaignsByYear).flatMap(([year, labels]) => labels.flatMap((label, index) => {
+        const month = String(index + 1).padStart(2, "0");
+        if (represented.has(`${year}:${month}`)) return [];
+        const calendarYear = `20${year.slice(-2)}`;
+        const row = feishuScheduleRecord([
+          year,
+          `${Number(month)}月：${label.replace(/^\d{2}月｜/, "")}`,
+          "未开始",
+          `${calendarYear}-${month}-01`,
+          "", "", "", "", "", "", "", "", "", "", ""
+        ]);
+        row.id = `feishu-standard-placeholder-${year.toLowerCase()}-${month}`;
+        row.isSynthetic = true;
+        return [row];
+      }));
+      return [...sourceRows, ...missingRows];
+    }
+
     function buildFeishuScheduleLaunchProjects() {
-      return feishuScheduleRows
-        .map(item => {
-          const row = feishuScheduleRecord(item);
-          row.id = feishuScheduleId(row);
-          return row;
-        })
+      return standardizedFeishuScheduleRows()
         .flatMap(row => {
-          const mappedProducts = feishuScheduleProductMap[row.name] || fallbackScheduleProduct(row);
+          const campaign = standardCampaignForScheduleRow(row);
+          const mappedProducts = row.isSynthetic
+            ? [{ id: row.id, name: "", category: "其他", isPlaceholder: true }]
+            : (feishuScheduleProductMap[row.name] || fallbackScheduleProduct(row));
           return mappedProducts.map((product, index) => {
             const category = product.category || inferLaunchCategory(product.name || row.name);
             return {
@@ -5840,15 +5901,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
               launchYear: row.year,
               category,
               categories: [category],
-              launchCampaign: row.name,
-              launchCampaignId: row.id,
+              launchCampaign: campaign?.label || row.name,
+              launchCampaignId: campaign?.id || row.id,
               owner: "Louise",
               source: `${feishuScheduleSource} · ${row.year}`,
               feishuStatus: row.status,
               calendarCompleted: row.status === "已完成",
               plannedDates: { ...row.plannedDates },
               actualDates: { ...row.actualDates },
-              note: `${row.year} ${row.name}：来自档期表；食品可在 Coffee Bar 全流程中补充。`,
+              note: `${row.year} ${campaign?.label || row.name}：来自档期表；食品可在 Coffee Bar 全流程中补充。`,
               checkedFlow: feishuScheduleFlow(row, product)
             };
           });
@@ -6384,6 +6445,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           return migrateLaunchProject({
             ...required,
             ...project,
+            launchYear: required.launchYear || project.launchYear || "",
+            launchCampaign: required.launchCampaign || project.launchCampaign || "",
+            launchCampaignId: required.launchCampaignId || project.launchCampaignId || "",
             feishuStatus: required.feishuStatus || project.feishuStatus || "",
             calendarCompleted: Boolean(required.calendarCompleted) || Boolean(project.calendarCompleted),
             source: project.source || required.source || "",

@@ -192,7 +192,7 @@ test("launch dashboard keeps seven milestones with separate campaign and product
 
 test("July source campaign is completed and an empty campaign can be completed manually", async () => {
   const july = await page.evaluate(() => {
-    const campaign = window.buildLaunchCampaigns(state.launchProjects || []).find(item => item.name === "7月：埃塞利姆古吉");
+    const campaign = window.buildLaunchCampaigns(state.launchProjects || []).find(item => item.name === "07月｜埃塞利姆古吉");
     return {
       status: window.launchProjectStatus(campaign),
       completion: window.launchCompletion(campaign)
@@ -204,7 +204,7 @@ test("July source campaign is completed and an empty campaign can be completed m
 
   const emptyCampaign = await page.evaluate(() => {
     const campaign = window.buildLaunchCampaigns(state.launchProjects || []).find(item =>
-      item.name === "9月：桂花2" && window.visibleLaunchProducts(item.products || []).length === 0
+      item.name === "09月｜桂花档期 2" && window.visibleLaunchProducts(item.products || []).length === 0
     );
     return campaign ? { id: campaign.id, name: campaign.name } : null;
   });
