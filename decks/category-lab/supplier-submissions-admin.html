@@ -283,14 +283,21 @@
       top: 0;
       z-index: 3;
       display: flex;
+      width: 100%;
       min-height: 44px;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
       padding: 9px 16px 9px 14px;
       border-top: 1px solid;
+      border-right: 0;
       border-bottom: 1px solid;
       border-left: 3px solid;
+      border-radius: 0;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
     }
     .test-category-bar.campaign-section {
       border-color: #b58a4a;
@@ -301,6 +308,11 @@
       border-color: #668069;
       background: #e4ebe4;
       color: #2f4a35;
+    }
+    .test-category-bar.maintenance-section {
+      border-color: #8b6d5d;
+      background: #ebe3de;
+      color: #4c4039;
     }
     .test-category-bar.uncategorized-section {
       border-color: #8e877a;
@@ -322,6 +334,23 @@
       font-weight: 650;
       opacity: .78;
       text-align: right;
+    }
+    .test-category-caret {
+      display: inline-grid;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 18px;
+      place-items: center;
+      font-size: 12px;
+      line-height: 1;
+      transition: transform .16s ease;
+    }
+    .test-category-bar[aria-expanded="false"] .test-category-caret {
+      transform: rotate(-90deg);
+    }
+    .test-category-bar:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: -3px;
     }
     .test-category-note {
       border-right: 1px solid currentColor;
@@ -1374,6 +1403,7 @@
     let historyExitInProgress = false;
     const expandedProductGroupKeys = new Set();
     const collapsedProductGroupKeys = new Set();
+    const collapsedTestCategoryKeys = new Set();
     let groupingSourceKey = "";
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
@@ -1870,7 +1900,7 @@
     }
 
     function compareWorkflowGroups(a, b) {
-      const categoryOrder = ["campaign", "proposal", "uncategorized"];
+      const categoryOrder = ["campaign", "proposal", "maintenance", "uncategorized"];
       const aCategory = testCategorySectionKey(a);
       const bCategory = testCategorySectionKey(b);
       const categoryDifference = optionRank(categoryOrder, aCategory) - optionRank(categoryOrder, bCategory);
@@ -1943,6 +1973,7 @@
       const category = String(latestGroupValue(group, "test_category") || "").trim();
       if (category === "档期测试") return "campaign";
       if (category === "新品提案") return "proposal";
+      if (category === "老品维护") return "maintenance";
       return "uncategorized";
     }
 
@@ -1987,6 +2018,7 @@
       const definitions = [
         { key: "campaign", label: "档期测试" },
         { key: "proposal", label: "新品提案" },
+        { key: "maintenance", label: "老品维护" },
         { key: "uncategorized", label: "未分类" }
       ];
       const buckets = new Map(definitions.map(definition => [definition.key, []]));
@@ -2216,23 +2248,27 @@
       const showProcessingStatus = shouldShowProcessingStatus();
       listEl.innerHTML = sections.map(section => {
         const recordCount = section.groups.reduce((total, group) => total + group.records.length, 0);
+        const isCollapsed = collapsedTestCategoryKeys.has(section.key);
         const sectionBar = section.label ? `
-          <header class="test-category-bar ${section.key}-section" data-test-category-section="${escapeAttr(section.key)}">
+          <button class="test-category-bar ${section.key}-section" data-test-category-section="${escapeAttr(section.key)}" data-test-category-toggle="${escapeAttr(section.key)}" type="button" aria-expanded="${!isCollapsed}">
             <span class="test-category-title">${escapeHtml(section.label)}</span>
             <span class="test-category-meta">
               ${section.note ? `<span class="test-category-note">${escapeHtml(section.note)}</span>` : ""}
               <span>${section.groups.length} 个产品 · ${recordCount} 条记录</span>
+              <span class="test-category-caret" aria-hidden="true">▼</span>
             </span>
-          </header>
+          </button>
         ` : "";
         return `
           <section class="test-category-section ${section.key}-category-section">
             ${sectionBar}
-          ${sortMode === "workflow"
-            ? workflowSectionHtml(section, activeGroupKey, showProcessingStatus)
-            : section.groups.map(group => productGroupListHtml(group, section.key, activeGroupKey, showProcessingStatus)).join("")}
-        </section>
-      `;
+            <div class="test-category-body" data-test-category-body="${escapeAttr(section.key)}" ${isCollapsed ? "hidden" : ""}>
+              ${sortMode === "workflow"
+                ? workflowSectionHtml(section, activeGroupKey, showProcessingStatus)
+                : section.groups.map(group => productGroupListHtml(group, section.key, activeGroupKey, showProcessingStatus)).join("")}
+            </div>
+          </section>
+        `;
       }).join("");
     }
 
@@ -2485,7 +2521,7 @@
             ${fieldBlock("宽度（mm）", fieldInput("width_mm", row.width_mm, "填写数字"))}
             ${fieldBlock("高度（mm）", fieldInput("height_mm", row.height_mm, "填写数字"))}
             ${fieldBlock("类型", fieldSelect("product_type", ["", "烘焙", "蛋糕", "三明治", "预包装食品"], row.product_type))}
-            ${fieldBlock("测试类别", fieldSelect("test_category", ["", "档期测试", "新品提案"], row.test_category))}
+            ${fieldBlock("测试类别", fieldSelect("test_category", ["", "档期测试", "新品提案", "老品维护"], row.test_category))}
             ${fieldBlock("送样时间", fieldInput("sample_date", row.sample_date, "YYYY-MM-DD", "date"))}
             ${fieldBlock("本版调整点", fieldTextarea("version_change", row.version_change, "本版调整点", 3), "span-2")}
             ${fieldBlock("产品结构", fieldTextarea("ingredients_structure", row.ingredients_structure, "产品结构", 3), "span-2")}
@@ -3189,6 +3225,14 @@
       });
     });
     listEl.addEventListener("click", async event => {
+      const categoryToggle = event.target.closest("[data-test-category-toggle]");
+      if (categoryToggle) {
+        const key = categoryToggle.dataset.testCategoryToggle;
+        if (collapsedTestCategoryKeys.has(key)) collapsedTestCategoryKeys.delete(key);
+        else collapsedTestCategoryKeys.add(key);
+        renderList();
+        return;
+      }
       const groupToggle = event.target.closest("[data-product-group-toggle]");
       if (groupToggle) {
         const key = groupToggle.dataset.productGroupToggle;
