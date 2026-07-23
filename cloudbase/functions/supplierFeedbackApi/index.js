@@ -27,7 +27,8 @@ const PUBLIC_ACTIONS = new Set([
 const REMINDER_HTTP_ACTIONS = new Set([
   "enableLaunchReminders",
   "syncLaunchReminders",
-  "launchReminderStatus"
+  "launchReminderStatus",
+  "runLaunchReminderScanFromWorker"
 ]);
 const REMINDER_DIRECT_ACTIONS = new Set([
   "scanLaunchReminders",
@@ -51,7 +52,7 @@ function jsonResponse(statusCode, body) {
     statusCode,
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type, X-CategoryLab-Admin-Code, X-CategoryLab-Access-Digest, X-CategoryLab-Reminder-Token",
+      "Access-Control-Allow-Headers": "Content-Type, X-CategoryLab-Admin-Code, X-CategoryLab-Access-Digest, X-CategoryLab-Reminder-Token, X-CategoryLab-Reminder-Worker-Token",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Content-Type": "application/json; charset=utf-8"
     },
@@ -527,6 +528,21 @@ function reminderTokenFromEvent(event = {}, body = {}) {
   );
 }
 
+function reminderWorkerTokenFromEvent(event = {}, body = {}) {
+  const headers = event.headers || {};
+  return text(
+    body.reminderWorkerToken ||
+    headers["x-categorylab-reminder-worker-token"] ||
+    headers["X-CategoryLab-Reminder-Worker-Token"]
+  );
+}
+
+function assertReminderWorker(event = {}, body = {}, env = process.env) {
+  const configured = text(env.CATEGORYLAB_REMINDER_WORKER_TOKEN);
+  const received = reminderWorkerTokenFromEvent(event, body);
+  if (!configured || !received || configured !== received) throw new Error("档期提醒定时任务授权失败。");
+}
+
 function reminderSnapshotDocId(campaignId) {
   return hashToken(`${REMINDER_WORKSPACE_ID}:${text(campaignId)}`).slice(0, 40);
 }
@@ -882,6 +898,7 @@ async function handleEvent(event = {}, dependencies = {}) {
       throw new Error("测试邮件授权失败。");
     }
     if (reminderDirectAction && !isDirectInvocation(event)) throw new Error("该提醒操作只允许腾讯云直接调用。");
+    if (action === "runLaunchReminderScanFromWorker") assertReminderWorker(event, body, env);
 
     const collection = app.database().collection(COLLECTION);
     let data;
@@ -891,6 +908,7 @@ async function handleEvent(event = {}, dependencies = {}) {
     else if (action === "enableLaunchReminders") data = await enableLaunchReminders(app, event, body, env, now);
     else if (action === "syncLaunchReminders") data = await syncLaunchReminders(app, event, body, now);
     else if (action === "launchReminderStatus") data = await launchReminderStatus(app, event, body);
+    else if (action === "runLaunchReminderScanFromWorker") data = await runLaunchReminderScan(app, env, { ...dependencies, now });
     else if (action === "scanLaunchReminders") data = { scheduleSkipped: false, ...(await runLaunchReminderScan(app, env, { ...dependencies, now })) };
     else if (action === "sendLaunchReminderTest") data = await sendLaunchReminderTest(app, event, body, env, { ...dependencies, now });
     else if (action === "submitSupplierFeedback") data = await submitSupplierFeedback(app, collection, body);
@@ -957,6 +975,7 @@ exports._private = {
   enableLaunchReminders,
   syncLaunchReminders,
   launchReminderStatus,
+  assertReminderWorker,
   runLaunchReminderScan,
   sendLaunchReminderTest,
   downloadNotificationAttachments,

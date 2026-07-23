@@ -105,7 +105,8 @@ const env = {
   MAIL_SMTP_PASS: "not-a-real-password",
   MAIL_TEST_TO: "louise.lu@peets.cn",
   MAIL_LAUNCH_REMINDER_TO: "louise.lu@peets.cn,chenkoli@peets.cn,pd_cw03@peets.cn",
-  MAIL_CATEGORYLAB_URL: "https://example.com/categorylab"
+  MAIL_CATEGORYLAB_URL: "https://example.com/categorylab",
+  CATEGORYLAB_REMINDER_WORKER_TOKEN: "test-worker-token"
 };
 
 test("enable exchanges admin authorization for a scoped token and stores only its hash", async () => {
@@ -212,4 +213,23 @@ test("timer events run only at Shanghai 09:00", async () => {
   });
   assert.equal(responseBody(ran).data.scheduleSkipped, false);
   assert.equal(responseBody(ran).data.scanned, 0);
+});
+
+test("event worker endpoint requires its scoped token", async () => {
+  const app = memoryApp();
+  const denied = await api._private.handleEvent(httpEvent({ action: "runLaunchReminderScanFromWorker" }), { app, env });
+  assert.equal(denied.statusCode, 400);
+
+  const allowed = await api._private.handleEvent({
+    httpMethod: "POST",
+    headers: { "X-CategoryLab-Reminder-Worker-Token": "test-worker-token" },
+    body: JSON.stringify({ action: "runLaunchReminderScanFromWorker" })
+  }, {
+    app,
+    env,
+    now: new Date("2026-07-23T01:00:00.000Z"),
+    sendLaunchEmail: async () => ({ messageId: "unused" })
+  });
+  assert.equal(allowed.statusCode, 200);
+  assert.equal(responseBody(allowed).data.scanned, 0);
 });
