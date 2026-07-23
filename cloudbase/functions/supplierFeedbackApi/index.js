@@ -5,12 +5,33 @@ const {
   buildNotificationMessage,
   sendNotification
 } = require("./notification");
+const {
+  addDays,
+  buildLaunchReminderMessage,
+  normalizeReminderSnapshot,
+  scanLaunchReminders: scanReminderEngine,
+  shanghaiDate,
+  shouldRunScheduledScan
+} = require("./launch-reminders");
 
 const COLLECTION = "supplier_feedback_records";
+const REMINDER_WORKSPACE_COLLECTION = "categorylab_reminder_workspaces";
+const REMINDER_SNAPSHOT_COLLECTION = "categorylab_launch_reminders";
+const REMINDER_DELIVERY_COLLECTION = "categorylab_reminder_deliveries";
+const REMINDER_WORKSPACE_ID = "categorylab-default";
 const IMAGE_LIMIT = 6;
 const PUBLIC_ACTIONS = new Set([
   "ping",
   "submitSupplierFeedback"
+]);
+const REMINDER_HTTP_ACTIONS = new Set([
+  "enableLaunchReminders",
+  "syncLaunchReminders",
+  "launchReminderStatus"
+]);
+const REMINDER_DIRECT_ACTIONS = new Set([
+  "scanLaunchReminders",
+  "sendLaunchReminderTest"
 ]);
 const CATEGORY_LAB_OWNER_ACCESS_DIGESTS = new Set([
   "2287a4cfed43e12623e7483ffdd5b9d580af1471d36c3df3f1295c4869d7bd78"
@@ -30,7 +51,7 @@ function jsonResponse(statusCode, body) {
     statusCode,
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type, X-CategoryLab-Admin-Code, X-CategoryLab-Access-Digest",
+      "Access-Control-Allow-Headers": "Content-Type, X-CategoryLab-Admin-Code, X-CategoryLab-Access-Digest, X-CategoryLab-Reminder-Token",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
       "Content-Type": "application/json; charset=utf-8"
     },
@@ -485,6 +506,196 @@ function categoryLabAccessDigestFromEvent(event = {}, body = {}) {
 
 function assertAdmin() {}
 
+function launchReminderConfig(env = process.env) {
+  const smtpUser = text(env.MAIL_SMTP_USER);
+  return {
+    smtpUser,
+    smtpPass: text(env.MAIL_SMTP_PASS),
+    from: `Category Lab 档期提醒 <${smtpUser}>`,
+    testTo: notificationRecipients(env.MAIL_TEST_TO)[0] || "",
+    recipients: notificationRecipients(env.MAIL_LAUNCH_REMINDER_TO),
+    categoryLabUrl: text(env.MAIL_CATEGORYLAB_URL) || "https://louise-ai-d2gi63mlafa5599c4-1434918374.tcloudbaseapp.com/decks/category-lab/categorylab"
+  };
+}
+
+function reminderTokenFromEvent(event = {}, body = {}) {
+  const headers = event.headers || {};
+  return text(
+    body.reminderToken ||
+    headers["x-categorylab-reminder-token"] ||
+    headers["X-CategoryLab-Reminder-Token"]
+  );
+}
+
+function reminderSnapshotDocId(campaignId) {
+  return hashToken(`${REMINDER_WORKSPACE_ID}:${text(campaignId)}`).slice(0, 40);
+}
+
+function reminderDeliveryDocId(key) {
+  return hashToken(text(key)).slice(0, 40);
+}
+
+function isTimerEvent(event = {}) {
+  return [event.Type, event.type, event.eventType].some(value => /timer/i.test(text(value))) ||
+    /reminder/i.test(text(event.TriggerName || event.triggerName));
+}
+
+async function reminderWorkspace(app) {
+  const result = await app.database().collection(REMINDER_WORKSPACE_COLLECTION).doc(REMINDER_WORKSPACE_ID).get();
+  return result.data?.[0] || null;
+}
+
+async function requireReminderToken(app, event, body) {
+  const token = reminderTokenFromEvent(event, body);
+  const workspace = await reminderWorkspace(app);
+  if (!token || !workspace?.token_hash || hashToken(token) !== workspace.token_hash) {
+    throw new Error("云提醒授权无效，请重新开启云提醒。");
+  }
+  if (workspace.active === false) throw new Error("云提醒当前未启用。");
+  return workspace;
+}
+
+async function enableLaunchReminders(app, event, body, env, now = new Date()) {
+  if (!isNotificationTestAuthorized(event, body, env)) throw new Error("云提醒启用授权失败。");
+  const collection = app.database().collection(REMINDER_WORKSPACE_COLLECTION);
+  const existingResult = await collection.doc(REMINDER_WORKSPACE_ID).get();
+  const existing = existingResult.data?.[0] || {};
+  const token = crypto.randomBytes(24).toString("hex");
+  const activationDate = dateText(existing.activation_date) || shanghaiDate(now);
+  const timestamp = now.toISOString();
+  await collection.doc(REMINDER_WORKSPACE_ID).set({
+    workspace_id: REMINDER_WORKSPACE_ID,
+    token_hash: hashToken(token),
+    activation_date: activationDate,
+    active: true,
+    created_at: existing.created_at || timestamp,
+    updated_at: timestamp,
+    last_synced_at: existing.last_synced_at || null
+  });
+  return { token, activationDate };
+}
+
+function dateText(value) {
+  const normalized = text(value);
+  return /^\d{4}-\d{2}-\d{2}$/.test(normalized) ? normalized : "";
+}
+
+async function syncLaunchReminders(app, event, body, now = new Date()) {
+  const workspace = await requireReminderToken(app, event, body);
+  const rawSnapshots = Array.isArray(body.snapshots) ? body.snapshots.slice(0, 100) : [];
+  const snapshots = rawSnapshots.map(normalizeReminderSnapshot).filter(snapshot => snapshot.id);
+  const collection = app.database().collection(REMINDER_SNAPSHOT_COLLECTION);
+  const timestamp = now.toISOString();
+  const activeDocIds = new Set();
+  for (const snapshot of snapshots) {
+    const docId = reminderSnapshotDocId(snapshot.id);
+    activeDocIds.add(docId);
+    await collection.doc(docId).set({
+      workspace_id: REMINDER_WORKSPACE_ID,
+      campaign_id: snapshot.id,
+      id: snapshot.id,
+      name: snapshot.name,
+      launchDate: snapshot.launchDate,
+      activationDate: dateText(workspace.activation_date),
+      nodes: snapshot.nodes,
+      active: true,
+      updated_at: timestamp
+    });
+  }
+  const current = await collection.where({ workspace_id: REMINDER_WORKSPACE_ID }).limit(1000).get();
+  for (const record of current.data || []) {
+    const docId = record._id || reminderSnapshotDocId(record.campaign_id || record.id);
+    if (!activeDocIds.has(docId) && record.active !== false) {
+      await collection.doc(docId).update({ active: false, updated_at: timestamp });
+    }
+  }
+  await app.database().collection(REMINDER_WORKSPACE_COLLECTION).doc(REMINDER_WORKSPACE_ID).update({
+    last_synced_at: timestamp,
+    updated_at: timestamp
+  });
+  return { synced: snapshots.length, syncedAt: timestamp };
+}
+
+async function launchReminderStatus(app, event, body) {
+  const workspace = await requireReminderToken(app, event, body);
+  const result = await app.database().collection(REMINDER_SNAPSHOT_COLLECTION)
+    .where({ workspace_id: REMINDER_WORKSPACE_ID, active: true })
+    .limit(1000)
+    .get();
+  return {
+    enabled: true,
+    campaigns: (result.data || []).length,
+    activationDate: dateText(workspace.activation_date),
+    lastSyncedAt: workspace.last_synced_at || null
+  };
+}
+
+async function sendLaunchMail(message, config, dependencies = {}) {
+  if (dependencies.sendLaunchEmail) return dependencies.sendLaunchEmail(message);
+  if (!config.smtpUser) throw new Error("缺少 MAIL_SMTP_USER。");
+  if (!config.smtpPass) throw new Error("缺少 MAIL_SMTP_PASS。");
+  return sendNotification({ smtpUser: config.smtpUser, smtpPass: config.smtpPass, message });
+}
+
+async function runLaunchReminderScan(app, env, dependencies = {}) {
+  const config = launchReminderConfig(env);
+  if (!config.recipients.length) throw new Error("缺少 MAIL_LAUNCH_REMINDER_TO。");
+  const database = app.database();
+  const snapshotCollection = database.collection(REMINDER_SNAPSHOT_COLLECTION);
+  const deliveryCollection = database.collection(REMINDER_DELIVERY_COLLECTION);
+  const snapshots = await snapshotCollection.where({ workspace_id: REMINDER_WORKSPACE_ID, active: true }).limit(1000).get();
+  return scanReminderEngine({
+    now: dependencies.now || new Date(),
+    listSnapshots: async () => snapshots.data || [],
+    hasDelivery: async key => {
+      const result = await deliveryCollection.doc(reminderDeliveryDocId(key)).get();
+      return result.data?.[0]?.status === "sent";
+    },
+    recordDelivery: async delivery => {
+      await deliveryCollection.doc(reminderDeliveryDocId(delivery.key)).set({
+        workspace_id: REMINDER_WORKSPACE_ID,
+        ...delivery,
+        status: "sent"
+      });
+    },
+    recordFailure: async failure => {
+      await deliveryCollection.doc(reminderDeliveryDocId(failure.key)).set({
+        workspace_id: REMINDER_WORKSPACE_ID,
+        ...failure,
+        status: "failed"
+      });
+    },
+    send: message => sendLaunchMail(message, config, dependencies),
+    config
+  });
+}
+
+async function sendLaunchReminderTest(app, event, body, env, dependencies = {}) {
+  if (!isDirectInvocation(event)) throw new Error("档期提醒测试邮件只允许腾讯云直接调用。");
+  const config = launchReminderConfig(env);
+  if (!config.testTo) throw new Error("缺少 MAIL_TEST_TO。");
+  const now = dependencies.now || new Date();
+  const today = shanghaiDate(now);
+  const campaign = {
+    id: "categorylab-reminder-test",
+    name: "测试档期（仅 Louise 收件）",
+    launchDate: addDays(today, 30)
+  };
+  const node = {
+    key: "consumer",
+    label: "众测",
+    plannedDate: addDays(today, 15),
+    actualDate: ""
+  };
+  const message = buildLaunchReminderMessage({ campaign, node, threshold: 15, remainingDays: 15 }, {
+    from: config.from,
+    to: [config.testTo],
+    categoryLabUrl: config.categoryLabUrl
+  });
+  const result = await sendLaunchMail(message, config, dependencies);
+  return { recipient: config.testTo, messageId: text(result?.messageId), subject: message.subject };
+}
+
 async function submitSupplierFeedback(app, collection, body) {
   const payload = sanitizePublicSubmissionPayload(body.payload);
   requireFields(payload, ["product_name", "supplier_name"]);
@@ -635,35 +846,53 @@ async function adminDelete(collection, event, body) {
   return { ok: true };
 }
 
-async function handleEvent(event = {}) {
+async function handleEvent(event = {}, dependencies = {}) {
   if (event.httpMethod === "OPTIONS" || event.requestContext?.http?.method === "OPTIONS") {
     return jsonResponse(204, {});
   }
 
   try {
+    const app = dependencies.app || getApp();
+    const env = dependencies.env || process.env;
+    const now = dependencies.now || new Date();
+    if (isTimerEvent(event)) {
+      if (!shouldRunScheduledScan(now)) {
+        return jsonResponse(200, { ok: true, data: { scheduleSkipped: true, reason: "outside-shanghai-09", checkedAt: now.toISOString() } });
+      }
+      const summary = await runLaunchReminderScan(app, env, { ...dependencies, now });
+      return jsonResponse(200, { ok: true, data: { scheduleSkipped: false, ...summary } });
+    }
+
     const method = event.httpMethod || event.requestContext?.http?.method || "POST";
     const query = queryParams(event);
     if (method === "GET" && text(query.action) === "image") {
-      const tempUrl = await tempUrlForFileID(getApp(), query.fileID || query.fileId);
+      const tempUrl = await tempUrlForFileID(app, query.fileID || query.fileId);
       return redirectResponse(tempUrl);
     }
 
     const body = parseEventBody(event);
     const action = text(body.action);
     const directNotificationTest = action === "sendLatestNotificationTest";
-    if (!PUBLIC_ACTIONS.has(action) && !action.startsWith("admin") && !directNotificationTest) {
+    const reminderHttpAction = REMINDER_HTTP_ACTIONS.has(action);
+    const reminderDirectAction = REMINDER_DIRECT_ACTIONS.has(action);
+    if (!PUBLIC_ACTIONS.has(action) && !action.startsWith("admin") && !directNotificationTest && !reminderHttpAction && !reminderDirectAction) {
       throw new Error("请求类型不支持。");
     }
-    if (directNotificationTest && !isNotificationTestAuthorized(event, body)) {
+    if (directNotificationTest && !isNotificationTestAuthorized(event, body, env)) {
       throw new Error("测试邮件授权失败。");
     }
+    if (reminderDirectAction && !isDirectInvocation(event)) throw new Error("该提醒操作只允许腾讯云直接调用。");
 
-    const app = getApp();
     const collection = app.database().collection(COLLECTION);
     let data;
 
     if (action === "ping") data = { ok: true };
     else if (directNotificationTest) data = await sendLatestNotificationTest(app, collection, event, body);
+    else if (action === "enableLaunchReminders") data = await enableLaunchReminders(app, event, body, env, now);
+    else if (action === "syncLaunchReminders") data = await syncLaunchReminders(app, event, body, now);
+    else if (action === "launchReminderStatus") data = await launchReminderStatus(app, event, body);
+    else if (action === "scanLaunchReminders") data = { scheduleSkipped: false, ...(await runLaunchReminderScan(app, env, { ...dependencies, now })) };
+    else if (action === "sendLaunchReminderTest") data = await sendLaunchReminderTest(app, event, body, env, { ...dependencies, now });
     else if (action === "submitSupplierFeedback") data = await submitSupplierFeedback(app, collection, body);
     else if (action === "adminLogin") {
       assertAdmin(event, body);
@@ -708,6 +937,7 @@ if (require.main === module) startServer();
 exports.main = handleEvent;
 
 exports._private = {
+  handleEvent,
   makeFollowupCode,
   parseEventBody,
   normalizeRecordPayload,
@@ -720,8 +950,15 @@ exports._private = {
   sanitizePublicSubmissionPayload,
   publicSubmissionRecord,
   notificationConfig,
+  launchReminderConfig,
   isDirectInvocation,
+  isTimerEvent,
   isNotificationTestAuthorized,
+  enableLaunchReminders,
+  syncLaunchReminders,
+  launchReminderStatus,
+  runLaunchReminderScan,
+  sendLaunchReminderTest,
   downloadNotificationAttachments,
   notifyRecord,
   isPublicAction: action => PUBLIC_ACTIONS.has(action)
