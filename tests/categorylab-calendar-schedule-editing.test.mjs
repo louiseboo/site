@@ -212,3 +212,72 @@ test("campaign schedule editor keeps all seven planned nodes and campaign actual
   await page.locator('[data-launch-campaign-actual="prototype"]').fill(originalPrototypeActual);
   await page.locator("#launchScheduleForm button[type=submit]").click();
 });
+
+test("launch reminder setup syncs only approved milestone fields and preserves local data on failure", async () => {
+  const reminderToken = "r".repeat(48);
+  let syncPayload = null;
+  let syncToken = "";
+  let failSync = false;
+
+  await page.route("**/api/supplier-feedback", async route => {
+    const request = route.request();
+    const payload = JSON.parse(request.postData() || "{}");
+    if (payload.action === "enableLaunchReminders") {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ ok: true, data: { token: reminderToken, activationDate: "2026-07-23" } })
+      });
+      return;
+    }
+    if (payload.action === "syncLaunchReminders") {
+      syncPayload = payload;
+      syncToken = request.headers()["x-categorylab-reminder-token"] || "";
+      await route.fulfill({
+        status: failSync ? 503 : 200,
+        contentType: "application/json",
+        body: JSON.stringify(failSync
+          ? { ok: false, error: "temporary failure" }
+          : { ok: true, data: { synced: payload.snapshots.length, deactivated: 0 } })
+      });
+      return;
+    }
+    await route.fallback();
+  });
+
+  await openLaunchPage();
+  await page.evaluate(() => localStorage.removeItem("categorylab-launch-reminder-token-v1"));
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: "My Calendar 档期产品开发", exact: true }).click();
+
+  const reminderButton = page.locator("#launchReminderSyncBtn");
+  await assert.doesNotReject(() => reminderButton.waitFor());
+  assert.equal((await reminderButton.innerText()).trim(), "云提醒 · 未开启");
+  await reminderButton.click();
+  await page.locator("#launchReminderModal.open").waitFor();
+  await page.locator("#launchReminderAdminCode").fill("test-admin-code");
+  await page.locator("#launchReminderForm button[type=submit]").click();
+  await page.getByText("云提醒 · 已同步", { exact: true }).waitFor();
+
+  assert.equal(await page.evaluate(() => localStorage.getItem("categorylab-launch-reminder-token-v1")), reminderToken);
+  assert.equal(await page.evaluate(() => localStorage.getItem("categorylab-launch-reminder-admin-code-v1")), null);
+  assert.equal(syncToken, reminderToken);
+  assert.ok(syncPayload.snapshots.length > 0);
+  assert.deepEqual(
+    [...new Set(syncPayload.snapshots.flatMap(item => Object.values(item.nodes).map(node => node.key)))].sort(),
+    ["consumer", "pilot", "prototype"]
+  );
+  assert.equal(syncPayload.snapshots.some(item => "products" in item || "note" in item || "checkedFlow" in item), false);
+  assert.equal(syncPayload.snapshots.every(item => Object.values(item.nodes).every(node => (
+    ["key", "label", "plannedDate", "actualDate"].every(key => key in node)
+  ))), true);
+
+  const localStateBeforeFailure = await page.evaluate(() => localStorage.getItem("burger-bom-tool-v1"));
+  failSync = true;
+  await reminderButton.click();
+  await page.getByText("云提醒 · 同步失败", { exact: true }).waitFor();
+  assert.equal(await page.evaluate(() => localStorage.getItem("burger-bom-tool-v1")), localStateBeforeFailure);
+
+  await page.evaluate(() => localStorage.removeItem("categorylab-launch-reminder-token-v1"));
+  await page.unroute("**/api/supplier-feedback");
+});
