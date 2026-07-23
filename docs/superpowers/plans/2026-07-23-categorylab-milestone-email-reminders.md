@@ -152,7 +152,8 @@ git commit -m "feat(categorylab): sync milestone reminders to cloud"
 
 **Interfaces:**
 - Cloud function: `supplierFeedbackApi`.
-- Timer trigger: `categorylabLaunchReminderHourly`, cron `0 0 * * * * *`; code executes scans only at 09:00 `Asia/Shanghai`.
+- Event worker: `categorylabLaunchReminderWorker`.
+- Timer trigger: `categorylabLaunchReminderHourly`, cron `0 0 * * * * *`; worker executes scans only at 09:00 `Asia/Shanghai` and calls the HTTP function through a scoped worker token.
 
 - [ ] **Step 1: Run all local tests before deployment**
 
@@ -164,13 +165,13 @@ Deploy code with `tcb fn deploy supplierFeedbackApi --dir cloudbase/functions/su
 
 - [ ] **Step 3: Verify required cloud environment variable names**
 
-Confirm the presence, without printing values, of `MAIL_SMTP_USER`, `MAIL_SMTP_PASS`, `MAIL_TEST_TO`, `MAIL_LAUNCH_REMINDER_TO`, and `CATEGORYLAB_ADMIN_CODE`. If SMTP variables are absent, stop cloud email activation and report the exact blocker; do not substitute a different sender silently.
+Confirm the presence, without printing values, of `MAIL_SMTP_USER`, `MAIL_SMTP_PASS`, `MAIL_TEST_TO`, `MAIL_LAUNCH_REMINDER_TO`, `CATEGORYLAB_ADMIN_CODE`, and `CATEGORYLAB_REMINDER_WORKER_TOKEN`. If SMTP variables are absent, stop cloud email activation and report the exact blocker; do not substitute a different sender silently.
 
 - [ ] **Step 4: Create and inspect the timer trigger**
 
 ```bash
-tcb fn trigger create supplierFeedbackApi --trigger-name categorylabLaunchReminderHourly --cron "0 0 * * * * *" -e louise-ai-d2gi63mlafa5599c4
-tcb fn detail supplierFeedbackApi -e louise-ai-d2gi63mlafa5599c4
+tcb fn trigger create categorylabLaunchReminderWorker --trigger-name categorylabLaunchReminderHourly --cron "0 0 * * * * *" -e louise-ai-d2gi63mlafa5599c4
+tcb fn detail categorylabLaunchReminderWorker -e louise-ai-d2gi63mlafa5599c4
 ```
 
 Expected: the named trigger appears once.
