@@ -365,11 +365,18 @@
       border-bottom: 1px solid var(--line-soft);
     }
     .campaign-group-bar {
+      width: 100%;
       min-height: 40px;
+      border: 0;
       border-left: 3px solid #9b7642;
+      border-bottom: 1px solid var(--line-soft);
+      border-radius: 0;
       background: #fffaf0;
       padding: 8px 14px 8px 13px;
       color: #493820;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
     }
     .campaign-group-bar strong {
       font-family: var(--serif);
@@ -382,6 +389,27 @@
       color: var(--muted);
       font-size: 10.5px;
       font-weight: 650;
+    }
+    .campaign-group-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .campaign-group-caret {
+      display: inline-grid;
+      width: 18px;
+      height: 18px;
+      place-items: center;
+      font-size: 11px;
+      line-height: 1;
+      transition: transform .16s ease;
+    }
+    .campaign-group-bar[aria-expanded="false"] .campaign-group-caret {
+      transform: rotate(-90deg);
+    }
+    .campaign-group-bar:focus-visible {
+      outline: 2px solid #9b7642;
+      outline-offset: -3px;
     }
     .product-type-bar {
       min-height: 32px;
@@ -1404,6 +1432,8 @@
     const expandedProductGroupKeys = new Set();
     const collapsedProductGroupKeys = new Set();
     const collapsedTestCategoryKeys = new Set();
+    const expandedCampaignGroupKeys = new Set();
+    const collapsedCampaignGroupKeys = new Set();
     let groupingSourceKey = "";
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
@@ -2223,15 +2253,33 @@
       if (!shouldGroupCampaigns) {
         return productTypeSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus);
       }
-      return campaignGroupSections(section.groups).map(campaignSection => {
+      const campaignSections = campaignGroupSections(section.groups);
+      const activeCampaignKey = campaignSections.find(campaignSection =>
+        campaignSection.groups.some(group => group.key === activeGroupKey)
+      )?.key || "";
+      return campaignSections.map(campaignSection => {
         const recordCount = campaignSection.groups.reduce((total, group) => total + group.records.length, 0);
         const label = campaignSection.campaign
           ? `${campaignSection.year}｜${campaignSection.campaign}`
           : "待补充档期";
+        const isExpanded = productGroupExpanded(
+          campaignSection.key,
+          activeCampaignKey,
+          expandedCampaignGroupKeys,
+          collapsedCampaignGroupKeys
+        );
         return `
           <div class="campaign-group-section" data-campaign-group-section="${escapeAttr(campaignSection.key)}">
-            <header class="campaign-group-bar" data-campaign-group><strong>${escapeHtml(label)}</strong><span>${campaignSection.groups.length} 个产品 · ${recordCount} 条记录</span></header>
-            ${productTypeSectionsHtml(campaignSection.groups, section.key, activeGroupKey, showProcessingStatus)}
+            <button class="campaign-group-bar" data-campaign-group data-campaign-group-toggle="${escapeAttr(campaignSection.key)}" type="button" aria-expanded="${isExpanded}">
+              <strong>${escapeHtml(label)}</strong>
+              <span class="campaign-group-meta">
+                <span>${campaignSection.groups.length} 个产品 · ${recordCount} 条记录</span>
+                <span class="campaign-group-caret" aria-hidden="true">▼</span>
+              </span>
+            </button>
+            <div class="campaign-group-body" data-campaign-group-body="${escapeAttr(campaignSection.key)}" ${isExpanded ? "" : "hidden"}>
+              ${productTypeSectionsHtml(campaignSection.groups, section.key, activeGroupKey, showProcessingStatus)}
+            </div>
           </div>
         `;
       }).join("");
@@ -3230,6 +3278,19 @@
         const key = categoryToggle.dataset.testCategoryToggle;
         if (collapsedTestCategoryKeys.has(key)) collapsedTestCategoryKeys.delete(key);
         else collapsedTestCategoryKeys.add(key);
+        renderList();
+        return;
+      }
+      const campaignGroupToggle = event.target.closest("[data-campaign-group-toggle]");
+      if (campaignGroupToggle) {
+        const key = campaignGroupToggle.dataset.campaignGroupToggle;
+        const shouldExpand = campaignGroupToggle.getAttribute("aria-expanded") !== "true";
+        setProductGroupExpanded(
+          key,
+          shouldExpand,
+          expandedCampaignGroupKeys,
+          collapsedCampaignGroupKeys
+        );
         renderList();
         return;
       }
