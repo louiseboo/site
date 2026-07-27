@@ -412,57 +412,6 @@
       outline: 2px solid #9b7642;
       outline-offset: -3px;
     }
-    .paused-subsection {
-      border-top: 2px solid #c9503f;
-      background: #fffaf8;
-    }
-    .paused-subsection-bar {
-      display: flex;
-      width: 100%;
-      min-height: 38px;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      border: 0;
-      border-left: 3px solid #c9503f;
-      border-bottom: 1px solid #ead6d0;
-      border-radius: 0;
-      background: #f5e3df;
-      padding: 7px 14px 7px 13px;
-      color: #7a2f24;
-      font: inherit;
-      text-align: left;
-      cursor: pointer;
-    }
-    .paused-subsection-bar strong {
-      font-size: 12.5px;
-      font-weight: 800;
-    }
-    .paused-subsection-meta {
-      display: flex;
-      flex: 0 0 auto;
-      align-items: center;
-      gap: 8px;
-      font-size: 10.5px;
-      font-weight: 700;
-      opacity: .82;
-    }
-    .paused-subsection-caret {
-      display: inline-grid;
-      width: 18px;
-      height: 18px;
-      place-items: center;
-      font-size: 11px;
-      line-height: 1;
-      transition: transform .16s ease;
-    }
-    .paused-subsection-bar[aria-expanded="false"] .paused-subsection-caret {
-      transform: rotate(-90deg);
-    }
-    .paused-subsection-bar:focus-visible {
-      outline: 2px solid #c9503f;
-      outline-offset: -3px;
-    }
     .supplier-group-section + .supplier-group-section {
       border-top: 1px solid var(--line);
     }
@@ -2597,6 +2546,14 @@
     function visibleProductGroupsInDisplayOrder() {
       return visibleProductSections().flatMap(section => {
         if (sortMode !== "workflow") return section.groups;
+        if (section.key === "campaign") {
+          return campaignGroupSections(section.groups).flatMap(campaignSection => {
+            const regularGroups = campaignSection.groups.filter(group => !isPausedProductGroup(group));
+            const pausedGroups = campaignSection.groups.filter(group => isPausedProductGroup(group));
+            const pausedDisplayOrder = supplierGroupSections(pausedGroups).flatMap(supplierSection => supplierSection.groups);
+            return [...regularGroups, ...pausedDisplayOrder];
+          });
+        }
         const regularGroups = section.groups.filter(group => !isPausedProductGroup(group));
         const pausedGroups = section.groups.filter(group => isPausedProductGroup(group));
         const pausedDisplayOrder = supplierGroupSections(pausedGroups).flatMap(supplierSection => supplierSection.groups);
@@ -2775,55 +2732,35 @@
         );
     }
 
-    function pausedSupplierSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
+    function pausedSupplierSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus, scopeKey = sectionKey) {
       const supplierSections = supplierGroupSections(groups);
       const activeSupplierKey = supplierSections.find(supplierSection =>
         supplierSection.groups.some(group => group.key === activeGroupKey)
-      )?.key || "";
+      );
       return supplierSections.map(supplierSection => {
         const recordCount = supplierSection.groups.reduce((total, group) => total + group.records.length, 0);
+        const supplierToggleKey = `${scopeKey}:${supplierSection.key}`;
         const isExpanded = productGroupExpanded(
-          supplierSection.key,
-          activeSupplierKey,
+          supplierToggleKey,
+          activeSupplierKey ? `${scopeKey}:${activeSupplierKey.key}` : "",
           expandedSupplierGroupKeys,
           collapsedSupplierGroupKeys
         );
         return `
-          <div class="supplier-group-section" data-supplier-group-section="${escapeAttr(supplierSection.key)}">
-            <button class="supplier-group-bar" data-supplier-group-toggle="${escapeAttr(supplierSection.key)}" type="button" aria-expanded="${isExpanded}">
+          <div class="supplier-group-section" data-supplier-group-section="${escapeAttr(supplierToggleKey)}">
+            <button class="supplier-group-bar" data-supplier-group-toggle="${escapeAttr(supplierToggleKey)}" type="button" aria-expanded="${isExpanded}">
               <strong>${escapeHtml(supplierSection.supplier)}</strong>
               <span class="supplier-group-meta">
                 <span>${supplierSection.groups.length} 个产品 · ${recordCount} 条记录</span>
                 <span class="supplier-group-caret" aria-hidden="true">▼</span>
               </span>
             </button>
-            <div class="supplier-group-body" data-supplier-group-body="${escapeAttr(supplierSection.key)}" ${isExpanded ? "" : "hidden"}>
+            <div class="supplier-group-body" data-supplier-group-body="${escapeAttr(supplierToggleKey)}" ${isExpanded ? "" : "hidden"}>
               ${supplierSection.groups.map(group => productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus)).join("")}
             </div>
           </div>
         `;
       }).join("");
-    }
-
-    function pausedSubsectionHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
-      if (!groups.length) return "";
-      const recordCount = groups.reduce((total, group) => total + group.records.length, 0);
-      const toggleKey = `${sectionKey}:paused`;
-      const isCollapsed = collapsedTestCategoryKeys.has(toggleKey);
-      return `
-        <section class="paused-subsection" data-paused-subsection="${escapeAttr(sectionKey)}">
-          <button class="paused-subsection-bar" data-paused-subsection-toggle="${escapeAttr(toggleKey)}" type="button" aria-expanded="${!isCollapsed}">
-            <strong>已暂停</strong>
-            <span class="paused-subsection-meta">
-              <span>${groups.length} 个产品 · ${recordCount} 条记录</span>
-              <span class="paused-subsection-caret" aria-hidden="true">▼</span>
-            </span>
-          </button>
-          <div class="paused-subsection-body" data-paused-subsection-body="${escapeAttr(toggleKey)}" ${isCollapsed ? "hidden" : ""}>
-            ${pausedSupplierSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus)}
-          </div>
-        </section>
-      `;
     }
 
     function productTypeSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
@@ -2836,13 +2773,13 @@
     }
 
     function workflowSectionHtml(section, activeGroupKey, showProcessingStatus) {
-      const pausedGroups = section.groups.filter(group => isPausedProductGroup(group));
-      const regularGroups = section.groups.filter(group => !isPausedProductGroup(group));
       const shouldGroupCampaigns = section.key === "campaign" && ["已确认", "已导入"].includes(statusFilter);
-      const regularHtml = shouldGroupCampaigns
-        ? campaignWorkflowHtml(regularGroups, section, activeGroupKey, showProcessingStatus)
-        : productTypeSectionsHtml(regularGroups, section.key, activeGroupKey, showProcessingStatus);
-      return `${regularHtml}${pausedSubsectionHtml(pausedGroups, section.key, activeGroupKey, showProcessingStatus)}`;
+      if (shouldGroupCampaigns) {
+        return campaignWorkflowHtml(section.groups, section, activeGroupKey, showProcessingStatus);
+      }
+      const regularGroups = section.groups.filter(group => !isPausedProductGroup(group));
+      const pausedGroups = section.groups.filter(group => isPausedProductGroup(group));
+      return `${productTypeSectionsHtml(regularGroups, section.key, activeGroupKey, showProcessingStatus)}${pausedSupplierSectionsHtml(pausedGroups, section.key, activeGroupKey, showProcessingStatus)}`;
     }
 
     function campaignWorkflowHtml(groups, section, activeGroupKey, showProcessingStatus) {
@@ -2871,7 +2808,8 @@
               </span>
             </button>
             <div class="campaign-group-body" data-campaign-group-body="${escapeAttr(campaignSection.key)}" ${isExpanded ? "" : "hidden"}>
-              ${productTypeSectionsHtml(campaignSection.groups, section.key, activeGroupKey, showProcessingStatus)}
+              ${productTypeSectionsHtml(campaignSection.groups.filter(group => !isPausedProductGroup(group)), section.key, activeGroupKey, showProcessingStatus)}
+              ${pausedSupplierSectionsHtml(campaignSection.groups.filter(group => isPausedProductGroup(group)), section.key, activeGroupKey, showProcessingStatus, `${section.key}:${campaignSection.key}`)}
             </div>
           </div>
         `;
@@ -3884,14 +3822,6 @@
           expandedCampaignGroupKeys,
           collapsedCampaignGroupKeys
         );
-        renderList();
-        return;
-      }
-      const pausedSubsectionToggle = event.target.closest("[data-paused-subsection-toggle]");
-      if (pausedSubsectionToggle) {
-        const key = pausedSubsectionToggle.dataset.pausedSubsectionToggle;
-        if (collapsedTestCategoryKeys.has(key)) collapsedTestCategoryKeys.delete(key);
-        else collapsedTestCategoryKeys.add(key);
         renderList();
         return;
       }
