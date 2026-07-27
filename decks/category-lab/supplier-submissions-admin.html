@@ -1234,6 +1234,9 @@
   <style id="inbox-ui-refresh">
     :root {
       --serif: "Songti SC", "STSong", "Noto Serif CJK SC", "Noto Serif SC", serif;
+      --inbox-left-width: 352px;
+      --inbox-right-width: 238px;
+      --inbox-resizer-width: 8px;
     }
 
     body {
@@ -1300,7 +1303,68 @@
     }
 
     .workspace {
-      grid-template-columns: 352px minmax(0, 1fr) 238px;
+      grid-template-columns:
+        var(--inbox-left-width)
+        var(--inbox-resizer-width)
+        minmax(420px, 1fr)
+        var(--inbox-resizer-width)
+        var(--inbox-right-width);
+    }
+
+    .list-pane {
+      grid-column: 1;
+      border-right: 0;
+    }
+
+    .reading-pane {
+      grid-column: 3;
+    }
+
+    .meta-sidebar {
+      grid-column: 5;
+      border-left: 0;
+    }
+
+    .column-resizer {
+      position: relative;
+      z-index: 6;
+      min-width: var(--inbox-resizer-width);
+      background: var(--paper);
+      cursor: col-resize;
+      outline: none;
+      touch-action: none;
+    }
+
+    .column-resizer::before {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: var(--line);
+      content: "";
+      transform: translateX(-50%);
+      transition: width .15s ease, background-color .15s ease;
+    }
+
+    .column-resizer:hover::before,
+    .column-resizer:focus-visible::before,
+    .column-resizer.active::before {
+      width: 3px;
+      background: #b89254;
+    }
+
+    .column-resizer-left {
+      grid-column: 2;
+    }
+
+    .column-resizer-right {
+      grid-column: 4;
+    }
+
+    body.inbox-column-resizing {
+      cursor: col-resize;
+      user-select: none;
     }
 
     .test-category-bar {
@@ -1496,10 +1560,6 @@
     }
 
     @media (min-width: 1101px) and (max-width: 1180px) {
-      .workspace {
-        grid-template-columns: 330px minmax(0, 1fr) 220px;
-      }
-
       .reading-pane {
         padding-inline: 26px;
       }
@@ -1514,6 +1574,19 @@
         grid-template-columns: 330px minmax(0, 1fr);
       }
 
+      .column-resizer {
+        display: none;
+      }
+
+      .list-pane {
+        grid-column: 1;
+      }
+
+      .reading-pane,
+      .meta-sidebar {
+        grid-column: 2;
+      }
+
       .supplier-facts {
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
@@ -1522,6 +1595,10 @@
     @media (max-width: 780px) {
       .inbox-app {
         grid-template-columns: minmax(0, 1fr);
+      }
+
+      .column-resizer {
+        display: none;
       }
 
       .top-actions input {
@@ -1608,9 +1685,11 @@
       <aside class="list-pane">
         <div class="submission-list" id="submissionList"></div>
       </aside>
+      <div class="column-resizer column-resizer-left" data-column-resizer="left" role="separator" aria-orientation="vertical" aria-label="调整左侧列表宽度" tabindex="0" title="拖动调整左侧列表宽度；双击恢复默认"></div>
       <main class="reading-pane">
         <div class="reading-inner" id="detailPane"></div>
       </main>
+      <div class="column-resizer column-resizer-right" data-column-resizer="right" role="separator" aria-orientation="vertical" aria-label="调整右侧操作栏宽度" tabindex="0" title="拖动调整右侧操作栏宽度；双击恢复默认"></div>
       <aside class="meta-sidebar" id="metaPanel"></aside>
     </div>
   </section>
@@ -3810,6 +3889,148 @@
     });
 
     boot().catch(error => showMessage(error.message || "加载失败。", "error"));
+  </script>
+  <script id="inbox-column-resize">
+    (() => {
+      const workspace = document.querySelector(".workspace");
+      const resizers = Array.from(document.querySelectorAll("[data-column-resizer]"));
+      if (!workspace || !resizers.length) return;
+
+      const storageKey = "categorylab-inbox-column-widths-v1";
+      const defaults = { left: 352, right: 238 };
+      const limits = {
+        left: { min: 260, max: 560 },
+        right: { min: 200, max: 400 },
+        centerMin: 420,
+        handles: 16
+      };
+      const desktopQuery = window.matchMedia("(min-width: 1101px)");
+      let widths = { ...defaults };
+      let dragState = null;
+      let resizeFrame = 0;
+
+      try {
+        const saved = JSON.parse(window.localStorage.getItem(storageKey) || "null");
+        if (Number.isFinite(saved?.left)) widths.left = saved.left;
+        if (Number.isFinite(saved?.right)) widths.right = saved.right;
+      } catch {}
+
+      function bounded(value, min, max) {
+        return Math.min(Math.max(value, min), Math.max(min, max));
+      }
+
+      function normalizeWidths() {
+        widths.left = bounded(widths.left, limits.left.min, limits.left.max);
+        widths.right = bounded(widths.right, limits.right.min, limits.right.max);
+        if (!desktopQuery.matches) return;
+
+        const available = Math.max(
+          limits.left.min + limits.right.min,
+          workspace.getBoundingClientRect().width - limits.centerMin - limits.handles
+        );
+        let overflow = widths.left + widths.right - available;
+        if (overflow <= 0) return;
+
+        const rightReduction = Math.min(overflow, widths.right - limits.right.min);
+        widths.right -= rightReduction;
+        overflow -= rightReduction;
+        if (overflow > 0) widths.left = Math.max(limits.left.min, widths.left - overflow);
+      }
+
+      function updateSeparatorState() {
+        resizers.forEach(resizer => {
+          const side = resizer.dataset.columnResizer;
+          const rule = limits[side];
+          resizer.setAttribute("aria-valuemin", String(rule.min));
+          resizer.setAttribute("aria-valuemax", String(rule.max));
+          resizer.setAttribute("aria-valuenow", String(Math.round(widths[side])));
+          resizer.setAttribute("aria-valuetext", `${Math.round(widths[side])} 像素`);
+        });
+      }
+
+      function renderWidths({ persist = false } = {}) {
+        normalizeWidths();
+        workspace.style.setProperty("--inbox-left-width", `${Math.round(widths.left)}px`);
+        workspace.style.setProperty("--inbox-right-width", `${Math.round(widths.right)}px`);
+        updateSeparatorState();
+        if (!persist) return;
+        try {
+          window.localStorage.setItem(storageKey, JSON.stringify({
+            left: Math.round(widths.left),
+            right: Math.round(widths.right)
+          }));
+        } catch {}
+      }
+
+      function setWidth(side, value, persist = false) {
+        if (!desktopQuery.matches) return;
+        const otherSide = side === "left" ? "right" : "left";
+        const maxBySpace = workspace.getBoundingClientRect().width
+          - widths[otherSide]
+          - limits.centerMin
+          - limits.handles;
+        widths[side] = bounded(value, limits[side].min, Math.min(limits[side].max, maxBySpace));
+        renderWidths({ persist });
+      }
+
+      function finishDrag(pointerId) {
+        if (!dragState || (pointerId != null && dragState.pointerId !== pointerId)) return;
+        dragState.resizer.classList.remove("active");
+        document.body.classList.remove("inbox-column-resizing");
+        dragState = null;
+        renderWidths({ persist: true });
+      }
+
+      resizers.forEach(resizer => {
+        const side = resizer.dataset.columnResizer;
+        resizer.addEventListener("pointerdown", event => {
+          if (!desktopQuery.matches || (event.pointerType === "mouse" && event.button !== 0)) return;
+          dragState = {
+            pointerId: event.pointerId,
+            resizer,
+            side,
+            startX: event.clientX,
+            startWidth: widths[side]
+          };
+          resizer.classList.add("active");
+          document.body.classList.add("inbox-column-resizing");
+          resizer.setPointerCapture?.(event.pointerId);
+          event.preventDefault();
+        });
+
+        resizer.addEventListener("dblclick", () => {
+          widths[side] = defaults[side];
+          renderWidths({ persist: true });
+        });
+
+        resizer.addEventListener("keydown", event => {
+          if (!desktopQuery.matches || !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
+          const movement = (event.key === "ArrowRight" ? 1 : -1) * (event.shiftKey ? 30 : 10);
+          const nextWidth = side === "left" ? widths[side] + movement : widths[side] - movement;
+          setWidth(side, nextWidth, true);
+          event.preventDefault();
+          event.stopPropagation();
+        });
+      });
+
+      window.addEventListener("pointermove", event => {
+        if (!dragState || dragState.pointerId !== event.pointerId) return;
+        const movement = event.clientX - dragState.startX;
+        const nextWidth = dragState.side === "left"
+          ? dragState.startWidth + movement
+          : dragState.startWidth - movement;
+        setWidth(dragState.side, nextWidth);
+      });
+      window.addEventListener("pointerup", event => finishDrag(event.pointerId));
+      window.addEventListener("pointercancel", event => finishDrag(event.pointerId));
+      window.addEventListener("resize", () => {
+        window.cancelAnimationFrame(resizeFrame);
+        resizeFrame = window.requestAnimationFrame(() => renderWidths());
+      });
+      desktopQuery.addEventListener?.("change", () => renderWidths());
+
+      renderWidths();
+    })();
   </script>
 </body>
 </html>
