@@ -463,6 +463,24 @@
       font-weight: 700;
       line-height: 1.4;
     }
+    .product-group-title-actions {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+    }
+    .product-paused-badge {
+      display: inline-flex;
+      min-height: 20px;
+      align-items: center;
+      border-radius: 999px;
+      background: #f6dfda;
+      color: #b43e2d;
+      padding: 1px 7px;
+      font-size: 10.5px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
     .product-group-caret {
       flex: 0 0 auto;
       color: var(--faint);
@@ -577,23 +595,6 @@
       font-size: 26px;
       font-weight: 700;
       line-height: 1.25;
-    }
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 24px;
-      border-radius: 999px;
-      padding: 2px 8px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-    .status-badge.pending {
-      background: var(--pending-bg);
-      color: var(--pending);
-    }
-    .status-badge.confirmed {
-      background: #dfeadf;
-      color: var(--confirmed);
     }
     .version-stage-badge {
       display: inline-flex;
@@ -2160,6 +2161,7 @@
     function productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus) {
       const isActiveGroup = group.key === activeGroupKey;
       const isExpanded = productGroupExpanded(group.key, activeGroupKey);
+      const isPaused = statusFilter === "已确认" && String(group.latest?.round_conclusion || "").trim() === "暂停";
       const statusParts = [
         group.pendingCount ? `${group.pendingCount} 待处理` : "",
         group.confirmedCount ? `${group.confirmedCount} 已确认` : ""
@@ -2174,7 +2176,10 @@
           <button class="product-group-head" data-product-group-toggle="${escapeAttr(group.key)}" type="button" aria-expanded="${isExpanded}">
             <span class="product-group-title-row">
               <span class="product-group-title">${escapeHtml(compactText(group.name, "未命名产品"))}</span>
-              <span class="product-group-caret">▼</span>
+              <span class="product-group-title-actions">
+                <span class="product-group-caret">▼</span>
+                ${isPaused ? `<span class="product-paused-badge" data-product-paused>暂停</span>` : ""}
+              </span>
             </span>
             <span class="product-group-meta-row">
               <span>${escapeHtml(compactText(group.supplier, "未知供应商"))} · ${group.records.length} 个版本 · ${escapeHtml(relativeTime(group.latest.created_at))}${escapeHtml(campaignText)}</span>
@@ -2616,12 +2621,10 @@
         metaPanel.innerHTML = "";
         return;
       }
-      const badgeClass = statusClass(row);
       const versionStage = deriveVersionStage(row, records);
       detailPane.innerHTML = `
         <div class="detail-title-row">
           <h2>${escapeHtml(compactText(row.product_name, "未命名产品"))}</h2>
-          <span class="status-badge ${badgeClass}">${escapeHtml(row.status || "待处理")}</span>
         </div>
         <p class="detail-meta">
           ${escapeHtml(compactText(row.supplier_name, "未知供应商"))}
