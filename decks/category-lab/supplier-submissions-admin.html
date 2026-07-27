@@ -471,13 +471,14 @@
     }
     .product-paused-badge {
       display: inline-flex;
-      min-height: 20px;
+      min-height: 22px;
       align-items: center;
+      border: 1px solid #c9503f;
       border-radius: 999px;
-      background: #f6dfda;
-      color: #b43e2d;
-      padding: 1px 7px;
-      font-size: 10.5px;
+      background: #fff4f1;
+      color: #a63a2b;
+      padding: 2px 8px;
+      font-size: 11px;
       font-weight: 800;
       line-height: 1.4;
     }
@@ -2491,8 +2492,8 @@
             <span class="product-group-title-row">
               <span class="product-group-title">${escapeHtml(compactText(group.name, "未命名产品"))}</span>
               <span class="product-group-title-actions">
+                ${isPaused ? `<span class="product-paused-badge" data-product-paused>已暂停</span>` : ""}
                 <span class="product-group-caret">▼</span>
-                ${isPaused ? `<span class="product-paused-badge" data-product-paused>暂停</span>` : ""}
               </span>
             </span>
             <span class="product-group-meta-row">
