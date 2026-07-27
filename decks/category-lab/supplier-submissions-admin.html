@@ -319,11 +319,6 @@
       background: #eeeae3;
       color: #514c44;
     }
-    .test-category-bar.paused-section {
-      border-color: #c9503f;
-      background: #f5e3df;
-      color: #7a2f24;
-    }
     .test-category-title {
       font-size: 13px;
       font-weight: 800;
@@ -415,6 +410,57 @@
     }
     .campaign-group-bar:focus-visible {
       outline: 2px solid #9b7642;
+      outline-offset: -3px;
+    }
+    .paused-subsection {
+      border-top: 2px solid #c9503f;
+      background: #fffaf8;
+    }
+    .paused-subsection-bar {
+      display: flex;
+      width: 100%;
+      min-height: 38px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border: 0;
+      border-left: 3px solid #c9503f;
+      border-bottom: 1px solid #ead6d0;
+      border-radius: 0;
+      background: #f5e3df;
+      padding: 7px 14px 7px 13px;
+      color: #7a2f24;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .paused-subsection-bar strong {
+      font-size: 12.5px;
+      font-weight: 800;
+    }
+    .paused-subsection-meta {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+      font-size: 10.5px;
+      font-weight: 700;
+      opacity: .82;
+    }
+    .paused-subsection-caret {
+      display: inline-grid;
+      width: 18px;
+      height: 18px;
+      place-items: center;
+      font-size: 11px;
+      line-height: 1;
+      transition: transform .16s ease;
+    }
+    .paused-subsection-bar[aria-expanded="false"] .paused-subsection-caret {
+      transform: rotate(-90deg);
+    }
+    .paused-subsection-bar:focus-visible {
+      outline: 2px solid #c9503f;
       outline-offset: -3px;
     }
     .supplier-group-section + .supplier-group-section {
@@ -2510,12 +2556,8 @@
         { key: "uncategorized", label: "未分类" }
       ];
       const buckets = new Map(definitions.map(definition => [definition.key, []]));
-      const pausedGroups = [];
-      groups.forEach(group => {
-        if (isPausedProductGroup(group, filter)) pausedGroups.push(group);
-        else buckets.get(testCategorySectionKey(group)).push(group);
-      });
-      const regularSections = definitions
+      groups.forEach(group => buckets.get(testCategorySectionKey(group)).push(group));
+      return definitions
         .map(definition => {
           const sectionGroups = [...buckets.get(definition.key)];
           return {
@@ -2527,13 +2569,6 @@
           };
         })
         .filter(section => section.groups.length > 0);
-      if (!pausedGroups.length) return regularSections;
-      return [{
-        key: "paused",
-        label: "已暂停",
-        note: "供应商 → 产品 → 版本",
-        groups: pausedGroups
-      }, ...regularSections];
     }
 
     function recordById(id) {
@@ -2560,7 +2595,13 @@
     }
 
     function visibleProductGroupsInDisplayOrder() {
-      return visibleProductSections().flatMap(section => section.groups);
+      return visibleProductSections().flatMap(section => {
+        if (sortMode !== "workflow") return section.groups;
+        const regularGroups = section.groups.filter(group => !isPausedProductGroup(group));
+        const pausedGroups = section.groups.filter(group => isPausedProductGroup(group));
+        const pausedDisplayOrder = supplierGroupSections(pausedGroups).flatMap(supplierSection => supplierSection.groups);
+        return [...regularGroups, ...pausedDisplayOrder];
+      });
     }
 
     function syncUrl() {
@@ -2764,6 +2805,27 @@
       }).join("");
     }
 
+    function pausedSubsectionHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
+      if (!groups.length) return "";
+      const recordCount = groups.reduce((total, group) => total + group.records.length, 0);
+      const toggleKey = `${sectionKey}:paused`;
+      const isCollapsed = collapsedTestCategoryKeys.has(toggleKey);
+      return `
+        <section class="paused-subsection" data-paused-subsection="${escapeAttr(sectionKey)}">
+          <button class="paused-subsection-bar" data-paused-subsection-toggle="${escapeAttr(toggleKey)}" type="button" aria-expanded="${!isCollapsed}">
+            <strong>已暂停</strong>
+            <span class="paused-subsection-meta">
+              <span>${groups.length} 个产品 · ${recordCount} 条记录</span>
+              <span class="paused-subsection-caret" aria-hidden="true">▼</span>
+            </span>
+          </button>
+          <div class="paused-subsection-body" data-paused-subsection-body="${escapeAttr(toggleKey)}" ${isCollapsed ? "hidden" : ""}>
+            ${pausedSupplierSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus)}
+          </div>
+        </section>
+      `;
+    }
+
     function productTypeSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
       return productTypeSections(groups).map(typeSection => `
         <div class="product-type-section" data-product-type-section="${escapeAttr(typeSection.type)}">
@@ -2774,14 +2836,17 @@
     }
 
     function workflowSectionHtml(section, activeGroupKey, showProcessingStatus) {
-      if (section.key === "paused") {
-        return pausedSupplierSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus);
-      }
+      const pausedGroups = section.groups.filter(group => isPausedProductGroup(group));
+      const regularGroups = section.groups.filter(group => !isPausedProductGroup(group));
       const shouldGroupCampaigns = section.key === "campaign" && ["已确认", "已导入"].includes(statusFilter);
-      if (!shouldGroupCampaigns) {
-        return productTypeSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus);
-      }
-      const campaignSections = campaignGroupSections(section.groups);
+      const regularHtml = shouldGroupCampaigns
+        ? campaignWorkflowHtml(regularGroups, section, activeGroupKey, showProcessingStatus)
+        : productTypeSectionsHtml(regularGroups, section.key, activeGroupKey, showProcessingStatus);
+      return `${regularHtml}${pausedSubsectionHtml(pausedGroups, section.key, activeGroupKey, showProcessingStatus)}`;
+    }
+
+    function campaignWorkflowHtml(groups, section, activeGroupKey, showProcessingStatus) {
+      const campaignSections = campaignGroupSections(groups);
       const activeCampaignKey = campaignSections.find(campaignSection =>
         campaignSection.groups.some(group => group.key === activeGroupKey)
       )?.key || "";
@@ -3819,6 +3884,14 @@
           expandedCampaignGroupKeys,
           collapsedCampaignGroupKeys
         );
+        renderList();
+        return;
+      }
+      const pausedSubsectionToggle = event.target.closest("[data-paused-subsection-toggle]");
+      if (pausedSubsectionToggle) {
+        const key = pausedSubsectionToggle.dataset.pausedSubsectionToggle;
+        if (collapsedTestCategoryKeys.has(key)) collapsedTestCategoryKeys.delete(key);
+        else collapsedTestCategoryKeys.add(key);
         renderList();
         return;
       }
