@@ -319,6 +319,11 @@
       background: #eeeae3;
       color: #514c44;
     }
+    .test-category-bar.paused-section {
+      border-color: #c9503f;
+      background: #f5e3df;
+      color: #7a2f24;
+    }
     .test-category-title {
       font-size: 13px;
       font-weight: 800;
@@ -357,6 +362,7 @@
       padding-right: 8px;
     }
     .campaign-group-bar,
+    .supplier-group-bar,
     .product-type-bar {
       display: flex;
       align-items: center;
@@ -409,6 +415,57 @@
     }
     .campaign-group-bar:focus-visible {
       outline: 2px solid #9b7642;
+      outline-offset: -3px;
+    }
+    .supplier-group-section + .supplier-group-section {
+      border-top: 1px solid var(--line);
+    }
+    .supplier-group-bar {
+      width: 100%;
+      min-height: 40px;
+      border: 0;
+      border-left: 3px solid #c9503f;
+      border-bottom: 1px solid var(--line-soft);
+      border-radius: 0;
+      background: #fff8f5;
+      padding: 8px 14px 8px 13px;
+      color: #673126;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .supplier-group-bar strong {
+      min-width: 0;
+      overflow: hidden;
+      font-family: var(--serif);
+      font-size: 13px;
+      line-height: 1.45;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .supplier-group-meta {
+      display: flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 10.5px;
+      font-weight: 650;
+    }
+    .supplier-group-caret {
+      display: inline-grid;
+      width: 18px;
+      height: 18px;
+      place-items: center;
+      font-size: 11px;
+      line-height: 1;
+      transition: transform .16s ease;
+    }
+    .supplier-group-bar[aria-expanded="false"] .supplier-group-caret {
+      transform: rotate(-90deg);
+    }
+    .supplier-group-bar:focus-visible {
+      outline: 2px solid #c9503f;
       outline-offset: -3px;
     }
     .product-type-bar {
@@ -1829,6 +1886,8 @@
     const collapsedTestCategoryKeys = new Set();
     const expandedCampaignGroupKeys = new Set();
     const collapsedCampaignGroupKeys = new Set();
+    const expandedSupplierGroupKeys = new Set();
+    const collapsedSupplierGroupKeys = new Set();
     let groupingSourceKey = "";
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
@@ -2402,6 +2461,10 @@
       return "uncategorized";
     }
 
+    function isPausedProductGroup(group, filter = statusFilter) {
+      return filter === "已确认" && String(group.latest?.round_conclusion || "").trim() === "暂停";
+    }
+
     function campaignRecord(value = {}) {
       if (!Array.isArray(value.records)) return value;
       return [...value.records]
@@ -2447,8 +2510,12 @@
         { key: "uncategorized", label: "未分类" }
       ];
       const buckets = new Map(definitions.map(definition => [definition.key, []]));
-      groups.forEach(group => buckets.get(testCategorySectionKey(group)).push(group));
-      return definitions
+      const pausedGroups = [];
+      groups.forEach(group => {
+        if (isPausedProductGroup(group, filter)) pausedGroups.push(group);
+        else buckets.get(testCategorySectionKey(group)).push(group);
+      });
+      const regularSections = definitions
         .map(definition => {
           const sectionGroups = [...buckets.get(definition.key)];
           return {
@@ -2460,6 +2527,13 @@
           };
         })
         .filter(section => section.groups.length > 0);
+      if (!pausedGroups.length) return regularSections;
+      return [{
+        key: "paused",
+        label: "已暂停",
+        note: "供应商 → 产品 → 版本",
+        groups: pausedGroups
+      }, ...regularSections];
     }
 
     function recordById(id) {
@@ -2555,7 +2629,7 @@
     function productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus) {
       const isActiveGroup = group.key === activeGroupKey;
       const isExpanded = productGroupExpanded(group.key, activeGroupKey);
-      const isPaused = statusFilter === "已确认" && String(group.latest?.round_conclusion || "").trim() === "暂停";
+      const isPaused = isPausedProductGroup(group);
       const statusParts = [
         group.pendingCount ? `${group.pendingCount} 待处理` : "",
         group.confirmedCount ? `${group.confirmedCount} 已确认` : ""
@@ -2638,6 +2712,58 @@
       });
     }
 
+    function supplierGroupSections(groups = []) {
+      const buckets = new Map();
+      groups.forEach(group => {
+        const supplier = String(group.supplier || "").trim() || "未知供应商";
+        const key = normalizeGroupingText(supplier) || "unknown";
+        const bucket = buckets.get(key) || { key, supplier, groups: [], latestTime: 0 };
+        bucket.groups.push(group);
+        bucket.latestTime = Math.max(bucket.latestTime, groupingTime(group.latest));
+        buckets.set(key, bucket);
+      });
+      return [...buckets.values()]
+        .map(bucket => ({
+          ...bucket,
+          groups: bucket.groups.sort((a, b) =>
+            groupingTime(b.latest) - groupingTime(a.latest) || compareGroupIdentity(a, b)
+          )
+        }))
+        .sort((a, b) =>
+          b.latestTime - a.latestTime || a.supplier.localeCompare(b.supplier, "zh-CN")
+        );
+    }
+
+    function pausedSupplierSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
+      const supplierSections = supplierGroupSections(groups);
+      const activeSupplierKey = supplierSections.find(supplierSection =>
+        supplierSection.groups.some(group => group.key === activeGroupKey)
+      )?.key || "";
+      return supplierSections.map(supplierSection => {
+        const recordCount = supplierSection.groups.reduce((total, group) => total + group.records.length, 0);
+        const isExpanded = productGroupExpanded(
+          supplierSection.key,
+          activeSupplierKey,
+          expandedSupplierGroupKeys,
+          collapsedSupplierGroupKeys
+        );
+        return `
+          <div class="supplier-group-section" data-supplier-group-section="${escapeAttr(supplierSection.key)}">
+            <button class="supplier-group-bar" data-supplier-group-toggle="${escapeAttr(supplierSection.key)}" type="button" aria-expanded="${isExpanded}">
+              <strong>${escapeHtml(supplierSection.supplier)}</strong>
+              <span class="supplier-group-meta">
+                <span>${supplierSection.groups.length} 个产品 · ${recordCount} 条记录</span>
+                <span class="supplier-group-caret" aria-hidden="true">▼</span>
+              </span>
+            </button>
+            <div class="supplier-group-body" data-supplier-group-body="${escapeAttr(supplierSection.key)}" ${isExpanded ? "" : "hidden"}>
+              ${supplierSection.groups.map(group => productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus)).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
     function productTypeSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
       return productTypeSections(groups).map(typeSection => `
         <div class="product-type-section" data-product-type-section="${escapeAttr(typeSection.type)}">
@@ -2648,6 +2774,9 @@
     }
 
     function workflowSectionHtml(section, activeGroupKey, showProcessingStatus) {
+      if (section.key === "paused") {
+        return pausedSupplierSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus);
+      }
       const shouldGroupCampaigns = section.key === "campaign" && ["已确认", "已导入"].includes(statusFilter);
       if (!shouldGroupCampaigns) {
         return productTypeSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus);
@@ -3664,6 +3793,8 @@
           sortSelect.value = sortMode;
           expandedProductGroupKeys.clear();
           collapsedProductGroupKeys.clear();
+          expandedSupplierGroupKeys.clear();
+          collapsedSupplierGroupKeys.clear();
           supplierEditOpen = false;
           renderAll("");
         });
@@ -3687,6 +3818,19 @@
           shouldExpand,
           expandedCampaignGroupKeys,
           collapsedCampaignGroupKeys
+        );
+        renderList();
+        return;
+      }
+      const supplierGroupToggle = event.target.closest("[data-supplier-group-toggle]");
+      if (supplierGroupToggle) {
+        const key = supplierGroupToggle.dataset.supplierGroupToggle;
+        const shouldExpand = supplierGroupToggle.getAttribute("aria-expanded") !== "true";
+        setProductGroupExpanded(
+          key,
+          shouldExpand,
+          expandedSupplierGroupKeys,
+          collapsedSupplierGroupKeys
         );
         renderList();
         return;
