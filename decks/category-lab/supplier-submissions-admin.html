@@ -2547,15 +2547,18 @@
       return visibleProductSections().flatMap(section => {
         if (sortMode !== "workflow") return section.groups;
         if (section.key === "campaign") {
-          return campaignGroupSections(section.groups).flatMap(campaignSection => {
-            const regularGroups = campaignSection.groups.filter(group => !isPausedProductGroup(group));
-            const pausedGroups = campaignSection.groups.filter(group => isPausedProductGroup(group));
-            const pausedDisplayOrder = supplierGroupSections(pausedGroups).flatMap(supplierSection => supplierSection.groups);
-            return [...regularGroups, ...pausedDisplayOrder];
-          });
+          return campaignGroupSections(section.groups).flatMap(campaignSection =>
+            productTypeGroupsInDisplayOrder(campaignSection.groups)
+          );
         }
-        const regularGroups = section.groups.filter(group => !isPausedProductGroup(group));
-        const pausedGroups = section.groups.filter(group => isPausedProductGroup(group));
+        return productTypeGroupsInDisplayOrder(section.groups);
+      });
+    }
+
+    function productTypeGroupsInDisplayOrder(groups = []) {
+      return productTypeSections(groups).flatMap(typeSection => {
+        const regularGroups = typeSection.groups.filter(group => !isPausedProductGroup(group));
+        const pausedGroups = typeSection.groups.filter(group => isPausedProductGroup(group));
         const pausedDisplayOrder = supplierGroupSections(pausedGroups).flatMap(supplierSection => supplierSection.groups);
         return [...regularGroups, ...pausedDisplayOrder];
       });
@@ -2763,13 +2766,19 @@
       }).join("");
     }
 
-    function productTypeSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
-      return productTypeSections(groups).map(typeSection => `
-        <div class="product-type-section" data-product-type-section="${escapeAttr(typeSection.type)}">
-          <header class="product-type-bar" data-product-type-group><strong>${escapeHtml(typeSection.type)}</strong><span>${typeSection.groups.length} 个产品</span></header>
-          ${typeSection.groups.map(group => productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus)).join("")}
-        </div>
-      `).join("");
+    function productTypeSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus, scopeKey = sectionKey) {
+      return productTypeSections(groups).map(typeSection => {
+        const regularGroups = typeSection.groups.filter(group => !isPausedProductGroup(group));
+        const pausedGroups = typeSection.groups.filter(group => isPausedProductGroup(group));
+        const typeScopeKey = `${scopeKey}:type:${normalizeGroupingText(typeSection.type) || "unknown"}`;
+        return `
+          <div class="product-type-section" data-product-type-section="${escapeAttr(typeSection.type)}">
+            <header class="product-type-bar" data-product-type-group><strong>${escapeHtml(typeSection.type)}</strong><span>${typeSection.groups.length} 个产品</span></header>
+            ${regularGroups.map(group => productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus)).join("")}
+            ${pausedSupplierSectionsHtml(pausedGroups, sectionKey, activeGroupKey, showProcessingStatus, typeScopeKey)}
+          </div>
+        `;
+      }).join("");
     }
 
     function workflowSectionHtml(section, activeGroupKey, showProcessingStatus) {
@@ -2777,9 +2786,7 @@
       if (shouldGroupCampaigns) {
         return campaignWorkflowHtml(section.groups, section, activeGroupKey, showProcessingStatus);
       }
-      const regularGroups = section.groups.filter(group => !isPausedProductGroup(group));
-      const pausedGroups = section.groups.filter(group => isPausedProductGroup(group));
-      return `${productTypeSectionsHtml(regularGroups, section.key, activeGroupKey, showProcessingStatus)}${pausedSupplierSectionsHtml(pausedGroups, section.key, activeGroupKey, showProcessingStatus)}`;
+      return productTypeSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus);
     }
 
     function campaignWorkflowHtml(groups, section, activeGroupKey, showProcessingStatus) {
@@ -2808,8 +2815,7 @@
               </span>
             </button>
             <div class="campaign-group-body" data-campaign-group-body="${escapeAttr(campaignSection.key)}" ${isExpanded ? "" : "hidden"}>
-              ${productTypeSectionsHtml(campaignSection.groups.filter(group => !isPausedProductGroup(group)), section.key, activeGroupKey, showProcessingStatus)}
-              ${pausedSupplierSectionsHtml(campaignSection.groups.filter(group => isPausedProductGroup(group)), section.key, activeGroupKey, showProcessingStatus, `${section.key}:${campaignSection.key}`)}
+              ${productTypeSectionsHtml(campaignSection.groups, section.key, activeGroupKey, showProcessingStatus, `${section.key}:${campaignSection.key}`)}
             </div>
           </div>
         `;
