@@ -2324,6 +2324,7 @@
 
     function deriveVersionStage(row = {}, allRecords = []) {
       const milestoneStages = {
+        "通过且储备": "储备版",
         "通过且进入众测": "众测版",
         "通过且进入中试": "中试版",
         "通过且进入大生产": "大生产版"
