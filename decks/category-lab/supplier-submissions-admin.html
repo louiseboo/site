@@ -2487,11 +2487,11 @@
       const bValid = Number.isFinite(bTime);
       if (aValid !== bValid) return aValid ? -1 : 1;
       if (aValid && bValid) {
-        const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-        const aUpcoming = aTime >= today;
-        const bUpcoming = bTime >= today;
-        if (aUpcoming !== bUpcoming) return aUpcoming ? -1 : 1;
-        if (aTime !== bTime) return aUpcoming ? aTime - bTime : bTime - aTime;
+        const currentMonth = Date.UTC(now.getFullYear(), now.getMonth(), 1);
+        const aCurrentOrUpcoming = aTime >= currentMonth;
+        const bCurrentOrUpcoming = bTime >= currentMonth;
+        if (aCurrentOrUpcoming !== bCurrentOrUpcoming) return aCurrentOrUpcoming ? -1 : 1;
+        if (aTime !== bTime) return aCurrentOrUpcoming ? aTime - bTime : bTime - aTime;
       }
       const aLatest = a.latest || a;
       const bLatest = b.latest || b;
