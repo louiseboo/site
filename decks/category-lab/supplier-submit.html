@@ -739,6 +739,10 @@
       return (product.structures || []).reduce((sum, row) => sum + numeric(row.weight), 0);
     }
 
+    function structureWeightRequiredForType(type) {
+      return type === "烘焙" || type === "三明治";
+    }
+
     function structureText(product) {
       const filledRows = (product.structures || [])
         .map(row => ({
@@ -832,10 +836,18 @@
     }
 
     function requiredProductStructure(card, index) {
-      const inputs = [...card.querySelectorAll('[data-structure-field="name"]')];
-      const hasStructure = inputs.some(input => String(input.value || "").trim());
-      if (hasStructure) return;
-      focusAndExplain(inputs[0], `请填写产品 ${index + 1} 的产品结构。`);
+      const rows = [...card.querySelectorAll("[data-structure-id]")];
+      const inputs = rows.map(row => row.querySelector('[data-structure-field="name"]'));
+      const hasStructure = inputs.some(input => String(input?.value || "").trim());
+      if (!hasStructure) focusAndExplain(inputs[0], `请填写产品 ${index + 1} 的产品结构。`);
+
+      if (!structureWeightRequiredForType(field("productType").value)) return;
+      const missingWeightRow = rows.find(row => !String(row.querySelector('[data-structure-field="weight"]')?.value || "").trim());
+      if (!missingWeightRow) return;
+      focusAndExplain(
+        missingWeightRow.querySelector('[data-structure-field="weight"]'),
+        `请填写产品 ${index + 1} 的产品结构重量。`
+      );
     }
 
     function requiredProductImages(product, card, index) {
@@ -891,10 +903,11 @@
     }
 
     function productStructureRows(product) {
+      const weightRequired = structureWeightRequiredForType(field("productType").value);
       return (product.structures || []).map(row => `
         <tr data-structure-id="${escapeAttr(row.id)}">
           <td><input data-structure-field="name" value="${escapeAttr(row.name || "")}" placeholder="如：蛋糕分每层结构；三明治主要原料；烘焙主要原料"></td>
-          <td><input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" placeholder="蛋糕可不填"></td>
+          <td><input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" ${weightRequired ? "required" : ""} placeholder="${weightRequired ? "必填" : "蛋糕可不填"}"></td>
           <td><button class="ghost-button danger" data-delete-structure="${escapeAttr(row.id)}" type="button">删除</button></td>
         </tr>
       `).join("");
@@ -903,6 +916,7 @@
     function productHtml(product, index) {
       const canDelete = products.length > 1;
       const productType = field("productType").value;
+      const structureWeightRequired = structureWeightRequiredForType(productType);
       const mainGridClass = productType === "蛋糕" ? "grid product-main cake" : "grid product-main";
       return `
         <article class="product-card" data-product-id="${escapeAttr(product.id)}">
@@ -948,7 +962,7 @@
                   <thead>
                     <tr>
                       <th>描述（从下至上依次是）</th>
-                      <th class="weight-cell">重量(g)</th>
+                      <th class="weight-cell">重量(g)${structureWeightRequired ? " *" : ""}</th>
                       <th class="action-cell">操作</th>
                     </tr>
                   </thead>
