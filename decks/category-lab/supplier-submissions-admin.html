@@ -463,6 +463,14 @@
       outline: 2px solid #c9503f;
       outline-offset: -3px;
     }
+    .supplier-group-bar.proposal-supplier-group-bar {
+      border-left-color: #668069;
+      background: #f6faf6;
+      color: #2f4a35;
+    }
+    .supplier-group-bar.proposal-supplier-group-bar:focus-visible {
+      outline-color: #668069;
+    }
     .product-type-bar {
       min-height: 32px;
       background: #f5f2eb;
@@ -472,6 +480,38 @@
     .product-type-bar strong {
       font-size: 11.5px;
       font-weight: 800;
+    }
+    button.product-type-bar {
+      width: 100%;
+      border-top: 0;
+      border-right: 0;
+      border-left: 0;
+      border-radius: 0;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .product-type-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .product-type-caret {
+      display: inline-grid;
+      width: 18px;
+      height: 18px;
+      place-items: center;
+      color: var(--faint);
+      font-size: 11px;
+      line-height: 1;
+      transition: transform .16s ease;
+    }
+    button.product-type-bar[aria-expanded="false"] .product-type-caret {
+      transform: rotate(-90deg);
+    }
+    button.product-type-bar:focus-visible {
+      outline: 2px solid var(--ink-soft);
+      outline-offset: -3px;
     }
     .campaign-group-section + .campaign-group-section {
       border-top: 1px solid var(--line);
@@ -1883,6 +1923,7 @@
     const collapsedCampaignGroupKeys = new Set();
     const expandedSupplierGroupKeys = new Set();
     const collapsedSupplierGroupKeys = new Set();
+    const collapsedProductTypeKeys = new Set();
     let groupingSourceKey = "";
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
@@ -2514,7 +2555,9 @@
             ...definition,
             note: definition.key === "campaign" && ["已确认", "已导入"].includes(filter)
               ? "档期 → 类型 → 产品 → 版本"
-              : "类型 → 产品 → 版本",
+              : definition.key === "proposal"
+                ? "类型 → 供应商 → 产品 → 版本"
+                : "类型 → 产品 → 版本",
             groups: sectionGroups
           };
         })
@@ -2552,6 +2595,7 @@
             productTypeGroupsInDisplayOrder(campaignSection.groups)
           );
         }
+        if (section.key === "proposal") return proposalProductGroupsInDisplayOrder(section.groups);
         return productTypeGroupsInDisplayOrder(section.groups);
       });
     }
@@ -2563,6 +2607,13 @@
         const pausedDisplayOrder = supplierGroupSections(pausedGroups).flatMap(supplierSection => supplierSection.groups);
         return [...regularGroups, ...pausedDisplayOrder];
       });
+    }
+
+    function proposalProductGroupsInDisplayOrder(groups = []) {
+      return productTypeSections(groups).flatMap(typeSection =>
+        supplierGroupSections(typeSection.groups, { pausedLast: true })
+          .flatMap(supplierSection => supplierSection.groups)
+      );
     }
 
     function syncUrl() {
@@ -2714,7 +2765,7 @@
       });
     }
 
-    function supplierGroupSections(groups = []) {
+    function supplierGroupSections(groups = [], { pausedLast = false } = {}) {
       const buckets = new Map();
       groups.forEach(group => {
         const supplier = String(group.supplier || "").trim() || "未知供应商";
@@ -2727,9 +2778,13 @@
       return [...buckets.values()]
         .map(bucket => ({
           ...bucket,
-          groups: bucket.groups.sort((a, b) =>
-            groupingTime(b.latest) - groupingTime(a.latest) || compareGroupIdentity(a, b)
-          )
+          groups: bucket.groups.sort((a, b) => {
+            if (pausedLast) {
+              const pausedDifference = Number(isPausedProductGroup(a)) - Number(isPausedProductGroup(b));
+              if (pausedDifference) return pausedDifference;
+            }
+            return groupingTime(b.latest) - groupingTime(a.latest) || compareGroupIdentity(a, b);
+          })
         }))
         .sort((a, b) =>
           b.latestTime - a.latestTime || a.supplier.localeCompare(b.supplier, "zh-CN")
@@ -2767,16 +2822,74 @@
       }).join("");
     }
 
-    function productTypeSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus, scopeKey = sectionKey) {
+    function proposalSupplierSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus, scopeKey = sectionKey) {
+      const supplierSections = supplierGroupSections(groups, { pausedLast: true });
+      const activeSupplierKey = supplierSections.find(supplierSection =>
+        supplierSection.groups.some(group => group.key === activeGroupKey)
+      );
+      return supplierSections.map(supplierSection => {
+        const recordCount = supplierSection.groups.reduce((total, group) => total + group.records.length, 0);
+        const supplierToggleKey = `${scopeKey}:${supplierSection.key}`;
+        const isExpanded = productGroupExpanded(
+          supplierToggleKey,
+          activeSupplierKey ? `${scopeKey}:${activeSupplierKey.key}` : "",
+          expandedSupplierGroupKeys,
+          collapsedSupplierGroupKeys
+        );
+        return `
+          <div class="supplier-group-section" data-supplier-group-section="${escapeAttr(supplierToggleKey)}">
+            <button class="supplier-group-bar proposal-supplier-group-bar" data-supplier-group-toggle="${escapeAttr(supplierToggleKey)}" type="button" aria-expanded="${isExpanded}">
+              <strong>${escapeHtml(supplierSection.supplier)}</strong>
+              <span class="supplier-group-meta">
+                <span>${supplierSection.groups.length} 个产品 · ${recordCount} 条记录</span>
+                <span class="supplier-group-caret" aria-hidden="true">▼</span>
+              </span>
+            </button>
+            <div class="supplier-group-body" data-supplier-group-body="${escapeAttr(supplierToggleKey)}" ${isExpanded ? "" : "hidden"}>
+              ${supplierSection.groups.map(group => productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus)).join("")}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function productTypeSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus, scopeKey = sectionKey, { collapsible = false } = {}) {
       return productTypeSections(groups).map(typeSection => {
         const regularGroups = typeSection.groups.filter(group => !isPausedProductGroup(group));
         const pausedGroups = typeSection.groups.filter(group => isPausedProductGroup(group));
         const typeScopeKey = `${scopeKey}:type:${normalizeGroupingText(typeSection.type) || "unknown"}`;
+        const isExpanded = !collapsedProductTypeKeys.has(typeScopeKey);
+        const typeBar = collapsible
+          ? `<button class="product-type-bar" data-product-type-group data-product-type-toggle="${escapeAttr(typeScopeKey)}" type="button" aria-expanded="${isExpanded}">
+              <strong>${escapeHtml(typeSection.type)}</strong>
+              <span class="product-type-meta"><span>${typeSection.groups.length} 个产品</span><span class="product-type-caret" aria-hidden="true">▼</span></span>
+            </button>`
+          : `<header class="product-type-bar" data-product-type-group><strong>${escapeHtml(typeSection.type)}</strong><span>${typeSection.groups.length} 个产品</span></header>`;
         return `
           <div class="product-type-section" data-product-type-section="${escapeAttr(typeSection.type)}">
-            <header class="product-type-bar" data-product-type-group><strong>${escapeHtml(typeSection.type)}</strong><span>${typeSection.groups.length} 个产品</span></header>
-            ${regularGroups.map(group => productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus)).join("")}
-            ${pausedSupplierSectionsHtml(pausedGroups, sectionKey, activeGroupKey, showProcessingStatus, typeScopeKey)}
+            ${typeBar}
+            <div class="product-type-body" data-product-type-body="${escapeAttr(typeScopeKey)}" ${collapsible && !isExpanded ? "hidden" : ""}>
+              ${regularGroups.map(group => productGroupListHtml(group, sectionKey, activeGroupKey, showProcessingStatus)).join("")}
+              ${pausedSupplierSectionsHtml(pausedGroups, sectionKey, activeGroupKey, showProcessingStatus, typeScopeKey)}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function proposalProductTypeSectionsHtml(groups, sectionKey, activeGroupKey, showProcessingStatus) {
+      return productTypeSections(groups).map(typeSection => {
+        const typeScopeKey = `${sectionKey}:type:${normalizeGroupingText(typeSection.type) || "unknown"}`;
+        const isExpanded = !collapsedProductTypeKeys.has(typeScopeKey);
+        return `
+          <div class="product-type-section" data-product-type-section="${escapeAttr(typeSection.type)}">
+            <button class="product-type-bar" data-product-type-group data-product-type-toggle="${escapeAttr(typeScopeKey)}" type="button" aria-expanded="${isExpanded}">
+              <strong>${escapeHtml(typeSection.type)}</strong>
+              <span class="product-type-meta"><span>${typeSection.groups.length} 个产品</span><span class="product-type-caret" aria-hidden="true">▼</span></span>
+            </button>
+            <div class="product-type-body" data-product-type-body="${escapeAttr(typeScopeKey)}" ${isExpanded ? "" : "hidden"}>
+              ${proposalSupplierSectionsHtml(typeSection.groups, sectionKey, activeGroupKey, showProcessingStatus, typeScopeKey)}
+            </div>
           </div>
         `;
       }).join("");
@@ -2786,6 +2899,12 @@
       const shouldGroupCampaigns = section.key === "campaign" && ["已确认", "已导入"].includes(statusFilter);
       if (shouldGroupCampaigns) {
         return campaignWorkflowHtml(section.groups, section, activeGroupKey, showProcessingStatus);
+      }
+      if (section.key === "proposal") {
+        return proposalProductTypeSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus);
+      }
+      if (section.key === "maintenance") {
+        return productTypeSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus, section.key, { collapsible: true });
       }
       return productTypeSectionsHtml(section.groups, section.key, activeGroupKey, showProcessingStatus);
     }
@@ -3805,6 +3924,7 @@
           collapsedProductGroupKeys.clear();
           expandedSupplierGroupKeys.clear();
           collapsedSupplierGroupKeys.clear();
+          collapsedProductTypeKeys.clear();
           supplierEditOpen = false;
           renderAll("");
         });
@@ -3829,6 +3949,14 @@
           expandedCampaignGroupKeys,
           collapsedCampaignGroupKeys
         );
+        renderList();
+        return;
+      }
+      const productTypeToggle = event.target.closest("[data-product-type-toggle]");
+      if (productTypeToggle) {
+        const key = productTypeToggle.dataset.productTypeToggle;
+        if (collapsedProductTypeKeys.has(key)) collapsedProductTypeKeys.delete(key);
+        else collapsedProductTypeKeys.add(key);
         renderList();
         return;
       }
