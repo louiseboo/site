@@ -1,88 +1,77 @@
-# Louise Boo / Food Product Work
+# CategoryLab
 
-Personal food-product workspace for category systems, consumer-testing readouts,
-and browser-ready product notes.
+Peet's 食品品类工作台。当前正式版本部署在腾讯云 CloudBase，GitHub 默认分支为 `tencent-active`。
 
-[Open the site](https://louiseboo-site.vercel.app) · [Open Category Lab](https://louiseboo-site.vercel.app/decks/category-lab/categorylab)
+## 入口
 
----
+- [CategoryLab 正式版](https://louise-ai-d2gi63mlafa5599c4-1434918374.tcloudbaseapp.com/decks/category-lab/categorylab)
+- [产品信息提交表](https://louise-ai-d2gi63mlafa5599c4-1434918374.tcloudbaseapp.com/decks/category-lab/supplier-submit)
+- [产品信息收件箱](https://louise-ai-d2gi63mlafa5599c4-1434918374.tcloudbaseapp.com/decks/category-lab/supplier-submissions-admin)
 
-## What This Is
+## 当前代码
 
-This repo powers a public-facing homepage for Louise Boo's food product work.
-It is designed like a working field shelf: fast to open, easy to scan, and
-warm enough to feel personal.
-
-The first featured workspace is **Category Lab**, a browser page for category
-thinking, product signals, and system experiments. The library also includes
-consumer-testing and product-validation report pages.
-
-## Category Lab Supabase
-
-Category Lab keeps the public pages on Vercel and uses Supabase as the long-term
-data layer for supplier submissions, images, internal accounts, and permissions.
-
-### Setup
-
-1. Create a Supabase project.
-2. Open Supabase SQL Editor and run `supabase/categorylab_schema.sql`.
-3. Create internal users in Supabase Auth.
-4. Set roles in SQL:
-
-```sql
-update public.categorylab_profiles
-set role = 'owner'
-where email = 'your-email@example.com';
-```
-
-Valid roles are `owner`, `pm`, `viewer`, and `supplier`. `owner` and `pm` can
-edit feedback and import records into Category Lab. `viewer` can read only.
-Suppliers can use the public form without registration.
-
-5. Fill `decks/category-lab/supabase-config.js` with the public project URL and
-Publishable key from Supabase Project Settings > API Keys.
-
-```js
-window.CATEGORYLAB_SUPABASE = {
-  url: "https://your-project.supabase.co",
-  anonKey: "your-public-publishable-key",
-  bucket: "supplier-feedback-images"
-};
-```
-
-### Links
-
-- Supplier form: `/supplier-submit`
-- Internal inbox: `/supplier-inbox`
-- Category Lab: `/decks/category-lab/categorylab`
-
-## Current Highlights
-
-- **Category Lab 个人工作台** - the main food category workbench.
-- **Consumer Testing Reports** - product readouts for cakes, candy, and bread.
-- **Food Product Lens** - category strategy, testing signals, launch thinking,
-  and practical product systems.
-
-## Design Direction
-
-The homepage uses a personal-profile structure with a food-product identity:
-warm paper, tomato red, matcha green, butter yellow, charcoal type, and an
-original kawaii cat food illustration for a softer profile signal.
-
-## File Map
-
-| Path | Role |
+| 路径 | 作用 |
 | --- | --- |
-| `index.html` | Homepage and library UI |
-| `styles.css` | Visual system and responsive layout |
-| `data/decks.json` | Editable library data |
-| `decks/` | Browser-ready materials |
-| `supabase/categorylab_schema.sql` | Database, storage, auth profile, and RLS setup |
-| `assets/` | Site imagery and marks |
-| `vercel.json` | Vercel static-site settings |
+| `decks/category-lab/categorylab.html` | CategoryLab 主应用，包含档期管理与产品日历 |
+| `decks/category-lab/supplier-submit.html` | 供应商提交表 |
+| `decks/category-lab/supplier-submissions-admin.html` | 产品信息收件箱 |
+| `decks/category-lab/cloudbase-config.js` | 腾讯云前端公开配置 |
+| `cloudbase/functions/` | 云函数与档期邮件提醒 |
+| `tests/` | CategoryLab 回归与交互测试 |
+| `docs/superpowers/specs/` | 已确认的模块设计说明 |
+| `docs/superpowers/plans/` | 对应实现计划与验收点 |
 
-## Live URL
+## 档期模块边界
+
+- 档期是时间轴父对象，食品是档期下的子对象。
+- Coffee Bar 全流程属于具体食品，不属于档期汇总行。
+- 档期时间轴上层显示计划节点，下层只显示已填写的实际节点。
+- 档期保留 7 个汇总节点；食品重点跟踪众测、NPC、中试和大生产。
+- 蛋糕默认记录稳定性测试、中试、运输测试和大生产。
+- 烘焙/三明治默认记录稳定性测试、中试、烤箱测试和大生产，运输测试按需添加。
+- 中试和大生产支持多次记录；当前时间轴取最后一次有日期的实际完成时间。
+- 档期、食品、Coffee Bar 流程和产品日历必须联动，食品只录入一次。
+
+## 数据注意事项
+
+CategoryLab 主业务数据目前主要保存在浏览器 `localStorage`，核心键为 `burger-bom-tool-v1`。代码公开不等于 Louise 浏览器里的数据会自动同步给其他人。
+
+接手开发前必须先在正式页面点击“备份数据 JSON”，再在本地预览中导入验证。飞书数据只用于补齐缺失默认值，不得覆盖 Louise 已经在网页端填写的名称、档期、品类、备注、计划日期、实际日期或食品变更。
+
+腾讯云只保存供应商收件箱数据，以及用于邮件提醒的最小档期节点快照；它目前不是完整 CategoryLab 数据库。
+
+## 本地预览
+
+```bash
+git clone https://github.com/louiseboo/site.git
+cd site
+git switch tencent-active
+python3 -m http.server 4173
+```
+
+打开：
 
 ```text
-https://louiseboo-site.vercel.app
+http://127.0.0.1:4173/decks/category-lab/categorylab.html
 ```
+
+## 发布规则
+
+1. 修改 `tencent-active`，不要把腾讯正式线直接合并到保留旧 Vercel 版本的 `main`。
+2. 完成档期、日历和提醒测试，并检查桌面/平板排版。
+3. 同步主 HTML 到工作台目录：
+
+```text
+/Users/louise.lu/Documents/Louise-peet's workstream/12 Category Lab System｜品类工作台迭代/categorylab.html
+```
+
+4. 提交并推送 GitHub。
+5. 部署腾讯云：
+
+```bash
+npx -y --package=@cloudbase/cli@3.6.4 tcb hosting deploy decks/category-lab /decks/category-lab -e louise-ai-d2gi63mlafa5599c4 --retry-count 3
+```
+
+6. 核对线上 HTML 与仓库 HTML 的 SHA-256，并确认 Louise 网页端已有数据没有被默认数据覆盖。
+
+凭据、管理口令、QQ SMTP 授权码和云函数环境变量不得写入 GitHub。
