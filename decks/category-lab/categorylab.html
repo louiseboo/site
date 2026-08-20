@@ -2520,6 +2520,170 @@
       justify-content: flex-end;
       gap: 6px;
     }
+    .coffee-flow-stack {
+      display: grid;
+      gap: 14px;
+    }
+    .coffee-flow-section {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+    .coffee-flow-section:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+    .coffee-flow-section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    .coffee-flow-section-head h4 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .coffee-flow-section-head p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .coffee-key-record-list {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fffdf8;
+    }
+    .coffee-key-record {
+      border-bottom: 1px solid var(--line);
+    }
+    .coffee-key-record:last-child { border-bottom: 0; }
+    .coffee-key-record summary {
+      display: grid;
+      grid-template-columns: minmax(150px, 1.35fr) minmax(110px, .8fr) minmax(88px, auto) 18px;
+      gap: 10px;
+      align-items: center;
+      min-height: 45px;
+      padding: 7px 10px;
+      cursor: pointer;
+      list-style: none;
+    }
+    .coffee-key-record summary::-webkit-details-marker { display: none; }
+    .coffee-key-record[open] summary,
+    .coffee-key-record summary:hover { background: #f7eddf; }
+    .coffee-key-record-name {
+      display: grid;
+      gap: 2px;
+    }
+    .coffee-key-record-name strong { font-size: 12px; }
+    .coffee-key-record-name small,
+    .coffee-key-record-date {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+    .coffee-key-record-state {
+      justify-self: end;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .coffee-key-record-state.done { color: var(--green); }
+    .coffee-key-record-chevron {
+      color: var(--muted);
+      font-size: 13px;
+      transform: rotate(0deg);
+      transition: transform .15s ease;
+    }
+    .coffee-key-record[open] .coffee-key-record-chevron { transform: rotate(90deg); }
+    .coffee-key-record-fields {
+      display: grid;
+      grid-template-columns: minmax(150px, .7fr) minmax(220px, 1.2fr) minmax(220px, 1.2fr);
+      gap: 10px;
+      padding: 10px;
+      border-top: 1px solid var(--line);
+      background: #fffaf2;
+    }
+    .coffee-key-record-fields label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .coffee-key-record-fields input,
+    .coffee-key-record-fields textarea {
+      width: 100%;
+      margin-top: 4px;
+    }
+    .coffee-key-record-fields textarea {
+      min-height: 58px;
+      resize: vertical;
+    }
+    .coffee-key-record-footer {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .coffee-key-record-footer label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text);
+      font-size: 11px;
+    }
+    .coffee-key-record-footer input { width: auto; margin: 0; }
+    .coffee-flow-groups {
+      display: grid;
+      gap: 7px;
+    }
+    .coffee-flow-group {
+      display: grid;
+      grid-template-columns: 82px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      min-width: 0;
+    }
+    .coffee-flow-group h5 {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+    }
+    .coffee-flow-group-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 6px;
+    }
+    .coffee-flow-group .flow-check {
+      min-height: 30px;
+    }
+    .launch-product-node-cell {
+      display: grid;
+      gap: 3px;
+    }
+    .launch-add-actual {
+      width: fit-content;
+      border: 0;
+      background: transparent;
+      color: #8a5a36;
+      padding: 1px 4px;
+      font-size: 9px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .launch-add-actual:hover { text-decoration: underline; }
+    .launch-actual-series {
+      display: grid;
+      gap: 6px;
+    }
+    .launch-actual-series-row {
+      display: grid;
+      grid-template-columns: minmax(145px, 1fr) auto;
+      gap: 5px;
+      align-items: end;
+    }
     .launch-product-pill {
       border: 1px solid var(--line);
       border-radius: 999px;
@@ -3523,6 +3687,10 @@
       }
       .launch-campaign-products-actions { justify-content: flex-start; }
       .launch-product-node-editor { grid-template-columns: 1fr; }
+      .coffee-flow-group { grid-template-columns: 1fr; gap: 5px; }
+      .coffee-flow-group h5 { margin-top: 4px; }
+      .coffee-key-record-fields { grid-template-columns: 1fr; }
+      .coffee-key-record-footer { grid-column: 1; }
       .validation-kpis .kpi,
       .validation-kpis .kpi.total { grid-column: span 1; }
       .recipe-meta { grid-template-columns: 1fr; }
@@ -6699,6 +6867,16 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const actualDates = { ...(project.actualDates || {}) };
       if (!actualDates.formula && actualDates.sample) actualDates.formula = actualDates.sample;
       if (!actualDates.sop && actualDates.training) actualDates.sop = actualDates.training;
+      const workflowNodeRecords = Object.fromEntries(Object.entries(project.workflowNodeRecords || {}).map(([key, records]) => [
+        key,
+        (Array.isArray(records) ? records : []).map((record, index) => ({
+          id: record?.id || `${key}-${index + 1}-${crypto.randomUUID()}`,
+          actualDate: record?.actualDate || "",
+          comment: record?.comment || "",
+          issue: record?.issue || "",
+          done: Boolean(record?.done) || Boolean(record?.actualDate)
+        }))
+      ]));
       const categories = splitLaunchCategories(project.categories?.length ? project.categories : (project.category || "烘焙"));
       const requiredLaunchCampaign = defaultLaunchCampaignForProject(project);
       const launchCampaign = project.launchCampaign || project.campaign || requiredLaunchCampaign || "";
@@ -6721,6 +6899,8 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         plannedDates: { ...(project.plannedDates || {}) },
         milestoneOffsets: { ...(project.milestoneOffsets || {}) },
         actualDates,
+        workflowNodeRecords,
+        optionalWorkflowNodes: { ...(project.optionalWorkflowNodes || {}) },
         checkedFlow: Object.fromEntries(coffeeBarFlowItems.map(item => [
           item,
           Boolean(project.calendarCompleted) || feishuStatus === "已完成" || Boolean(checkedFlow[item]) || (flowAliases[item] || []).some(alias => Boolean(checkedFlow[alias]))
@@ -7580,8 +7760,102 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       renderBakeRecords();
     }
 
+    function coffeeBarProductKind(project = {}) {
+      const category = [project.category, ...(project.categories || [])].join(" ").toLowerCase();
+      if (/三明治|sandwich|轻食/.test(category)) return "sandwich";
+      if (/烘焙|bakery/.test(category)) return "bakery";
+      if (/蛋糕|cake|dessert/.test(category)) return "cake";
+      return "other";
+    }
+
+    function coffeeBarOccurrencePrefix(index) {
+      if (index === 0) return "";
+      if (index === 1) return "二次";
+      if (index === 2) return "三次";
+      return `第${index + 1}次`;
+    }
+
+    function coffeeBarNodeTitle(key, index = 0) {
+      const labels = {
+        stability: "稳定性测试",
+        transport: "运输测试",
+        oven: "烤箱测试",
+        pilot: "中试",
+        mass: "大生产"
+      };
+      const label = labels[key] || key;
+      return ["pilot", "mass"].includes(key) ? `${coffeeBarOccurrencePrefix(index)}${label}` : label;
+    }
+
+    function coffeeBarKeyNodeDefinitions(project = {}) {
+      const kind = coffeeBarProductKind(project);
+      const definitions = [
+        { key: "stability", description: "配方与货架稳定性" },
+        { key: "pilot", description: "实际生产验证" }
+      ];
+      if (kind === "cake" || project.optionalWorkflowNodes?.transport) {
+        definitions.push({ key: "transport", description: "运输过程与成品状态" });
+      }
+      if (["bakery", "sandwich"].includes(kind)) {
+        definitions.push({ key: "oven", description: "门店烤箱参数与成品表现" });
+      }
+      definitions.push({ key: "mass", description: "正式生产与交付" });
+      return definitions;
+    }
+
+    function coffeeBarNodeLegacyFlowKey(key, index = 0) {
+      if (key === "stability") return "稳定性测试";
+      if (key === "transport") return "运输测试";
+      if (key === "oven") return "烤箱测试";
+      return coffeeBarNodeTitle(key, index);
+    }
+
+    function launchWorkflowNodeRecords(project, key, ensure = false) {
+      project.workflowNodeRecords = project.workflowNodeRecords || {};
+      let records = Array.isArray(project.workflowNodeRecords[key]) ? project.workflowNodeRecords[key] : [];
+      if (ensure && !records.length) {
+        const actualDate = ["pilot", "mass"].includes(key) ? (project.actualDates?.[key] || "") : "";
+        records = [{
+          id: `${key}-${crypto.randomUUID()}`,
+          actualDate,
+          comment: "",
+          issue: "",
+          done: Boolean(actualDate) || Boolean(project.calendarCompleted) || project.feishuStatus === "已完成" || Boolean(project.checkedFlow?.[coffeeBarNodeLegacyFlowKey(key)])
+        }];
+        project.workflowNodeRecords[key] = records;
+      }
+      return records;
+    }
+
+    function launchWorkflowLatestActualDate(project, key) {
+      const dates = launchWorkflowNodeRecords(project, key)
+        .map(record => record.actualDate || "")
+        .filter(Boolean);
+      if (!dates.length) return "";
+      return dates.slice().sort((a, b) => timeValue(a) - timeValue(b)).at(-1) || "";
+    }
+
+    function syncLaunchWorkflowActualDate(project, key) {
+      if (!["pilot", "mass"].includes(key)) return;
+      project.actualDates = project.actualDates || {};
+      project.actualDates[key] = launchWorkflowLatestActualDate(project, key);
+    }
+
+    function coffeeBarFlowGroups() {
+      return [
+        { label: "前期开发", items: ["Brief", "初版配方确认", "初版报价"] },
+        { label: "评审确认", items: ["众测", "NPC", "配方确认", "产品名称确认"] },
+        { label: "跟产验收", items: ["中试跟产", "三方跟产", "中试验收", "三方跟产验收", "大生产验收"] },
+        { label: "上市资料", items: ["ID 照", "factsheet初版稿件", "factsheet提交审核", "审核Tony", "审核Dan", "factsheet发送", "规格书", "烤程SOP", "Memo", "上市"] }
+      ];
+    }
+
     function launchMilestoneActualDate(project, template) {
       const actualDates = project?.actualDates || {};
+      if (["pilot", "mass"].includes(template?.key)) {
+        const repeatedDate = launchWorkflowLatestActualDate(project, template.key);
+        if (repeatedDate) return repeatedDate;
+      }
       const keys = [template?.key, ...(template?.actualKeys || [])].filter(Boolean);
       return keys.map(key => actualDates[key]).find(Boolean) || "";
     }
@@ -7953,8 +8227,10 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       const milestone = launchMainProductMilestones(project).find(item => item.key === milestoneKey);
       if (!milestone) return `<span class="launch-product-node"><b>-</b></span>`;
       const actualDate = milestone.displayActualDate || milestone.actualDate || "";
+      const repeatedRecords = ["pilot", "mass"].includes(milestoneKey) ? launchWorkflowNodeRecords(project, milestoneKey, true) : [];
       const delta = actualDate && milestone.plannedDate ? dayDiff(actualDate, milestone.plannedDate) : "";
-      const primary = `${actualDate ? "实" : "计"} ${launchDateLabel(actualDate || milestone.plannedDate)}`;
+      const occurrenceLabel = repeatedRecords.length > 1 ? ` · ${repeatedRecords.length} 次` : "";
+      const primary = `${actualDate ? "实" : "计"} ${launchDateLabel(actualDate || milestone.plannedDate)}${occurrenceLabel}`;
       let secondary = milestone.status || "待完成";
       let tone = launchStatusClass(milestone.status);
       if (actualDate) {
@@ -7969,7 +8245,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           tone = "done";
         }
       }
-      return `<button class="launch-product-node ${escapeAttr(tone)}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}" aria-pressed="${activeLaunchProjectId === project.id && activeLaunchMilestoneKey === milestone.key ? "true" : "false"}" type="button"><b>${escapeHtml(primary)}</b><small>${escapeHtml(secondary)}</small></button>`;
+      const node = `<button class="launch-product-node ${escapeAttr(tone)}" data-select-launch-node="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}" aria-pressed="${activeLaunchProjectId === project.id && activeLaunchMilestoneKey === milestone.key ? "true" : "false"}" type="button"><b>${escapeHtml(primary)}</b><small>${escapeHtml(secondary)}</small></button>`;
+      if (!["pilot", "mass"].includes(milestoneKey)) return node;
+      return `<div class="launch-product-node-cell">${node}<button class="launch-add-actual" data-add-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestoneKey)}" type="button" title="新增一次${escapeAttr(milestone.shortLabel)}">＋ 新增一次</button></div>`;
     }
 
     function launchProductNodeEditorHtml(project) {
@@ -7977,11 +8255,21 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (!milestone) {
         return `<div class="launch-product-node-editor"><div><b>节点日期</b><span>点击众测、NPC、中试或大生产，查看并填写实际日期。</span></div></div>`;
       }
+      const repeated = ["pilot", "mass"].includes(milestone.key);
+      const records = repeated ? launchWorkflowNodeRecords(project, milestone.key, true) : [];
       const actualValue = milestone.actualDate || milestone.displayActualDate || "";
+      const actualEditor = repeated
+        ? `<div class="launch-actual-series">${records.map((record, index) => `
+            <div class="launch-actual-series-row">
+              <label>${escapeHtml(coffeeBarNodeTitle(milestone.key, index))}实际日期<input class="small-input" type="date" value="${escapeAttr(record.actualDate || "")}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}" data-workflow-record-id="${escapeAttr(record.id)}"></label>
+              ${index > 0 ? `<button class="btn compact danger" data-remove-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}" data-workflow-record-id="${escapeAttr(record.id)}" type="button">删除</button>` : ""}
+            </div>
+          `).join("")}</div>`
+        : `<label>实际日期<input class="small-input" type="date" value="${escapeAttr(actualValue)}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}"></label>`;
       return `
         <div class="launch-product-node-editor">
           <div><b>${escapeHtml(launchMilestoneDisplayLabel(milestone))}</b><span>计划日期 ${escapeHtml(milestone.plannedDate || "未定")}</span></div>
-          <label>实际日期<input class="small-input" type="date" value="${escapeAttr(actualValue)}" data-launch-actual="${escapeAttr(project.id)}" data-milestone-key="${escapeAttr(milestone.key)}"></label>
+          ${actualEditor}
           <span class="status-dot ${escapeAttr(launchStatusClass(milestone.status))}">${escapeHtml(milestone.status || "待完成")}</span>
         </div>
       `;
@@ -8357,6 +8645,111 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       });
     }
 
+    function launchWorkflowRecord(project, key, recordId) {
+      return launchWorkflowNodeRecords(project, key, true).find(record => record.id === recordId) || null;
+    }
+
+    function addLaunchActualOccurrence(projectId, key) {
+      if (!["pilot", "mass"].includes(key)) return;
+      const project = (state.launchProjects || []).find(item => item.id === projectId);
+      if (!project) return;
+      const records = launchWorkflowNodeRecords(project, key, true);
+      const record = { id: `${key}-${crypto.randomUUID()}`, actualDate: "", comment: "", issue: "", done: false };
+      records.push(record);
+      const campaign = launchCampaignById(project.id);
+      if (campaign) setLaunchCampaignExpanded(campaign.id, true);
+      activeLaunchProjectId = project.id;
+      activeLaunchMilestoneKey = key;
+      persist();
+      renderLaunchProjects();
+      requestAnimationFrame(() => {
+        const input = document.querySelector(`[data-launch-actual="${CSS.escape(project.id)}"][data-milestone-key="${CSS.escape(key)}"][data-workflow-record-id="${CSS.escape(record.id)}"]`);
+        input?.scrollIntoView({ behavior: "smooth", block: "center" });
+        input?.focus();
+      });
+    }
+
+    function removeLaunchActualOccurrence(projectId, key, recordId) {
+      const project = (state.launchProjects || []).find(item => item.id === projectId);
+      const records = project ? launchWorkflowNodeRecords(project, key, true) : [];
+      const record = records.find(item => item.id === recordId);
+      if (!project || !record || records.length <= 1) return;
+      const remove = () => {
+        project.workflowNodeRecords[key] = records.filter(item => item.id !== recordId);
+        syncLaunchWorkflowActualDate(project, key);
+        activeLaunchProjectId = project.id;
+        activeLaunchMilestoneKey = key;
+        persist();
+        renderLaunchProjects();
+      };
+      if (record.actualDate || record.comment || record.issue) {
+        askDeleteConfirm(`确认删除「${coffeeBarNodeTitle(key, records.indexOf(record))}」及其记录？`, remove);
+      } else {
+        remove();
+      }
+    }
+
+    function addOptionalWorkflowNode(projectId, key) {
+      const project = (state.launchProjects || []).find(item => item.id === projectId);
+      if (!project || key !== "transport") return;
+      project.optionalWorkflowNodes = project.optionalWorkflowNodes || {};
+      project.optionalWorkflowNodes.transport = true;
+      const record = launchWorkflowNodeRecords(project, key, true)[0];
+      activeLaunchProjectId = project.id;
+      persist();
+      renderLaunchProjects();
+      requestAnimationFrame(() => {
+        const detail = document.querySelector(`#coffeeBarChecklist [data-workflow-record-id="${CSS.escape(record.id)}"]`);
+        if (detail) detail.open = true;
+        detail?.scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+    }
+
+    function removeOptionalWorkflowNode(projectId, key) {
+      const project = (state.launchProjects || []).find(item => item.id === projectId);
+      if (!project || key !== "transport" || coffeeBarProductKind(project) === "cake") return;
+      const records = launchWorkflowNodeRecords(project, key);
+      const hasContent = records.some(record => record.actualDate || record.comment || record.issue || record.done);
+      const remove = () => {
+        project.optionalWorkflowNodes = project.optionalWorkflowNodes || {};
+        delete project.optionalWorkflowNodes.transport;
+        delete project.workflowNodeRecords?.transport;
+        persist();
+        renderLaunchProjects();
+      };
+      if (hasContent) askDeleteConfirm("确认移除运输测试及其中的日期和记录？", remove);
+      else remove();
+    }
+
+    function coffeeBarKeyRecordHtml(project, definition) {
+      const records = launchWorkflowNodeRecords(project, definition.key, true);
+      const optionalTransport = definition.key === "transport" && coffeeBarProductKind(project) !== "cake";
+      return records.map((record, index) => {
+        const title = coffeeBarNodeTitle(definition.key, index);
+        const done = Boolean(record.done) || Boolean(record.actualDate);
+        const hasNotes = Boolean(String(record.comment || "").trim()) || Boolean(String(record.issue || "").trim());
+        return `
+          <details class="coffee-key-record" data-workflow-node-key="${escapeAttr(definition.key)}" data-workflow-record-id="${escapeAttr(record.id)}">
+            <summary>
+              <span class="coffee-key-record-name"><strong data-workflow-node-title>${escapeHtml(title)}</strong><small>${escapeHtml(definition.description || "关键节点记录")}</small></span>
+              <span class="coffee-key-record-date">${record.actualDate ? `实际 ${escapeHtml(record.actualDate)}` : "未填写实际日期"}</span>
+              <span class="coffee-key-record-state ${done ? "done" : ""}">${done ? "已完成" : (hasNotes ? "跟进中" : "待记录")}</span>
+              <span class="coffee-key-record-chevron" aria-hidden="true">›</span>
+            </summary>
+            <div class="coffee-key-record-fields">
+              <label>实际日期<input type="date" value="${escapeAttr(record.actualDate || "")}" data-workflow-node-field="actualDate" data-workflow-project-id="${escapeAttr(project.id)}" data-workflow-node-key="${escapeAttr(definition.key)}" data-workflow-record-id="${escapeAttr(record.id)}"></label>
+              <label>评论／结论<textarea data-workflow-node-field="comment" data-workflow-project-id="${escapeAttr(project.id)}" data-workflow-node-key="${escapeAttr(definition.key)}" data-workflow-record-id="${escapeAttr(record.id)}" placeholder="记录测试表现、结论或现场反馈">${escapeHtml(record.comment || "")}</textarea></label>
+              <label>问题点<textarea data-workflow-node-field="issue" data-workflow-project-id="${escapeAttr(project.id)}" data-workflow-node-key="${escapeAttr(definition.key)}" data-workflow-record-id="${escapeAttr(record.id)}" placeholder="记录问题、风险或待解决事项">${escapeHtml(record.issue || "")}</textarea></label>
+              <div class="coffee-key-record-footer">
+                <label><input type="checkbox" data-workflow-node-done="${escapeAttr(project.id)}" data-workflow-node-key="${escapeAttr(definition.key)}" data-workflow-record-id="${escapeAttr(record.id)}" ${done ? "checked" : ""}>标记已完成</label>
+                ${optionalTransport ? `<button class="btn compact danger" data-remove-workflow-node="transport" data-workflow-project-id="${escapeAttr(project.id)}" type="button">移除运输测试</button>` : ""}
+              </div>
+            </div>
+          </details>
+        `;
+      }).join("");
+    }
+
     function renderCoffeeBarChecklist(project = activeLaunchProject()) {
       const host = document.querySelector("#coffeeBarChecklist");
       const label = document.querySelector("#launchActiveProjectLabel");
@@ -8379,6 +8772,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           ? `当前档期：${campaign?.name || "未命名档期"} · 未关联食品`
           : `当前档期：${campaign?.name || "未命名档期"} · 当前食品：${project.name || "未命名食品"}`;
       }
+      const keyNodeDefinitions = coffeeBarKeyNodeDefinitions(project);
+      keyNodeDefinitions.forEach(definition => launchWorkflowNodeRecords(project, definition.key, true));
+      const canAddTransport = coffeeBarProductKind(project) !== "cake" && !keyNodeDefinitions.some(definition => definition.key === "transport");
       host.innerHTML = `
         <div class="launch-product-picker launch-flow-product-picker" aria-label="选择食品">
           ${products.map(item => `
@@ -8388,10 +8784,27 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         <div class="launch-flow-toolbar">
           <div><b>${escapeHtml(isPlaceholderProduct ? "全流程任务" : (project.name || "未命名食品"))}</b><span class="muted"> · ${escapeHtml(project.category || "未分类")}</span></div>
         </div>
-        <div class="checkbox-grid">
-          ${coffeeBarFlowItems.map(item => `
-            <label class="flow-check"><input type="checkbox" data-flow-check="${escapeAttr(item)}" ${project.checkedFlow?.[item] ? "checked" : ""}>${escapeHtml(item)}</label>
-          `).join("")}
+        <div class="coffee-flow-stack">
+          <section class="coffee-flow-section">
+            <div class="coffee-flow-section-head">
+              <div><h4>关键节点记录</h4><p>点击节点展开，填写实际日期、评论和问题点。</p></div>
+              ${canAddTransport ? `<button class="btn compact" data-add-workflow-node="transport" data-workflow-project-id="${escapeAttr(project.id)}" type="button">＋ 添加运输测试</button>` : ""}
+            </div>
+            <div class="coffee-key-record-list">
+              ${keyNodeDefinitions.map(definition => coffeeBarKeyRecordHtml(project, definition)).join("")}
+            </div>
+          </section>
+          <section class="coffee-flow-section">
+            <div class="coffee-flow-section-head"><div><h4>其余流程</h4><p>按阶段收拢普通任务，避免与关键节点重复。</p></div></div>
+            <div class="coffee-flow-groups">
+              ${coffeeBarFlowGroups(project).map(group => `
+                <div class="coffee-flow-group">
+                  <h5>${escapeHtml(group.label)}</h5>
+                  <div class="coffee-flow-group-items">${group.items.map(item => `<label class="flow-check"><input type="checkbox" data-flow-check="${escapeAttr(item)}" ${project.checkedFlow?.[item] ? "checked" : ""}>${escapeHtml(item)}</label>`).join("")}</div>
+                </div>
+              `).join("")}
+            </div>
+          </section>
         </div>
         <div class="launch-issue-box">
           <textarea id="launchIssueNote" data-launch-issue-note="${escapeAttr(project.id)}" placeholder="记录这个食品在档期推进中的问题、风险或复盘点">${escapeHtml(project.issueNote || "")}</textarea>
@@ -14150,6 +14563,26 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         openLaunchActualEditor(openLaunchActuals.dataset.openLaunchActuals, openLaunchActuals.dataset.milestoneKey || "");
         return;
       }
+      const addLaunchActual = event.target.closest("[data-add-launch-actual]");
+      if (addLaunchActual) {
+        addLaunchActualOccurrence(addLaunchActual.dataset.addLaunchActual, addLaunchActual.dataset.milestoneKey || "");
+        return;
+      }
+      const removeLaunchActual = event.target.closest("[data-remove-launch-actual]");
+      if (removeLaunchActual) {
+        removeLaunchActualOccurrence(removeLaunchActual.dataset.removeLaunchActual, removeLaunchActual.dataset.milestoneKey || "", removeLaunchActual.dataset.workflowRecordId || "");
+        return;
+      }
+      const addWorkflowNode = event.target.closest("[data-add-workflow-node]");
+      if (addWorkflowNode) {
+        addOptionalWorkflowNode(addWorkflowNode.dataset.workflowProjectId || "", addWorkflowNode.dataset.addWorkflowNode || "");
+        return;
+      }
+      const removeWorkflowNode = event.target.closest("[data-remove-workflow-node]");
+      if (removeWorkflowNode) {
+        removeOptionalWorkflowNode(removeWorkflowNode.dataset.workflowProjectId || "", removeWorkflowNode.dataset.removeWorkflowNode || "");
+        return;
+      }
       const editLaunchMilestone = event.target.closest("[data-edit-launch-milestone]");
       if (editLaunchMilestone) {
         openLaunchScheduleModal(editLaunchMilestone.dataset.editLaunchMilestone, editLaunchMilestone.dataset.milestoneKey);
@@ -14885,6 +15318,15 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         }
         return;
       }
+      if (event.target.matches('[data-workflow-node-field="comment"], [data-workflow-node-field="issue"]')) {
+        const project = (state.launchProjects || []).find(item => item.id === event.target.dataset.workflowProjectId);
+        const record = project ? launchWorkflowRecord(project, event.target.dataset.workflowNodeKey || "", event.target.dataset.workflowRecordId || "") : null;
+        if (record) {
+          record[event.target.dataset.workflowNodeField] = event.target.value;
+          persist();
+        }
+        return;
+      }
       if (event.target.matches("[data-formula-scale-total]")) {
         updateFormulaDetailScale(event.target);
         return;
@@ -14967,6 +15409,34 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     });
 
     document.body.addEventListener("change", event => {
+      if (event.target.matches('[data-workflow-node-field="actualDate"], [data-workflow-node-done]')) {
+        const projectId = event.target.dataset.workflowProjectId || event.target.dataset.workflowNodeDone;
+        const key = event.target.dataset.workflowNodeKey || "";
+        const recordId = event.target.dataset.workflowRecordId || "";
+        const project = (state.launchProjects || []).find(item => item.id === projectId);
+        const records = project ? launchWorkflowNodeRecords(project, key, true) : [];
+        const record = records.find(item => item.id === recordId);
+        if (project && record) {
+          if (event.target.matches('[data-workflow-node-field="actualDate"]')) {
+            record.actualDate = event.target.value;
+            if (event.target.value) record.done = true;
+          } else {
+            record.done = event.target.checked;
+          }
+          const index = records.indexOf(record);
+          project.checkedFlow = project.checkedFlow || {};
+          project.checkedFlow[coffeeBarNodeLegacyFlowKey(key, index)] = Boolean(record.done) || Boolean(record.actualDate);
+          syncLaunchWorkflowActualDate(project, key);
+          activeLaunchProjectId = project.id;
+          persist();
+          renderLaunchProjects();
+          requestAnimationFrame(() => {
+            const detail = document.querySelector(`#coffeeBarChecklist [data-workflow-record-id="${CSS.escape(recordId)}"]`);
+            if (detail) detail.open = true;
+          });
+        }
+        return;
+      }
       if (event.target.matches("[data-launch-actual]")) {
         const key = event.target.dataset.milestoneKey;
         if (!key || key === "launch") return;
@@ -14976,8 +15446,20 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         const targets = directProject ? [directProject] : (campaign?.products || []);
         if (targets.length) {
           targets.forEach(project => {
-            project.actualDates = project.actualDates || {};
-            project.actualDates[key] = event.target.value;
+            if (["pilot", "mass"].includes(key) && event.target.dataset.workflowRecordId) {
+              const records = launchWorkflowNodeRecords(project, key, true);
+              const record = records.find(item => item.id === event.target.dataset.workflowRecordId);
+              if (record) {
+                record.actualDate = event.target.value;
+                if (event.target.value) record.done = true;
+                project.checkedFlow = project.checkedFlow || {};
+                project.checkedFlow[coffeeBarNodeLegacyFlowKey(key, records.indexOf(record))] = Boolean(record.done) || Boolean(record.actualDate);
+                syncLaunchWorkflowActualDate(project, key);
+              }
+            } else {
+              project.actualDates = project.actualDates || {};
+              project.actualDates[key] = event.target.value;
+            }
           });
           activeLaunchMilestoneKey = key;
           persist();

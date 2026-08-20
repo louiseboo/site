@@ -267,14 +267,18 @@ test("campaigns without foods keep the complete Coffee Bar workflow visible", as
   assert.equal(await emptyCampaign.count(), 1);
   await emptyCampaign.evaluate(element => element.click());
   const expectedFlowItems = [
-    "Brief", "初版配方确认", "初版报价", "稳定性测试", "众测", "NPC", "配方确认",
-    "产品名称确认", "中试跟产", "三方跟产", "中试", "运输测试", "中试验收", "二次中试",
-    "二次中试验收", "三方跟产验收", "ID 照", "factsheet初版稿件", "factsheet提交审核",
-    "审核Tony", "审核Dan", "factsheet发送", "规格书", "大生产", "大生产验收",
-    "烤程SOP", "Memo", "上市"
+    "Brief", "初版配方确认", "初版报价", "众测", "NPC", "配方确认", "产品名称确认",
+    "中试跟产", "三方跟产", "中试验收", "三方跟产验收", "大生产验收", "ID 照",
+    "factsheet初版稿件", "factsheet提交审核", "审核Tony", "审核Dan", "factsheet发送",
+    "规格书", "烤程SOP", "Memo", "上市"
   ];
   const visibleFlowItems = await page.locator("#coffeeBarChecklist .flow-check").allTextContents();
   assert.deepEqual(visibleFlowItems.map(item => item.trim()), expectedFlowItems);
+  const keyNodeTitles = await page.locator("#coffeeBarChecklist [data-workflow-node-title]").allTextContents();
+  assert.ok(keyNodeTitles.includes("稳定性测试"));
+  assert.ok(keyNodeTitles.includes("中试"));
+  assert.ok(keyNodeTitles.includes("大生产"));
+  assert.ok(!keyNodeTitles.includes("二次中试"));
   assert.match(await page.locator("#launchActiveProjectLabel").innerText(), /未关联食品/);
   assert.equal(await page.locator("#coffeeBarChecklist [data-edit-launch-product]").count(), 0);
   assert.equal(await page.locator("#coffeeBarChecklist [data-delete-launch-product]").count(), 0);
@@ -388,6 +392,107 @@ test("food milestone actual dates remain editable and persist", async () => {
 
   await input.fill(original);
   await input.press("Tab");
+});
+
+test("Coffee Bar key records adapt by category and repeated milestones stay linked", async () => {
+  const cakeId = "coffee-flow-preview-cake";
+  const bakeryId = "coffee-flow-preview-bakery";
+  await page.evaluate(({ cakeId, bakeryId }) => {
+    const testIds = new Set([cakeId, bakeryId]);
+    state.launchProjects = (state.launchProjects || []).filter(project => !testIds.has(project.id));
+    state.launchProjects.push(
+      migrateLaunchProject({
+        id: cakeId,
+        name: "流程预览蛋糕",
+        launchCampaignId: "coffee-flow-preview-cake-campaign",
+        launchCampaign: "流程预览蛋糕档期",
+        launchDate: "2026-12-08",
+        launchYear: "FY26",
+        category: "蛋糕",
+        categories: ["蛋糕"],
+        plannedDates: {},
+        actualDates: {},
+        checkedFlow: {}
+      }),
+      migrateLaunchProject({
+        id: bakeryId,
+        name: "流程预览烘焙",
+        launchCampaignId: "coffee-flow-preview-bakery-campaign",
+        launchCampaign: "流程预览烘焙档期",
+        launchDate: "2026-12-08",
+        launchYear: "FY26",
+        category: "烘焙",
+        categories: ["烘焙"],
+        plannedDates: { pilot: "2026-09-09", mass: "2026-10-10" },
+        actualDates: { pilot: "2026-09-10", mass: "2026-10-11" },
+        checkedFlow: {}
+      })
+    );
+    persist();
+    selectLaunchProject(cakeId);
+  }, { cakeId, bakeryId });
+
+  assert.deepEqual(
+    await page.locator("#coffeeBarChecklist .coffee-key-record[data-workflow-node-key]").evaluateAll(nodes =>
+      [...new Set(nodes.map(node => node.getAttribute("data-workflow-node-key")))]
+    ),
+    ["stability", "pilot", "transport", "mass"]
+  );
+  assert.equal(await page.locator('#coffeeBarChecklist [data-add-workflow-node="transport"]').count(), 0);
+
+  await page.evaluate(id => selectLaunchProject(id), bakeryId);
+  assert.deepEqual(
+    await page.evaluate(() => coffeeBarKeyNodeDefinitions({ category: "三明治", categories: ["三明治"] }).map(item => item.key)),
+    ["stability", "pilot", "oven", "mass"]
+  );
+  assert.deepEqual(
+    await page.locator("#coffeeBarChecklist .coffee-key-record[data-workflow-node-key]").evaluateAll(nodes =>
+      [...new Set(nodes.map(node => node.getAttribute("data-workflow-node-key")))]
+    ),
+    ["stability", "pilot", "oven", "mass"]
+  );
+  const addTransport = page.locator('#coffeeBarChecklist [data-add-workflow-node="transport"]');
+  assert.equal(await addTransport.count(), 1);
+  await addTransport.click();
+  assert.equal(await page.locator('#coffeeBarChecklist .coffee-key-record[data-workflow-node-key="transport"]').count(), 1);
+
+  const addPilot = page.locator(`[data-add-launch-actual="${bakeryId}"][data-milestone-key="pilot"]`);
+  const addMass = page.locator(`[data-add-launch-actual="${bakeryId}"][data-milestone-key="mass"]`);
+  assert.equal(await addPilot.count(), 1);
+  assert.equal(await addMass.count(), 1);
+  await addPilot.click();
+  let pilotInputs = page.locator(`[data-launch-actual="${bakeryId}"][data-milestone-key="pilot"]`);
+  assert.equal(await pilotInputs.count(), 2);
+  await pilotInputs.nth(1).fill("2026-09-18");
+  await pilotInputs.nth(1).press("Tab");
+  assert.deepEqual(
+    await page.locator('#coffeeBarChecklist .coffee-key-record[data-workflow-node-key="pilot"] [data-workflow-node-title]').allTextContents(),
+    ["中试", "二次中试"]
+  );
+  await addMass.click();
+  assert.deepEqual(
+    await page.locator('#coffeeBarChecklist .coffee-key-record[data-workflow-node-key="mass"] [data-workflow-node-title]').allTextContents(),
+    ["大生产", "二次大生产"]
+  );
+
+  await page.locator('#coffeeBarChecklist .coffee-key-record[data-workflow-node-key="pilot"]').nth(1).evaluate(element => { element.open = true; });
+  const secondPilotComment = page.locator('#coffeeBarChecklist .coffee-key-record[data-workflow-node-key="pilot"] [data-workflow-node-field="comment"]').nth(1);
+  await secondPilotComment.fill("第二次中试口感稳定");
+  await secondPilotComment.press("Tab");
+  await openLaunchPage();
+  await page.evaluate(id => selectLaunchProject(id), bakeryId);
+  await page.locator('#coffeeBarChecklist .coffee-key-record[data-workflow-node-key="pilot"]').nth(1).evaluate(element => { element.open = true; });
+  assert.equal(
+    await page.locator('#coffeeBarChecklist .coffee-key-record[data-workflow-node-key="pilot"] [data-workflow-node-field="comment"]').nth(1).inputValue(),
+    "第二次中试口感稳定"
+  );
+
+  await page.evaluate(ids => {
+    const testIds = new Set(ids);
+    state.launchProjects = (state.launchProjects || []).filter(project => !testIds.has(project.id));
+    persist();
+    renderLaunchProjects();
+  }, [cakeId, bakeryId]);
 });
 
 test("campaign aggregation and editing preserve product-level dates", async () => {
