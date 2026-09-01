@@ -108,17 +108,23 @@ function quoteToNumber(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function nullableSubmissionBatchId(value) {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
 function nullableBatchItemIndex(value) {
-  if (value === null || value === undefined || value === "") return null;
-  const parsed = Number(value);
-  return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0
+    ? value
+    : null;
 }
 
 function normalizeRecordPayload(payload = {}) {
   return {
     product_name: text(payload.product_name),
     supplier_name: text(payload.supplier_name),
-    submission_batch_id: nullableText(payload.submission_batch_id),
+    submission_batch_id: nullableSubmissionBatchId(payload.submission_batch_id),
     batch_item_index: nullableBatchItemIndex(payload.batch_item_index),
     version_label: nullableText(payload.version_label),
     sample_date: nullableText(payload.sample_date),
