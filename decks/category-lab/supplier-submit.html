@@ -1045,7 +1045,7 @@
       syncModeFieldState();
     }
 
-    function productPayload(product, imagePaths = []) {
+    function productPayload(product, imagePaths = [], batchMetadata = {}) {
       const sharedSupplier = field("supplierName").value.trim();
       const sharedDate = field("sampleDate").value;
       const sharedProductType = field("productType").value;
@@ -1053,6 +1053,8 @@
       return {
         product_name: productValue(product, "productName").trim(),
         supplier_name: sharedSupplier,
+        submission_batch_id: batchMetadata.submissionBatchId || null,
+        batch_item_index: Number.isInteger(batchMetadata.batchItemIndex) ? batchMetadata.batchItemIndex : null,
         version_label: productValue(product, "versionLabel").trim(),
         sample_date: sharedDate,
         product_type: sharedProductType,
@@ -1152,7 +1154,16 @@
     async function submitCreate() {
       syncAllProducts();
       validateProducts();
-      const payloads = products.map((product, index) => ({ product, index, payload: productPayload(product, []) }));
+      const submissionBatchId = rowId();
+      const payloads = products.map((product, index) => {
+        const batchMetadata = { submissionBatchId, batchItemIndex: index };
+        return {
+          product,
+          index,
+          batchMetadata,
+          payload: productPayload(product, [], batchMetadata)
+        };
+      });
       const missing = payloads.find(item => !item.payload.product_name || !item.payload.version_label);
       if (missing) throw new Error(`请填写产品 ${missing.index + 1} 的品名和版本。`);
       if (!payloads.length) throw new Error("请至少填写一个产品。");
@@ -1182,7 +1193,7 @@
             const { error: updateError } = await client.rpc("update_supplier_feedback", {
               p_id: data.id,
               p_edit_token: data.edit_token,
-              p_payload: productPayload(item.product, images)
+              p_payload: productPayload(item.product, images, item.batchMetadata)
             });
             if (updateError) throw updateError;
           }
