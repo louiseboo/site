@@ -519,6 +519,75 @@
     .product-type-section + .product-type-section {
       border-top: 1px solid var(--line-soft);
     }
+    .submission-batch {
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .submission-batch.active {
+      background: var(--panel);
+      box-shadow: inset 3px 0 0 var(--ink);
+    }
+    .submission-batch-head {
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid var(--line-soft);
+      border-radius: 0;
+      background: transparent;
+      color: var(--ink);
+      padding: 14px 18px 12px;
+      text-align: left;
+      white-space: normal;
+    }
+    .submission-batch-title,
+    .submission-batch-meta,
+    .pending-batch-item-head,
+    .pending-batch-item-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .submission-batch-title strong {
+      font-family: var(--serif);
+      font-size: 15px;
+    }
+    .submission-batch-meta,
+    .pending-batch-item-meta {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .submission-batch[aria-expanded="false"] .submission-batch-body {
+      display: none;
+    }
+    .pending-batch-item {
+      width: 100%;
+      border: 0;
+      border-bottom: 1px solid var(--line-soft);
+      border-radius: 0;
+      background: transparent;
+      padding: 14px 18px 14px 28px;
+      color: var(--ink);
+      text-align: left;
+      white-space: normal;
+    }
+    .pending-batch-item.active {
+      background: var(--panel);
+    }
+    .pending-batch-product-name {
+      font-family: var(--serif);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .pending-batch-item-summary {
+      display: -webkit-box;
+      margin-top: 7px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.55;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
     .product-group {
       border-bottom: 1px solid var(--line);
     }
@@ -1924,6 +1993,7 @@
     const expandedSupplierGroupKeys = new Set();
     const collapsedSupplierGroupKeys = new Set();
     const collapsedProductTypeKeys = new Set();
+    const collapsedSubmissionBatchKeys = new Set();
     let groupingSourceKey = "";
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
 
@@ -2476,6 +2546,71 @@
       return sortRecords(filtered);
     }
 
+    function submissionBatchKey(row) {
+      const explicit = String(row.submission_batch_id || "").trim();
+      return explicit ? `batch:${explicit}` : `record:${row.id}`;
+    }
+
+    function validBatchItemIndex(row) {
+      if (row.batch_item_index === null || row.batch_item_index === undefined || row.batch_item_index === "") return null;
+      const value = Number(row.batch_item_index);
+      return Number.isInteger(value) && value >= 0 ? value : null;
+    }
+
+    function comparePendingBatchItems(a, b) {
+      const aIndex = validBatchItemIndex(a);
+      const bIndex = validBatchItemIndex(b);
+      if (aIndex !== null && bIndex !== null && aIndex !== bIndex) return aIndex - bIndex;
+      const timeDifference = new Date(a.created_at || 0) - new Date(b.created_at || 0);
+      return timeDifference || String(a.id || "").localeCompare(String(b.id || ""), "zh-CN");
+    }
+
+    function pendingSubmissionBatches() {
+      const matchingIds = new Set(visibleRecords().map(row => row.id));
+      const byKey = new Map();
+      records.filter(row => row.status === "待处理").forEach(row => {
+        const key = submissionBatchKey(row);
+        if (!byKey.has(key)) byKey.set(key, []);
+        byKey.get(key).push(row);
+      });
+      return [...byKey.entries()]
+        .map(([key, rows]) => {
+          const orderedRecords = [...rows].sort(comparePendingBatchItems);
+          const first = orderedRecords[0] || {};
+          const submittedAt = orderedRecords.reduce((earliest, row) => {
+            const value = new Date(row.created_at || 0).getTime();
+            return Number.isFinite(value) ? Math.min(earliest, value) : earliest;
+          }, Number.POSITIVE_INFINITY);
+          return {
+            key,
+            supplier: first.supplier_name || "未知供应商",
+            sampleDate: first.sample_date || "",
+            submittedAt: Number.isFinite(submittedAt) ? submittedAt : 0,
+            records: orderedRecords,
+            matchesSearch: orderedRecords.some(row => matchingIds.has(row.id))
+          };
+        })
+        .filter(batch => batch.matchesSearch)
+        .sort((a, b) => b.submittedAt - a.submittedAt || a.key.localeCompare(b.key, "zh-CN"));
+    }
+
+    function pendingRecordsInDisplayOrder() {
+      return pendingSubmissionBatches().flatMap(batch => batch.records);
+    }
+
+    function nextPendingRecordId(currentId) {
+      const batches = pendingSubmissionBatches();
+      const batchIndex = batches.findIndex(batch => batch.records.some(row => row.id === currentId));
+      if (batchIndex < 0) return pendingRecordsInDisplayOrder().find(row => row.id !== currentId)?.id || "";
+      const batch = batches[batchIndex];
+      const rowIndex = batch.records.findIndex(row => row.id === currentId);
+      const sameBatch = [...batch.records.slice(rowIndex + 1), ...batch.records.slice(0, rowIndex)].find(row => row.id !== currentId);
+      if (sameBatch) return sameBatch.id;
+      return [...batches.slice(batchIndex + 1), ...batches.slice(0, batchIndex)]
+        .flatMap(item => item.records)
+        .find(row => row.id !== currentId)?.id || "";
+    }
+
     function latestGroupValue(group, field) {
       return [...(group.records || [])]
         .sort((a, b) => groupingUpdateTime(b) - groupingUpdateTime(a))
@@ -2623,6 +2758,14 @@
     }
 
     function ensureActive(preferredId = activeRecordId) {
+      if (statusFilter === "待处理") {
+        const availableRows = pendingRecordsInDisplayOrder();
+        activeRecordId = preferredId && availableRows.some(row => row.id === preferredId)
+          ? preferredId
+          : (availableRows[0]?.id || "");
+        syncUrl();
+        return;
+      }
       const groups = visibleProductGroupsInDisplayOrder();
       const availableRows = groups.flatMap(group => group.records);
       if (preferredId && availableRows.some(row => row.id === preferredId)) {
@@ -2942,7 +3085,57 @@
       }).join("");
     }
 
+    function pendingSubmissionItemHtml(row, index) {
+      return `
+        <button class="pending-batch-item ${row.id === activeRecordId ? "active" : ""}" data-record-id="${escapeAttr(row.id)}" type="button">
+          <span class="pending-batch-item-head">
+            <span class="pending-batch-product-name">${escapeHtml(compactText(row.product_name, "未命名产品"))}</span>
+            <span class="item-time">第 ${index + 1} 项</span>
+          </span>
+          <span class="pending-batch-item-meta">
+            <span>${escapeHtml(compactText(row.version_label, "未填版本"))} · ${escapeHtml(compactText(row.product_type, "未分类"))} · ${escapeHtml(compactText(row.test_category, "未分类"))}</span>
+            <span>${escapeHtml(relativeTime(row.created_at))}</span>
+          </span>
+          <span class="pending-batch-item-summary">${escapeHtml(compactText(row.version_change || row.core_ingredients_selling_points || row.ingredients_structure, "暂无摘要"))}</span>
+        </button>
+      `;
+    }
+
+    function renderPendingSubmissionList() {
+      const batches = pendingSubmissionBatches();
+      if (!batches.length) {
+        listEl.innerHTML = `<div class="empty-list">暂无匹配记录。</div>`;
+        return;
+      }
+      const activeBatchKey = batches.find(batch => batch.records.some(row => row.id === activeRecordId))?.key || "";
+      listEl.innerHTML = batches.map(batch => {
+        const expanded = !collapsedSubmissionBatchKeys.has(batch.key);
+        const submittedAt = batch.submittedAt ? dateText(new Date(batch.submittedAt).toISOString()) : "未记录";
+        return `
+          <section class="submission-batch ${batch.key === activeBatchKey ? "active" : ""}" data-submission-batch-key="${escapeAttr(batch.key)}" aria-expanded="${expanded}">
+            <button class="submission-batch-head" data-submission-batch-toggle="${escapeAttr(batch.key)}" type="button" aria-expanded="${expanded}">
+              <span class="submission-batch-title">
+                <strong>${escapeHtml(batch.supplier)}</strong>
+                <span data-submission-batch-count>${batch.records.length} 个产品</span>
+              </span>
+              <span class="submission-batch-meta">
+                <span>送样 ${escapeHtml(batch.sampleDate || "未填写")} · 提交 ${escapeHtml(submittedAt)}</span>
+                <span aria-hidden="true">${expanded ? "▼" : "▶"}</span>
+              </span>
+            </button>
+            <div class="submission-batch-body">
+              ${batch.records.map(pendingSubmissionItemHtml).join("")}
+            </div>
+          </section>
+        `;
+      }).join("");
+    }
+
     function renderList() {
+      if (statusFilter === "待处理") {
+        renderPendingSubmissionList();
+        return;
+      }
       const groups = visibleProductGroupsInDisplayOrder();
       if (!groups.length) {
         listEl.innerHTML = `<div class="empty-list">暂无匹配记录。</div>`;
@@ -3679,9 +3872,16 @@
 
     async function confirmActiveRow(id = activeRecordId) {
       if (!roleCanEdit() || !id) return null;
+      const confirmingFromPending = statusFilter === "待处理";
+      const nextId = confirmingFromPending ? nextPendingRecordId(id) : id;
       const updated = await saveRow(id, { status: "已确认" });
-      statusFilter = "已确认";
-      renderAll(id);
+      if (confirmingFromPending) {
+        statusFilter = "待处理";
+        renderAll(nextId);
+      } else {
+        statusFilter = "已确认";
+        renderAll(id);
+      }
       return updated;
     }
 
@@ -3925,12 +4125,21 @@
           expandedSupplierGroupKeys.clear();
           collapsedSupplierGroupKeys.clear();
           collapsedProductTypeKeys.clear();
+          collapsedSubmissionBatchKeys.clear();
           supplierEditOpen = false;
           renderAll("");
         });
       });
     });
     listEl.addEventListener("click", async event => {
+      const batchToggle = event.target.closest("[data-submission-batch-toggle]");
+      if (batchToggle) {
+        const key = batchToggle.dataset.submissionBatchToggle;
+        if (collapsedSubmissionBatchKeys.has(key)) collapsedSubmissionBatchKeys.delete(key);
+        else collapsedSubmissionBatchKeys.add(key);
+        renderList();
+        return;
+      }
       const categoryToggle = event.target.closest("[data-test-category-toggle]");
       if (categoryToggle) {
         const key = categoryToggle.dataset.testCategoryToggle;
