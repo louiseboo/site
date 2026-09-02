@@ -116,6 +116,32 @@ test("desktop weight input shares the description input top edge", async () => {
   }
 });
 
+test("desktop delete button shares the input top edge and height", async () => {
+  for (const width of [1118, 760, 521]) {
+    await page.setViewportSize({ width, height: 900 });
+    const geometry = await page.evaluate(() => {
+      const row = document.querySelector(".structure-table tbody tr");
+      const inputRect = row.querySelector('[data-structure-field="name"]').getBoundingClientRect();
+      const deleteRect = row.querySelector("[data-delete-structure]").getBoundingClientRect();
+      return {
+        inputTop: inputRect.top,
+        inputHeight: inputRect.height,
+        deleteTop: deleteRect.top,
+        deleteHeight: deleteRect.height
+      };
+    });
+
+    assert.ok(
+      Math.abs(geometry.deleteTop - geometry.inputTop) <= 1,
+      `${width}px: delete should align with the input top (${geometry.deleteTop} vs ${geometry.inputTop})`
+    );
+    assert.ok(
+      Math.abs(geometry.deleteHeight - geometry.inputHeight) <= 1,
+      `${width}px: delete should match the input height (${geometry.deleteHeight} vs ${geometry.inputHeight})`
+    );
+  }
+});
+
 test("mobile structure rows remain readable and touch friendly", async () => {
   await page.setViewportSize({ width: 320, height: 700 });
   const geometry = await page.evaluate(() => {

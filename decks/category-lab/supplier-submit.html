@@ -260,8 +260,8 @@
     .structure-table .action-cell { width: 82px; }
     .structure-mobile-label { display: none; }
     @media (min-width: 521px) {
-      .structure-table tbody .weight-cell { vertical-align: top; }
-      .structure-table tbody .weight-cell .structure-mobile-label {
+      .structure-table tbody :is(.weight-cell, .action-cell) { vertical-align: top; }
+      .structure-table tbody :is(.weight-cell, .action-cell) .structure-mobile-label {
         display: block;
         visibility: hidden;
         margin-bottom: 5px;
@@ -269,6 +269,7 @@
         font-weight: 900;
         line-height: 1.55;
       }
+      .structure-table tbody .action-cell .ghost-button { min-height: 44px; }
     }
     .structure-description-cell {
       display: grid;
