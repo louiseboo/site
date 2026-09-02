@@ -71,6 +71,56 @@ test("structure guidance labels layers from bottom to top", async () => {
   assert.deepEqual(await page.locator("[data-structure-layer-label]").allTextContents(), ["第1层｜最底层", "第2层"]);
 });
 
+test("weight heading aligns with its inputs wherever the table header is shown", async () => {
+  for (const width of [1063, 760, 521]) {
+    await page.setViewportSize({ width, height: 900 });
+    const geometry = await page.evaluate(() => {
+      const heading = document.querySelector("th.weight-cell");
+      const input = document.querySelector('[data-structure-field="weight"]');
+      const headingRange = document.createRange();
+      headingRange.selectNodeContents(heading);
+      const headingRect = headingRange.getBoundingClientRect();
+      const inputRect = input.getBoundingClientRect();
+      return {
+        headingCenter: (headingRect.left + headingRect.right) / 2,
+        inputCenter: (inputRect.left + inputRect.right) / 2,
+        documentWidth: document.documentElement.scrollWidth,
+        viewportWidth: document.documentElement.clientWidth
+      };
+    });
+
+    assert.ok(
+      Math.abs(geometry.headingCenter - geometry.inputCenter) <= 1,
+      `${width}px: weight heading should share the input center line (${geometry.headingCenter} vs ${geometry.inputCenter})`
+    );
+    assert.equal(geometry.documentWidth, geometry.viewportWidth, `${width}px: page should not overflow horizontally`);
+  }
+});
+
+test("mobile structure rows remain readable and touch friendly", async () => {
+  await page.setViewportSize({ width: 320, height: 700 });
+  const geometry = await page.evaluate(() => {
+    const row = document.querySelector(".structure-table tbody tr");
+    const descriptionInput = row.querySelector('[data-structure-field="name"]');
+    const weightInput = row.querySelector('[data-structure-field="weight"]');
+    const deleteButton = row.querySelector("[data-delete-structure]");
+    return {
+      rowDisplay: getComputedStyle(row).display,
+      descriptionWidth: descriptionInput.getBoundingClientRect().width,
+      weightWidth: weightInput.getBoundingClientRect().width,
+      deleteHeight: deleteButton.getBoundingClientRect().height,
+      documentWidth: document.documentElement.scrollWidth,
+      viewportWidth: document.documentElement.clientWidth
+    };
+  });
+
+  assert.equal(geometry.rowDisplay, "grid");
+  assert.ok(geometry.descriptionWidth >= 180, `description input should stay readable (${geometry.descriptionWidth}px)`);
+  assert.ok(geometry.weightWidth >= 100, `weight input should stay readable (${geometry.weightWidth}px)`);
+  assert.ok(geometry.deleteHeight >= 44, `delete target should be at least 44px high (${geometry.deleteHeight}px)`);
+  assert.equal(geometry.documentWidth, geometry.viewportWidth, "mobile page should not overflow horizontally");
+});
+
 test("structure description removes symbols and asks for another layer", async () => {
   const input = page.locator('[data-structure-field="name"]').first();
   await input.fill("饼干底A1 / 奶油");

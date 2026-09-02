@@ -248,13 +248,17 @@
       color: #3e352b;
       font-size: 12px;
     }
-    .structure-table .weight-cell { width: 150px; }
+    .structure-table .weight-cell {
+      width: 150px;
+      text-align: center;
+    }
     .structure-table .percent-cell {
       width: 86px;
       text-align: right;
       font-variant-numeric: tabular-nums;
     }
     .structure-table .action-cell { width: 82px; }
+    .structure-mobile-label { display: none; }
     .structure-description-cell {
       display: grid;
       gap: 5px;
@@ -505,19 +509,61 @@
       }
       .structure-table {
         min-width: 0;
-        table-layout: fixed;
+        table-layout: auto;
+        border-collapse: separate;
+        border-spacing: 0;
         font-size: 13px;
       }
-      .structure-table th,
-      .structure-table td {
-        padding: 6px;
+      .structure-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
       }
-      .structure-table .weight-cell { width: 92px; }
-      .structure-table .percent-cell { width: 62px; }
-      .structure-table .action-cell { width: 66px; }
+      .structure-table tbody {
+        display: grid;
+        gap: 8px;
+      }
+      .structure-table tbody tr {
+        display: grid;
+        grid-template-columns: minmax(100px, 1fr) 40px 53px;
+        gap: 8px 6px;
+        padding: 10px;
+        border: 1px solid #eadfce;
+        border-radius: 8px;
+        background: #fffdf8;
+      }
+      .structure-table tbody td {
+        display: block;
+        width: auto;
+        padding: 0;
+        border: 0;
+      }
+      .structure-table tbody td:first-child { grid-column: 1 / -1; }
+      .structure-table .weight-cell { width: auto; text-align: left; }
+      .structure-table .percent-cell,
+      .structure-table .action-cell {
+        width: auto;
+        align-self: end;
+      }
+      .structure-mobile-label {
+        display: block;
+        min-height: 18px;
+        margin-bottom: 4px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 900;
+        line-height: 1.4;
+      }
       .structure-table .ghost-button {
         width: 100%;
         min-width: 0;
+        min-height: 46px;
         padding: 7px 6px;
       }
       .structure-builder { overflow-x: visible; }
@@ -975,9 +1021,18 @@
               <p class="structure-error" data-structure-error aria-live="polite"></p>
             </div>
           </td>
-          <td><input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" ${weightRequired ? "required" : ""} placeholder="${weightRequired ? "必填" : "蛋糕可不填"}"></td>
-          <td class="percent-cell"><output class="structure-percent" data-structure-percent>${formatStructurePercent(numeric(row.weight), total)}</output></td>
-          <td><button class="ghost-button danger" data-delete-structure="${escapeAttr(row.id)}" type="button">删除</button></td>
+          <td class="weight-cell">
+            <span class="structure-mobile-label">重量(g)</span>
+            <input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" aria-label="本层重量(g)" ${weightRequired ? "required" : ""} placeholder="${weightRequired ? "必填" : "蛋糕可不填"}">
+          </td>
+          <td class="percent-cell">
+            <span class="structure-mobile-label">占比</span>
+            <output class="structure-percent" data-structure-percent>${formatStructurePercent(numeric(row.weight), total)}</output>
+          </td>
+          <td class="action-cell">
+            <span class="structure-mobile-label">操作</span>
+            <button class="ghost-button danger" data-delete-structure="${escapeAttr(row.id)}" type="button">删除</button>
+          </td>
         </tr>
       `).join("");
     }
