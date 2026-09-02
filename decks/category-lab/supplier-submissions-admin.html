@@ -19,6 +19,10 @@
       --pending: #a4550f;
       --pending-bg: #f3e3cd;
       --confirmed: #3d7a4a;
+      --company-bg: #f3efe6;
+      --company-active-bg: #eadbc0;
+      --product-active-bg: #e7efe5;
+      --product-active-line: #6f8068;
       --danger: #c9503f;
       --danger-dark: #a63a2b;
       --danger-copy: #7a4238;
@@ -523,19 +527,21 @@
       border-bottom: 1px solid var(--line-soft);
     }
     .submission-batch.active {
-      background: var(--panel);
-      box-shadow: inset 3px 0 0 var(--ink);
+      background: transparent;
     }
     .submission-batch-head {
       width: 100%;
       border: 0;
       border-bottom: 1px solid var(--line-soft);
       border-radius: 0;
-      background: transparent;
+      background: var(--company-bg);
       color: var(--ink);
       padding: 14px 18px 12px;
       text-align: left;
       white-space: normal;
+    }
+    .submission-batch[aria-expanded="true"] > .submission-batch-head {
+      background: var(--company-active-bg);
     }
     .submission-batch-title,
     .submission-batch-meta,
@@ -571,7 +577,8 @@
       white-space: normal;
     }
     .pending-batch-item.active {
-      background: var(--panel);
+      background: var(--product-active-bg);
+      box-shadow: inset 3px 0 0 var(--product-active-line);
     }
     .pending-batch-product-name {
       font-family: var(--serif);
@@ -722,6 +729,7 @@
       line-height: 1.45;
       -webkit-line-clamp: 1;
       -webkit-box-orient: vertical;
+      white-space: pre-line;
     }
     .item-time {
       flex: 0 0 auto;
@@ -1007,6 +1015,25 @@
       font-size: 14px;
       font-weight: 700;
       line-height: 1.3;
+    }
+    .section-title-bar {
+      display: inline-block;
+      border: 1px solid var(--line-soft);
+      border-radius: 5px;
+      background: var(--side);
+      padding: 6px 10px;
+      color: var(--ink);
+    }
+    .structure-lines {
+      display: grid;
+      gap: 5px;
+    }
+    .structure-line {
+      margin: 0;
+      color: var(--body);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
     }
     .section-copy {
       margin: 0;
@@ -2199,6 +2226,15 @@
       return normalizeCampaignYear(row.campaign_year || row.campaignYear || row.launchYear || row.launchDate) || CAMPAIGN_YEARS[0];
     }
 
+    function canonicalCampaignName(year, name) {
+      const selectedYear = normalizeCampaignYear(year) || CAMPAIGN_YEARS[0];
+      const value = String(name || "").trim();
+      if (selectedYear === "2027" && ["01月｜CNY", "01月｜CNY（含烘焙 / 三明治换新）"].includes(value)) {
+        return "01月｜CNY（含烘焙 / 三明治换新）";
+      }
+      return value;
+    }
+
     function campaignOptions(year) {
       const selectedYear = normalizeCampaignYear(year) || CAMPAIGN_YEARS[0];
       return [...(CAMPAIGN_OPTIONS_BY_YEAR[selectedYear] || [])];
@@ -2215,7 +2251,7 @@
 
     function campaignPickerField(row = {}) {
       const year = effectiveCampaignYear(row);
-      const campaign = String(row.campaign || "").trim();
+      const campaign = canonicalCampaignName(year, row.campaign);
       return `
         <div class="field-label">
           <span>档期年份 / 名称</span>
@@ -2486,7 +2522,7 @@
 
     function campaignGroupIdentity(value = {}) {
       const row = campaignRecord(value);
-      const campaign = String(row.campaign || "").trim();
+      const campaign = canonicalCampaignName(effectiveCampaignYear(row), row.campaign);
       return campaign ? `${effectiveCampaignYear(row)}::${campaign}` : "";
     }
 
@@ -2895,7 +2931,7 @@
       const buckets = new Map();
       groups.forEach(group => {
         const row = campaignRecord(group);
-        const campaign = String(row.campaign || "").trim();
+        const campaign = canonicalCampaignName(effectiveCampaignYear(row), row.campaign);
         const year = campaign ? effectiveCampaignYear(row) : "";
         const key = campaign ? `${year}::${campaign}` : "unassigned";
         const bucket = buckets.get(key) || { key, year, campaign, groups: [] };
@@ -3330,7 +3366,18 @@
     function sectionHtml(title, value, className = "") {
       const text = String(value || "").trim();
       if (!text) return "";
-      return `<section class="section-block ${className}"><h3>${escapeHtml(title)}</h3><p class="section-copy">${nl(text)}</p></section>`;
+      return `<section class="section-block ${className}"><h3 class="section-title-bar">${escapeHtml(title)}</h3><p class="section-copy">${nl(text)}</p></section>`;
+    }
+
+    function structureSectionHtml(title, value) {
+      const lines = String(value || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+      if (!lines.length) return "";
+      return `
+        <section class="section-block structure-section">
+          <h3 class="section-title-bar">${escapeHtml(title)}</h3>
+          <div class="structure-lines">${lines.map(line => `<p class="structure-line" data-structure-line>${escapeHtml(line)}</p>`).join("")}</div>
+        </section>
+      `;
     }
 
     function factItem(label, value) {
@@ -3435,7 +3482,7 @@
       return `
         <section class="supplier-block">
           <div class="supplier-head">
-            <h3>供应商提交内容</h3>
+            <h3 class="section-title-bar">供应商提交内容</h3>
             <button class="supplier-edit-toggle" data-toggle-supplier-edit type="button" ${roleCanEdit() ? "" : "disabled"}>${supplierEditOpen ? "收起校准" : "编辑供应商信息"}</button>
           </div>
           <div class="supplier-facts">
@@ -3452,7 +3499,7 @@
             ${factItem("送样时间", row.sample_date)}
           </div>
           ${sectionHtml("本版调整点", row.version_change)}
-          ${sectionHtml("产品结构", row.ingredients_structure)}
+          ${structureSectionHtml("产品结构", row.ingredients_structure)}
           ${sectionHtml("核心原料及卖点", row.core_ingredients_selling_points)}
           ${renderSupplierEditPanel(row)}
         </section>
@@ -3484,7 +3531,7 @@
         ${renderImageStrip(row)}
         ${renderSupplierBlock(row)}
         <section class="edit-panel">
-          <h3>产品经理补充测试结果</h3>
+          <h3 class="section-title-bar">产品经理补充测试结果</h3>
           <div class="edit-grid">
             ${fieldBlock("报价（元，含税含运）", fieldInput("quote_rmb", row.quote_rmb, "线下确认后填写"))}
             ${campaignPickerField(row)}
@@ -3669,6 +3716,8 @@
       const quoteText = detailValue("quote_rmb", row.quote_rmb ?? "").trim();
       const quoteCleaned = quoteText.replace(/[^0-9.]/g, "");
       const quote = Number(quoteCleaned);
+      const campaignYear = normalizeCampaignYear(detailValue("campaign_year", effectiveCampaignYear(row))) || effectiveCampaignYear(row);
+      const campaign = canonicalCampaignName(campaignYear, detailValue("campaign", row.campaign || ""));
       return {
         product_name: detailValue("product_name", row.product_name || "").trim() || row.product_name || "",
         supplier_name: detailValue("supplier_name", row.supplier_name || "").trim() || row.supplier_name || "",
@@ -3676,8 +3725,8 @@
         sample_date: detailValue("sample_date", row.sample_date || "").trim() || null,
         product_type: detailValue("product_type", row.product_type || "").trim(),
         test_category: detailValue("test_category", row.test_category || "").trim(),
-        campaign_year: normalizeCampaignYear(detailValue("campaign_year", effectiveCampaignYear(row))) || effectiveCampaignYear(row),
-        campaign: detailValue("campaign", row.campaign || "").trim(),
+        campaign_year: campaignYear,
+        campaign,
         version_change: detailValue("version_change", row.version_change || "").trim(),
         finished_spec: detailValue("finished_spec", row.finished_spec || "").trim(),
         length_mm: detailValue("length_mm", row.length_mm || "").trim(),
@@ -3704,7 +3753,11 @@
       if (!row || appPanel.classList.contains("hidden")) return false;
       const payload = activePayload();
       const fieldsChanged = EDITABLE_RECORD_FIELDS.some(field => {
-        const original = field === "campaign_year" ? effectiveCampaignYear(row) : row[field];
+        const original = field === "campaign_year"
+          ? effectiveCampaignYear(row)
+          : field === "campaign"
+            ? canonicalCampaignName(effectiveCampaignYear(row), row.campaign)
+            : row[field];
         return comparableRecordValue(payload[field]) !== comparableRecordValue(original);
       });
       return fieldsChanged || adminImageDraftChanged(row);

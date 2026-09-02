@@ -15,7 +15,9 @@ const seedRecords = [
   { id: "a-1", submission_batch_id: "batch-a", batch_item_index: 1, supplier_name: "佰翔空厨食品有限公司", product_name: "黑豆松子恰巴塔", version_label: "V1", sample_date: "2026-08-22", product_type: "烘焙", test_category: "新品提案", version_change: "第二项", status: "待处理", created_at: "2026-08-28T02:00:02.000Z", updated_at: "2026-08-28T02:00:02.000Z" },
   { id: "a-2", submission_batch_id: "batch-a", batch_item_index: 2, supplier_name: "佰翔空厨食品有限公司", product_name: "云朵吐司", version_label: "V1", sample_date: "2026-08-22", product_type: "烘焙", test_category: "新品提案", version_change: "第三项", status: "待处理", created_at: "2026-08-28T02:00:04.000Z", updated_at: "2026-08-28T02:00:04.000Z" },
   { id: "legacy-0", supplier_name: "百嘉宜", product_name: "莓果山楂蛋糕", version_label: "V3", sample_date: "2026-08-27", product_type: "蛋糕", test_category: "档期测试", status: "待处理", created_at: "2026-08-27T02:00:00.000Z", updated_at: "2026-08-27T02:00:00.000Z" },
-  { id: "confirmed-0", submission_batch_id: "old-batch", batch_item_index: 0, supplier_name: "供应商 B", product_name: "已确认产品", version_label: "V1", product_type: "蛋糕", test_category: "新品提案", status: "已确认", created_at: "2026-08-20T02:00:00.000Z", updated_at: "2026-08-20T02:00:00.000Z" }
+  { id: "confirmed-0", submission_batch_id: "old-batch", batch_item_index: 0, supplier_name: "供应商 B", product_name: "已确认产品", version_label: "V1", product_type: "蛋糕", test_category: "新品提案", status: "已确认", created_at: "2026-08-20T02:00:00.000Z", updated_at: "2026-08-20T02:00:00.000Z" },
+  { id: "cny-old", supplier_name: "供应商 C", product_name: "旧名产品", version_label: "V1", product_type: "蛋糕", test_category: "档期测试", campaign_year: "2027", campaign: "01月｜CNY", ingredients_structure: "第1层｜最底层：饼干底 20g（20%）\n第2层：芝士慕斯 80g（80%）\n自动计算总克重：100g", status: "已确认", created_at: "2026-08-19T02:00:00.000Z", updated_at: "2026-08-19T02:00:00.000Z" },
+  { id: "cny-standard", supplier_name: "供应商 D", product_name: "标准名产品", version_label: "V1", product_type: "三明治", test_category: "档期测试", campaign_year: "2027", campaign: "01月｜CNY（含烘焙 / 三明治换新）", status: "已确认", created_at: "2026-08-18T02:00:00.000Z", updated_at: "2026-08-18T02:00:00.000Z" }
 ];
 
 let server;
@@ -139,13 +141,50 @@ test("confirmation advances inside the batch and removes the batch after its fin
 test("processed and all views continue to use product grouping", async () => {
   await page.locator('[data-status-filter="已确认"]').click();
   assert.equal(await page.locator("[data-submission-batch-key]").count(), 0);
-  assert.equal(await page.locator("[data-product-group-key]").count(), 1);
+  assert.equal(await page.locator("[data-product-group-key]").count(), 3);
 
   await page.locator('[data-status-filter="已导入"]').click();
+  await page.locator('[data-status-filter="已导入"].active').waitFor();
   assert.equal(await page.locator("[data-submission-batch-key]").count(), 0);
   assert.equal(await page.locator("[data-product-group-key]").count(), 1);
 
   await page.locator('[data-status-filter=""]').click();
   assert.equal(await page.locator("[data-submission-batch-key]").count(), 0);
   assert.ok(await page.locator("[data-product-group-key]").count() >= 1);
+});
+
+test("company and selected product use different hierarchy colors", async () => {
+  const company = page.locator('[data-submission-batch-key="batch:batch-a"]');
+  const product = company.locator('[data-record-id="a-0"]');
+  await product.click();
+  assert.equal(
+    await company.locator(".submission-batch-head").evaluate(element => getComputedStyle(element).backgroundColor),
+    "rgb(234, 219, 192)"
+  );
+  assert.equal(await product.evaluate(element => getComputedStyle(element).backgroundColor), "rgb(231, 239, 229)");
+});
+
+test("middle detail headings render as title bars", async () => {
+  assert.ok(await page.locator(".section-title-bar").count() >= 3);
+  assert.deepEqual(await page.locator(".section-title-bar").allTextContents(), [
+    "供应商提交内容",
+    "本版调整点",
+    "产品经理补充测试结果"
+  ]);
+});
+
+test("FY27 CNY aliases render as one campaign section", async () => {
+  await page.locator('[data-status-filter="已确认"]').click();
+  assert.equal(await page.locator("[data-campaign-group-section]").count(), 1);
+  assert.match(await page.locator("[data-campaign-group]").innerText(), /01月｜CNY（含烘焙 \/ 三明治换新）/);
+});
+
+test("product structure keeps one visual line per stored layer", async () => {
+  await page.locator('[data-status-filter="已确认"]').click();
+  await page.locator('[data-record-id="cny-old"]').click();
+  assert.deepEqual(await page.locator("[data-structure-line]").allTextContents(), [
+    "第1层｜最底层：饼干底 20g（20%）",
+    "第2层：芝士慕斯 80g（80%）",
+    "自动计算总克重：100g"
+  ]);
 });
