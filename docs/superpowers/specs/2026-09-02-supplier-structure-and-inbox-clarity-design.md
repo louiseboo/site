@@ -17,13 +17,25 @@ Make supplier submissions easier to read and harder to enter incorrectly:
 
 The pending inbox keeps the existing submission-batch hierarchy and changes only its visual emphasis.
 
-- The supplier/company header uses the existing warm side-panel color `#f3efe6`.
-- Product rows use the lighter panel color `#fffdf8`.
+- The supplier/company header uses the existing warm side-panel color `#f3efe6`; its expanded/active state becomes a stronger warm oat block (`#eadbc0`).
+- Product rows use the lighter panel color `#fffdf8`; the selected product becomes a pale sage block (`#e7efe5`) with a muted green left accent.
 - A small inset gap and border separate the product body from the supplier header.
-- The active product keeps the existing dark left accent, so selection remains obvious.
+- Company and product click states must never share the same fill color: warm oat always means the company/submission level, while pale sage always means the selected product level.
 - No new decorative color system or additional grouping level is introduced.
 
 This creates two stable visual roles: the colored company bar identifies one submission, and the lighter rows below it identify the products in that submission.
+
+## 1.1 Detail-panel title bars
+
+The middle reading pane gains a consistent section-title bar so long supplier content can be scanned by blocks. Apply the same compact, lightly rounded bar treatment to:
+
+- `供应商提交内容`;
+- `本版调整点`;
+- `产品结构`;
+- `核心原料及卖点`;
+- `产品经理补充测试结果` and its main subsections.
+
+The bar uses the existing warm neutral palette, a subtle border, and compact horizontal padding. It is a hierarchy marker rather than a button: it has no hover state, does not look clickable, and does not add a new interaction. The product name at the top remains the page title and is not placed inside the same bar.
 
 ## 2. Product-structure guidance and enforced input
 
@@ -103,6 +115,8 @@ This makes the confirmed inbox show one FY27 CNY section while retaining all pro
 Automated tests are written before production changes and must cover:
 
 - supplier and product blocks have distinct semantic classes and palette roles;
+- supplier/company and product click states use different fill colors;
+- middle-pane section titles use the same non-interactive bar treatment;
 - fixed bottom-to-top guidance, layer labels, and `向上新增一层` copy;
 - allowed Chinese, English, and numeric input is retained;
 - spaces and representative punctuation/symbols are rejected with the required message;
