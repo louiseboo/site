@@ -97,6 +97,25 @@ test("weight heading aligns with its inputs wherever the table header is shown",
   }
 });
 
+test("desktop weight input shares the description input top edge", async () => {
+  for (const width of [1075, 760, 521]) {
+    await page.setViewportSize({ width, height: 900 });
+    const geometry = await page.evaluate(() => {
+      const row = document.querySelector(".structure-table tbody tr");
+      const top = selector => row.querySelector(selector).getBoundingClientRect().top;
+      return {
+        descriptionTop: top('[data-structure-field="name"]'),
+        weightTop: top('[data-structure-field="weight"]')
+      };
+    });
+
+    assert.ok(
+      Math.abs(geometry.weightTop - geometry.descriptionTop) <= 1,
+      `${width}px: weight should align with the description input (${geometry.weightTop} vs ${geometry.descriptionTop})`
+    );
+  }
+});
+
 test("mobile structure rows remain readable and touch friendly", async () => {
   await page.setViewportSize({ width: 320, height: 700 });
   const geometry = await page.evaluate(() => {
