@@ -216,6 +216,15 @@
       align-items: center;
       margin-bottom: 10px;
     }
+    .structure-guidance {
+      margin: 0 0 10px;
+      border-left: 3px solid #b18a47;
+      background: #f7f0e4;
+      color: #574a39;
+      padding: 8px 10px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
     .weight-summary {
       margin-left: auto;
       color: var(--muted);
@@ -240,7 +249,33 @@
       font-size: 12px;
     }
     .structure-table .weight-cell { width: 150px; }
+    .structure-table .percent-cell {
+      width: 86px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
     .structure-table .action-cell { width: 82px; }
+    .structure-description-cell {
+      display: grid;
+      gap: 5px;
+    }
+    .structure-layer-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .structure-error {
+      min-height: 0;
+      margin: 0;
+      color: var(--danger);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .structure-error:empty { display: none; }
+    .structure-percent {
+      color: var(--ink);
+      font-weight: 900;
+    }
     .ghost-button {
       min-height: 36px;
       padding: 7px 10px;
@@ -478,6 +513,7 @@
         padding: 6px;
       }
       .structure-table .weight-cell { width: 92px; }
+      .structure-table .percent-cell { width: 62px; }
       .structure-table .action-cell { width: 66px; }
       .structure-table .ghost-button {
         width: 100%;
@@ -743,19 +779,40 @@
       return type === "烘焙" || type === "三明治";
     }
 
+    function normalizeStructureDescription(value) {
+      return String(value || "").normalize("NFKC").replace(/[^\p{Script=Han}A-Za-z0-9]/gu, "");
+    }
+
+    function structureDescriptionIsValid(value) {
+      const normalized = String(value || "").normalize("NFKC");
+      return normalized === normalizeStructureDescription(normalized);
+    }
+
+    function formatStructurePercent(weight, total) {
+      if (!(weight > 0) || !(total > 0)) return "—";
+      return `${Number(((weight / total) * 100).toFixed(1))}%`;
+    }
+
+    function structureLayerLabel(index) {
+      return index === 0 ? "第1层｜最底层" : `第${index + 1}层`;
+    }
+
     function structureText(product) {
       const filledRows = (product.structures || [])
-        .map(row => ({
+        .map((row, index) => ({
+          index,
           name: String(row.name || "").trim(),
           weight: numeric(row.weight)
         }))
         .filter(row => row.name || row.weight > 0);
 
+      const total = filledRows.reduce((sum, row) => sum + row.weight, 0);
+
       const lines = filledRows.map(row => {
         const weightText = row.weight > 0 ? ` ${formatWeight(row.weight)}g` : "";
-        return `${row.name}${weightText}`.trim();
+        const percentText = row.weight > 0 && total > 0 ? `（${formatStructurePercent(row.weight, total)}）` : "";
+        return `${structureLayerLabel(row.index)}：${row.name}${weightText}${percentText}`.trim();
       });
-      const total = filledRows.reduce((sum, row) => sum + row.weight, 0);
       if (total > 0) lines.push(`自动计算总克重：${formatWeight(total)}g`);
       return lines.join("\n");
     }
@@ -840,6 +897,10 @@
       const inputs = rows.map(row => row.querySelector('[data-structure-field="name"]'));
       const hasStructure = inputs.some(input => String(input?.value || "").trim());
       if (!hasStructure) focusAndExplain(inputs[0], `请填写产品 ${index + 1} 的产品结构。`);
+      const invalidInput = inputs.find(input => !structureDescriptionIsValid(input?.value || ""));
+      if (invalidInput) {
+        focusAndExplain(invalidInput, "每一行只能填写一层。请点击“向上新增一层”继续填写。");
+      }
 
       if (!structureWeightRequiredForType(field("productType").value)) return;
       const missingWeightRow = rows.find(row => !String(row.querySelector('[data-structure-field="weight"]')?.value || "").trim());
@@ -904,10 +965,18 @@
 
     function productStructureRows(product) {
       const weightRequired = structureWeightRequiredForType(field("productType").value);
-      return (product.structures || []).map(row => `
+      const total = structureTotal(product);
+      return (product.structures || []).map((row, index) => `
         <tr data-structure-id="${escapeAttr(row.id)}">
-          <td><input data-structure-field="name" value="${escapeAttr(row.name || "")}" placeholder="如：蛋糕分每层结构；三明治主要原料；烘焙主要原料"></td>
+          <td>
+            <div class="structure-description-cell">
+              <span class="structure-layer-label" data-structure-layer-label>${escapeAttr(structureLayerLabel(index))}</span>
+              <input data-structure-field="name" value="${escapeAttr(row.name || "")}" autocomplete="off" placeholder="只填这一层，如：饼干底">
+              <p class="structure-error" data-structure-error aria-live="polite"></p>
+            </div>
+          </td>
           <td><input data-structure-field="weight" value="${escapeAttr(row.weight || "")}" inputmode="decimal" ${weightRequired ? "required" : ""} placeholder="${weightRequired ? "必填" : "蛋糕可不填"}"></td>
+          <td class="percent-cell"><output class="structure-percent" data-structure-percent>${formatStructurePercent(numeric(row.weight), total)}</output></td>
           <td><button class="ghost-button danger" data-delete-structure="${escapeAttr(row.id)}" type="button">删除</button></td>
         </tr>
       `).join("");
@@ -954,8 +1023,9 @@
             <div class="span-3">
               <label>产品结构 *</label>
               <div class="structure-builder">
+                <p class="structure-guidance" data-structure-guidance>填写顺序：从下到上。每一行只填一层；有下一层时，请点击“向上新增一层”。</p>
                 <div class="structure-tools">
-                  <button class="ghost-button" data-add-structure="${escapeAttr(product.id)}" type="button">新增产品结构</button>
+                  <button class="ghost-button" data-add-structure="${escapeAttr(product.id)}" type="button">向上新增一层</button>
                   <span class="weight-summary" data-total-weight>自动计算克重：0g</span>
                 </div>
                 <table class="structure-table" aria-label="产品结构明细">
@@ -963,6 +1033,7 @@
                     <tr>
                       <th>描述（从下至上依次是）</th>
                       <th class="weight-cell">重量(g)${structureWeightRequired ? " *" : ""}</th>
+                      <th class="percent-cell">占比</th>
                       <th class="action-cell">操作</th>
                     </tr>
                   </thead>
@@ -1011,6 +1082,11 @@
       const structureField = card.querySelector('[data-product-field="ingredientsStructure"]');
       const totalWeightText = card.querySelector("[data-total-weight]");
       const specCompareText = card.querySelector("[data-spec-compare]");
+      card.querySelectorAll("[data-structure-id]").forEach(row => {
+        const weight = numeric(row.querySelector('[data-structure-field="weight"]')?.value || "");
+        const output = row.querySelector("[data-structure-percent]");
+        if (output) output.textContent = formatStructurePercent(weight, total);
+      });
       if (structureField) structureField.value = structureText(product);
       if (totalWeightText) totalWeightText.textContent = `自动计算克重：${formatWeight(total)}g`;
       const spec = specWeight(product);
@@ -1226,9 +1302,38 @@
       syncAllProducts();
       renderProducts();
     });
+    const composingStructureInputs = new WeakSet();
+
+    function applyStructureDescriptionRule(input) {
+      const normalized = String(input.value || "").normalize("NFKC");
+      const filtered = normalizeStructureDescription(normalized);
+      const error = input.closest("[data-structure-id]")?.querySelector("[data-structure-error]");
+      input.value = filtered;
+      if (error) {
+        error.textContent = normalized === filtered
+          ? ""
+          : "每一行只能填写一层。请点击“向上新增一层”继续填写。";
+      }
+    }
+
+    productsContainer.addEventListener("compositionstart", event => {
+      if (event.target.matches('[data-structure-field="name"]')) composingStructureInputs.add(event.target);
+    });
+    productsContainer.addEventListener("compositionend", event => {
+      if (!event.target.matches('[data-structure-field="name"]')) return;
+      composingStructureInputs.delete(event.target);
+      applyStructureDescriptionRule(event.target);
+      const card = event.target.closest("[data-product-id]");
+      if (!card) return;
+      syncProductFromCard(card.dataset.productId);
+      updateProductSummary(card.dataset.productId);
+    });
     productsContainer.addEventListener("input", event => {
       const card = event.target.closest("[data-product-id]");
       if (!card) return;
+      if (event.target.matches('[data-structure-field="name"]') && !composingStructureInputs.has(event.target)) {
+        applyStructureDescriptionRule(event.target);
+      }
       syncProductFromCard(card.dataset.productId);
       updateProductSummary(card.dataset.productId);
     });
