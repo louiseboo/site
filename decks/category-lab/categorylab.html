@@ -6479,8 +6479,12 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
 
     function migrateMaterial(material) {
       const next = { ...material };
-      if (n(next.spec) > 10) next.spec = +(n(next.spec) / 1000).toFixed(6);
-      if (n(next.unitPrice) > 0 && n(next.unitPrice) < 2) next.unitPrice = +(n(next.unitPrice) * 1000).toFixed(6);
+      // Records saved with a price basis already use the form's explicit kg units.
+      if (!next.priceBasis) {
+        if (n(next.spec) > 10) next.spec = +(n(next.spec) / 1000).toFixed(6);
+        if (n(next.unitPrice) > 0 && n(next.unitPrice) < 2) next.unitPrice = +(n(next.unitPrice) * 1000).toFixed(6);
+        next.spec = normalizeSpecKg(next.spec, next.packagePrice, next.unitPrice);
+      }
       const categoryMap = {
         "调味品": "基础调味品",
         "复合调味品": "复合粉料",
@@ -6490,7 +6494,6 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (categoryMap[next.category]) next.category = categoryMap[next.category];
       if (next.source === "OEM") next.source = "OEM 供应商";
       if (next.source === "供应商直供" || next.source === "样品") next.source = "其他";
-      next.spec = normalizeSpecKg(next.spec, next.packagePrice, next.unitPrice);
       if (!validStoredImage(next.image)) next.image = taobaoMaterialImages[next.code] || "";
       return next;
     }
@@ -7139,9 +7142,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     }
 
     function calcUnitPrice(mat) {
-      const spec = normalizeSpecKg(mat.spec, mat.packagePrice, mat.unitPrice);
+      if (mat.priceBasis === "unit") return n(mat.unitPrice);
+      const spec = mat.priceBasis ? n(mat.spec) : normalizeSpecKg(mat.spec, mat.packagePrice, mat.unitPrice);
       const price = n(mat.packagePrice);
-      return spec > 0 ? price / spec : n(mat.unitPrice);
+      const hasPackagePrice = mat.packagePrice != null && String(mat.packagePrice).trim() !== "";
+      return spec > 0 && hasPackagePrice ? price / spec : n(mat.unitPrice);
     }
 
     function calcLine(line) {
@@ -12063,7 +12068,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
           <td>${escapeHtml(item.name)}</td>
           <td>${escapeHtml(item.category)}</td>
           <td class="num">${fmt(n(item.spec), 3)}</td>
-          <td class="num">${fmt(n(item.packagePrice), 2)}</td>
+          <td class="num">${item.packagePrice == null ? "" : fmt(n(item.packagePrice), 2)}</td>
           <td class="num">${fmt(calcUnitPrice(item), 2)}</td>
           <td>${escapeHtml(item.supplier)}</td>
           <td>${escapeHtml(item.source)}</td>
@@ -12891,17 +12896,28 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       return parsed <= 1 ? fmt(parsed * 100, 2) : fmt(parsed, 2);
     }
 
-    function updateMaterialUnitPrice() {
-      const rawSpec = n(document.querySelector("#matSpec").value);
-      const pack = n(document.querySelector("#matPackagePrice").value);
-      const spec = normalizeSpecKg(rawSpec, pack, n(document.querySelector("#matUnitPrice").value));
-      if (spec > 0 && pack >= 0) document.querySelector("#matUnitPrice").value = fmt(pack / spec, 2);
+    function updateMaterialUnitPrice(event) {
+      const spec = n(document.querySelector("#matSpec").value);
+      const packInput = document.querySelector("#matPackagePrice");
+      const unitInput = document.querySelector("#matUnitPrice");
+      const hasPackagePrice = packInput.value.trim() !== "";
+      if (event?.target.id === "matUnitPrice") els.materialForm.dataset.priceBasis = "unit";
+      else if (event?.target.id === "matPackagePrice" || !els.materialForm.dataset.priceBasis) {
+        els.materialForm.dataset.priceBasis = hasPackagePrice ? "package" : "unit";
+      }
+      if (spec <= 0) return;
+      if (els.materialForm.dataset.priceBasis === "unit") {
+        if (hasPackagePrice && unitInput.value.trim() !== "") packInput.value = fmt(n(unitInput.value) * spec, 2);
+      } else if (hasPackagePrice) {
+        unitInput.value = fmt(n(packInput.value) / spec, 2);
+      }
     }
 
     function clearMaterialForm() {
       selectedMaterialCode = null;
       els.materialFormTitle.textContent = "新增原料";
       els.materialForm.reset();
+      delete els.materialForm.dataset.priceBasis;
       document.querySelector("#matCategory").value = materialCategories[0];
       document.querySelector("#matSource").value = sourceOptions[0];
       syncMaterialCodeForCategory(true);
@@ -12923,8 +12939,9 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       document.querySelector("#matCategory").value = mat.category;
       document.querySelector("#matSupplier").value = mat.supplier;
       document.querySelector("#matSpec").value = mat.spec;
-      document.querySelector("#matPackagePrice").value = mat.packagePrice;
-      document.querySelector("#matUnitPrice").value = fmt(calcUnitPrice(mat), 2);
+      document.querySelector("#matPackagePrice").value = mat.packagePrice ?? "";
+      document.querySelector("#matUnitPrice").value = mat.unitPrice == null && (mat.packagePrice == null || n(mat.spec) <= 0) ? "" : fmt(calcUnitPrice(mat), 2);
+      els.materialForm.dataset.priceBasis = mat.priceBasis || (mat.packagePrice != null ? "package" : "unit");
       document.querySelector("#matSource").value = mat.source;
       document.querySelector("#matNote").value = mat.note;
       const image = validStoredImage(mat.image) ? mat.image : "";
@@ -12944,16 +12961,17 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
         name: document.querySelector("#matName").value.trim(),
         category: document.querySelector("#matCategory").value.trim(),
         spec: n(document.querySelector("#matSpec").value),
-        packagePrice: n(document.querySelector("#matPackagePrice").value),
-        unitPrice: n(document.querySelector("#matUnitPrice").value),
+        packagePrice: document.querySelector("#matPackagePrice").value.trim() === "" ? null : n(document.querySelector("#matPackagePrice").value),
+        unitPrice: document.querySelector("#matUnitPrice").value.trim() === "" ? null : n(document.querySelector("#matUnitPrice").value),
         supplier: document.querySelector("#matSupplier").value.trim(),
         source: document.querySelector("#matSource").value.trim(),
         note: document.querySelector("#matNote").value.trim(),
         image: els.matImagePreview.dataset.image || ""
       };
       if (!mat.code || !mat.name) return;
-      mat.spec = normalizeSpecKg(mat.spec, mat.packagePrice, mat.unitPrice);
-      mat.unitPrice = mat.spec > 0 ? mat.packagePrice / mat.spec : mat.unitPrice;
+      mat.priceBasis = (mat.unitPrice != null && els.materialForm.dataset.priceBasis === "unit")
+        || mat.packagePrice == null ? "unit" : "package";
+      if (mat.priceBasis === "package" && mat.spec > 0) mat.unitPrice = mat.packagePrice / mat.spec;
       const existingIndex = state.materials.findIndex(item => item.code === (selectedMaterialCode || mat.code));
       if (existingIndex >= 0) state.materials[existingIndex] = mat;
       else state.materials.push(mat);
@@ -13224,9 +13242,11 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       };
       const unitPriceForExport = material => {
         if (!material) return 0;
-        const spec = normalizeSpecForExport(material.spec, material.packagePrice, material.unitPrice);
+        if (material.priceBasis === "unit") return numberValue(material.unitPrice);
+        const spec = material.priceBasis ? numberValue(material.spec) : normalizeSpecForExport(material.spec, material.packagePrice, material.unitPrice);
         const price = numberValue(material.packagePrice);
-        return spec > 0 ? price / spec : numberValue(material.unitPrice);
+        const hasPackagePrice = material.packagePrice != null && String(material.packagePrice).trim() !== "";
+        return spec > 0 && hasPackagePrice ? price / spec : numberValue(material.unitPrice);
       };
       const materialMap = new Map((materialRows || []).map(material => [textValue(material.code), material]));
       const rowsByMaterial = new Map();
@@ -14801,6 +14821,7 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
     els.clearMaterialBtn.addEventListener("click", clearMaterialForm);
     document.querySelector("#matSpec").addEventListener("input", updateMaterialUnitPrice);
     document.querySelector("#matPackagePrice").addEventListener("input", updateMaterialUnitPrice);
+    document.querySelector("#matUnitPrice").addEventListener("input", updateMaterialUnitPrice);
     document.querySelector("#matCategory").addEventListener("change", () => syncMaterialCodeForCategory());
     document.querySelector("#matImage").addEventListener("change", event => {
       const file = event.target.files[0];
