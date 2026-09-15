@@ -9938,14 +9938,29 @@ hz004@peets.cn|男|31-35岁|10万以下|每天|以上都不是|以上都不是|�
       if (!campaign || !changedInput) return;
       const key = changedInput.dataset.launchScheduleDate || changedInput.dataset.launchScheduleOffset;
       if (!key || key === "launch") return;
+      const index = launchMilestoneTemplates.findIndex(template => template.key === key);
+      if (index < 0) return;
       const dateInput = document.querySelector(`[data-launch-schedule-date="${key}"]`);
       const offsetInput = document.querySelector(`[data-launch-schedule-offset="${key}"]`);
       if (!dateInput || !offsetInput) return;
       if (changedInput.matches("[data-launch-schedule-date]")) {
-        offsetInput.value = String(dayDiff(dateInput.value, campaign.launchDate));
+        if (dateInput.value) offsetInput.value = String(dayDiff(dateInput.value, campaign.launchDate));
       } else {
         const offset = Number(offsetInput.value);
         if (Number.isFinite(offset)) dateInput.value = addDays(campaign.launchDate, offset);
+      }
+      if (!dateInput.value) return;
+      // 倒排级联：修改某个节点的计划日期后，正推它之后的所有节点，保持 Feishu 默认相邻间隔；上市日固定不推
+      let cursorDate = dateInput.value;
+      for (let i = index + 1; i < launchMilestoneTemplates.length; i += 1) {
+        const template = launchMilestoneTemplates[i];
+        if (template.key === "launch") continue;
+        const gap = template.offsetDays - launchMilestoneTemplates[i - 1].offsetDays;
+        cursorDate = addDays(cursorDate, gap);
+        const nextDateInput = document.querySelector(`[data-launch-schedule-date="${template.key}"]`);
+        const nextOffsetInput = document.querySelector(`[data-launch-schedule-offset="${template.key}"]`);
+        if (nextDateInput) nextDateInput.value = cursorDate;
+        if (nextOffsetInput) nextOffsetInput.value = String(dayDiff(cursorDate, campaign.launchDate));
       }
     }
 
