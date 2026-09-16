@@ -15,6 +15,7 @@ const seedRecords = [
   { id: "a-1", submission_batch_id: "batch-a", batch_item_index: 1, supplier_name: "佰翔空厨食品有限公司", product_name: "黑豆松子恰巴塔", version_label: "V1", sample_date: "2026-08-22", product_type: "烘焙", test_category: "新品提案", version_change: "第二项", status: "待处理", created_at: "2026-08-28T02:00:02.000Z", updated_at: "2026-08-28T02:00:02.000Z" },
   { id: "a-2", submission_batch_id: "batch-a", batch_item_index: 2, supplier_name: "佰翔空厨食品有限公司", product_name: "云朵吐司", version_label: "V1", sample_date: "2026-08-22", product_type: "烘焙", test_category: "新品提案", version_change: "第三项", status: "待处理", created_at: "2026-08-28T02:00:04.000Z", updated_at: "2026-08-28T02:00:04.000Z" },
   { id: "legacy-0", supplier_name: "百嘉宜", product_name: "莓果山楂蛋糕", version_label: "V3", sample_date: "2026-08-27", product_type: "蛋糕", test_category: "档期测试", status: "待处理", created_at: "2026-08-27T02:00:00.000Z", updated_at: "2026-08-27T02:00:00.000Z" },
+  { id: "a-old", submission_batch_id: "batch-a-old", batch_item_index: 0, supplier_name: "佰翔空厨食品有限公司", product_name: "旧日送样蛋糕", version_label: "V1", sample_date: "2026-08-20", product_type: "蛋糕", test_category: "新品提案", status: "待处理", created_at: "2026-08-26T02:00:00.000Z", updated_at: "2026-08-26T02:00:00.000Z" },
   { id: "confirmed-0", submission_batch_id: "old-batch", batch_item_index: 0, supplier_name: "供应商 B", product_name: "已确认产品", version_label: "V1", product_type: "蛋糕", test_category: "新品提案", status: "已确认", created_at: "2026-08-20T02:00:00.000Z", updated_at: "2026-08-20T02:00:00.000Z" },
   { id: "cny-old", supplier_name: "供应商 C", product_name: "旧名产品", version_label: "V1", product_type: "蛋糕", test_category: "档期测试", campaign_year: "2027", campaign: "01月｜CNY", ingredients_structure: "第1层｜最底层：饼干底 20g（20%）\n第2层：芝士慕斯 80g（80%）\n自动计算总克重：100g", status: "已确认", created_at: "2026-08-19T02:00:00.000Z", updated_at: "2026-08-19T02:00:00.000Z" },
   { id: "cny-standard", supplier_name: "供应商 D", product_name: "标准名产品", version_label: "V1", product_type: "三明治", test_category: "档期测试", campaign_year: "2027", campaign: "01月｜CNY（含烘焙 / 三明治换新）", status: "已确认", created_at: "2026-08-18T02:00:00.000Z", updated_at: "2026-08-18T02:00:00.000Z" }
@@ -107,8 +108,15 @@ test.afterEach(async () => {
   await page?.close();
 });
 
-test("pending view groups by submission and preserves original product order", async () => {
-  assert.equal(await page.locator("[data-submission-batch-key]").count(), 2);
+test("pending view groups suppliers before submission dates and preserves product order", async () => {
+  assert.equal(await page.locator("[data-pending-supplier-key]").count(), 2);
+  assert.equal(await page.locator("[data-submission-batch-key]").count(), 3);
+  const supplierGroups = page.locator("[data-pending-supplier-key]");
+  assert.deepEqual(await supplierGroups.locator(".pending-supplier-name").allTextContents(), ["佰翔空厨食品有限公司", "百嘉宜"]);
+  assert.deepEqual(
+    await supplierGroups.first().locator("[data-submission-batch-key]").evaluateAll(elements => elements.map(element => element.dataset.submissionBatchKey)),
+    ["batch:batch-a", "batch:batch-a-old"]
+  );
   assert.deepEqual(
     await page.locator('[data-submission-batch-key="batch:batch-a"] [data-record-id] .pending-batch-product-name').allTextContents(),
     ["牛肝菌黑松露恰巴塔", "黑豆松子恰巴塔", "云朵吐司"]
@@ -116,10 +124,40 @@ test("pending view groups by submission and preserves original product order", a
   assert.match(await page.locator('[data-submission-batch-key="record:legacy-0"]').innerText(), /1 个产品/);
 });
 
+test("a supplier section can collapse across dates without hiding another supplier", async () => {
+  const supplier = page.locator("[data-pending-supplier-key]").first();
+  await supplier.locator("[data-pending-supplier-toggle]").click();
+  assert.equal(await supplier.locator("[data-pending-supplier-toggle]").getAttribute("aria-expanded"), "false");
+  assert.equal(await supplier.locator("[data-submission-batch-key]").first().isVisible(), false);
+  assert.equal(await page.locator('[data-submission-batch-key="record:legacy-0"]').isVisible(), true);
+  await supplier.locator("[data-pending-supplier-toggle]").click();
+  assert.equal(await supplier.locator('[data-submission-batch-key="batch:batch-a-old"]').isVisible(), true);
+});
+
+test("supplier and submission headings fit a narrow inbox", async () => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const headings = await page.locator(".pending-supplier-head, .submission-batch-head").evaluateAll(elements =>
+    elements.map(element => ({ width: element.clientWidth, contentWidth: element.scrollWidth }))
+  );
+  assert.ok(headings.every(heading => heading.contentWidth <= heading.width + 1));
+  if (process.env.CATEGORYLAB_VISUAL_CHECK) {
+    await page.screenshot({ path: "/tmp/categorylab-pending-suppliers-mobile.png", fullPage: true });
+  }
+});
+
 test("pending search keeps the matching product's full submission batch", async () => {
   await page.locator("#searchInput").fill("黑豆松子");
   assert.equal(await page.locator('[data-submission-batch-key="batch:batch-a"] [data-record-id]').count(), 3);
   assert.equal(await page.locator('[data-submission-batch-key="record:legacy-0"]').count(), 0);
+});
+
+test("pending supplier search keeps all of that supplier's submission dates", async () => {
+  await page.locator("#searchInput").fill("佰翔空厨");
+  assert.equal(await page.locator("[data-pending-supplier-key]").count(), 1);
+  assert.deepEqual(
+    await page.locator("[data-submission-batch-key]").evaluateAll(elements => elements.map(element => element.dataset.submissionBatchKey)),
+    ["batch:batch-a", "batch:batch-a-old"]
+  );
 });
 
 test("confirmation advances inside the batch and removes the batch after its final product", async () => {
@@ -135,20 +173,28 @@ test("confirmation advances inside the batch and removes the batch after its fin
   await page.locator("[data-confirm-active]").click();
   await page.locator('[data-submission-batch-key="batch:batch-a"]').waitFor({ state: "detached" });
   assert.equal(await page.locator('[data-submission-batch-key="batch:batch-a"]').count(), 0);
+  assert.equal(await page.locator('[data-record-id="a-old"].active').count(), 1);
+  assert.equal(await page.locator("[data-pending-supplier-key]").count(), 2);
+  await page.locator("[data-confirm-active]").click();
+  await page.locator('[data-submission-batch-key="batch:batch-a-old"]').waitFor({ state: "detached" });
+  assert.equal(await page.locator("[data-pending-supplier-key]").count(), 1);
   assert.equal(await page.locator('[data-submission-batch-key="record:legacy-0"]').count(), 1);
 });
 
 test("processed and all views continue to use product grouping", async () => {
   await page.locator('[data-status-filter="已确认"]').click();
+  assert.equal(await page.locator("[data-pending-supplier-key]").count(), 0);
   assert.equal(await page.locator("[data-submission-batch-key]").count(), 0);
   assert.equal(await page.locator("[data-product-group-key]").count(), 3);
 
   await page.locator('[data-status-filter="已导入"]').click();
   await page.locator('[data-status-filter="已导入"].active').waitFor();
+  assert.equal(await page.locator("[data-pending-supplier-key]").count(), 0);
   assert.equal(await page.locator("[data-submission-batch-key]").count(), 0);
   assert.equal(await page.locator("[data-product-group-key]").count(), 1);
 
   await page.locator('[data-status-filter=""]').click();
+  assert.equal(await page.locator("[data-pending-supplier-key]").count(), 0);
   assert.equal(await page.locator("[data-submission-batch-key]").count(), 0);
   assert.ok(await page.locator("[data-product-group-key]").count() >= 1);
 });
