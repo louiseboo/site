@@ -101,42 +101,41 @@ test.beforeEach(async () => {
     });
   });
   await page.goto(`${baseUrl}${inboxPath}?backend=cloudbase`, { waitUntil: "domcontentloaded" });
-  await page.locator("[data-submission-batch-key]").first().waitFor();
+  await page.locator("[data-pending-supplier-key]").first().waitFor();
 });
 
 test.afterEach(async () => {
   await page?.close();
 });
 
-test("pending view groups suppliers before submission dates and preserves product order", async () => {
+test("pending view groups only by supplier and lists products in submission order", async () => {
   assert.equal(await page.locator("[data-pending-supplier-key]").count(), 2);
-  assert.equal(await page.locator("[data-submission-batch-key]").count(), 3);
+  assert.equal(await page.locator("[data-submission-batch-key]").count(), 0);
   const supplierGroups = page.locator("[data-pending-supplier-key]");
   assert.deepEqual(await supplierGroups.locator(".pending-supplier-name").allTextContents(), ["佰翔空厨食品有限公司", "百嘉宜"]);
   assert.deepEqual(
-    await supplierGroups.first().locator("[data-submission-batch-key]").evaluateAll(elements => elements.map(element => element.dataset.submissionBatchKey)),
-    ["batch:batch-a", "batch:batch-a-old"]
+    await supplierGroups.first().locator("[data-record-id]").evaluateAll(elements => elements.map(element => element.dataset.recordId)),
+    ["a-0", "a-1", "a-2", "a-old"]
   );
-  assert.deepEqual(
-    await page.locator('[data-submission-batch-key="batch:batch-a"] [data-record-id] .pending-batch-product-name').allTextContents(),
-    ["牛肝菌黑松露恰巴塔", "黑豆松子恰巴塔", "云朵吐司"]
-  );
-  assert.match(await page.locator('[data-submission-batch-key="record:legacy-0"]').innerText(), /1 个产品/);
+  assert.deepEqual(await supplierGroups.last().locator("[data-record-id]").evaluateAll(elements => elements.map(element => element.dataset.recordId)), ["legacy-0"]);
+  assert.match(await supplierGroups.first().locator(".pending-supplier-meta").innerText(), /4 个产品/);
+  assert.equal(await page.locator("#submissionList .submission-batch-head, #submissionList .item-time").count(), 0);
+  assert.doesNotMatch(await supplierGroups.first().locator(".pending-supplier-meta").innerText(), /次提交/);
 });
 
 test("a supplier section can collapse across dates without hiding another supplier", async () => {
   const supplier = page.locator("[data-pending-supplier-key]").first();
   await supplier.locator("[data-pending-supplier-toggle]").click();
   assert.equal(await supplier.locator("[data-pending-supplier-toggle]").getAttribute("aria-expanded"), "false");
-  assert.equal(await supplier.locator("[data-submission-batch-key]").first().isVisible(), false);
-  assert.equal(await page.locator('[data-submission-batch-key="record:legacy-0"]').isVisible(), true);
+  assert.equal(await supplier.locator('[data-record-id="a-0"]').isVisible(), false);
+  assert.equal(await page.locator('[data-record-id="legacy-0"]').isVisible(), true);
   await supplier.locator("[data-pending-supplier-toggle]").click();
-  assert.equal(await supplier.locator('[data-submission-batch-key="batch:batch-a-old"]').isVisible(), true);
+  assert.equal(await supplier.locator('[data-record-id="a-old"]').isVisible(), true);
 });
 
-test("supplier and submission headings fit a narrow inbox", async () => {
+test("supplier headings and product rows fit a narrow inbox", async () => {
   await page.setViewportSize({ width: 390, height: 844 });
-  const headings = await page.locator(".pending-supplier-head, .submission-batch-head").evaluateAll(elements =>
+  const headings = await page.locator(".pending-supplier-head, .pending-batch-item").evaluateAll(elements =>
     elements.map(element => ({ width: element.clientWidth, contentWidth: element.scrollWidth }))
   );
   assert.ok(headings.every(heading => heading.contentWidth <= heading.width + 1));
@@ -145,40 +144,38 @@ test("supplier and submission headings fit a narrow inbox", async () => {
   }
 });
 
-test("pending search keeps the matching product's full submission batch", async () => {
+test("pending product search shows only matching products", async () => {
   await page.locator("#searchInput").fill("黑豆松子");
-  assert.equal(await page.locator('[data-submission-batch-key="batch:batch-a"] [data-record-id]').count(), 3);
-  assert.equal(await page.locator('[data-submission-batch-key="record:legacy-0"]').count(), 0);
+  assert.deepEqual(await page.locator("#submissionList [data-record-id]").evaluateAll(elements => elements.map(element => element.dataset.recordId)), ["a-1"]);
 });
 
 test("pending supplier search keeps all of that supplier's submission dates", async () => {
   await page.locator("#searchInput").fill("佰翔空厨");
   assert.equal(await page.locator("[data-pending-supplier-key]").count(), 1);
   assert.deepEqual(
-    await page.locator("[data-submission-batch-key]").evaluateAll(elements => elements.map(element => element.dataset.submissionBatchKey)),
-    ["batch:batch-a", "batch:batch-a-old"]
+    await page.locator("#submissionList [data-record-id]").evaluateAll(elements => elements.map(element => element.dataset.recordId)),
+    ["a-0", "a-1", "a-2", "a-old"]
   );
 });
 
-test("confirmation advances inside the batch and removes the batch after its final product", async () => {
+test("confirmation advances through a supplier's products before moving to another supplier", async () => {
   await page.locator('[data-record-id="a-0"]').click();
   await page.locator("[data-confirm-active]").click();
-  await page.locator('[data-submission-batch-key="batch:batch-a"] [data-record-id="a-1"].active').waitFor();
-  assert.match(await page.locator('[data-submission-batch-key="batch:batch-a"] [data-submission-batch-count]').innerText(), /2 个产品/);
+  await page.locator('[data-record-id="a-1"].active').waitFor();
+  assert.match(await page.locator('[data-pending-supplier-key]').first().locator('.pending-supplier-meta').innerText(), /3 个产品/);
   assert.equal(await page.locator('[data-record-id="a-0"]').count(), 0);
   assert.equal(await page.locator('[data-status-filter="待处理"].active').count(), 1);
 
   await page.locator("[data-confirm-active]").click();
   await page.locator('[data-record-id="a-2"].active').waitFor();
   await page.locator("[data-confirm-active]").click();
-  await page.locator('[data-submission-batch-key="batch:batch-a"]').waitFor({ state: "detached" });
-  assert.equal(await page.locator('[data-submission-batch-key="batch:batch-a"]').count(), 0);
+  await page.locator('[data-record-id="a-2"]').waitFor({ state: "detached" });
   assert.equal(await page.locator('[data-record-id="a-old"].active').count(), 1);
   assert.equal(await page.locator("[data-pending-supplier-key]").count(), 2);
   await page.locator("[data-confirm-active]").click();
-  await page.locator('[data-submission-batch-key="batch:batch-a-old"]').waitFor({ state: "detached" });
+  await page.locator('[data-record-id="a-old"]').waitFor({ state: "detached" });
   assert.equal(await page.locator("[data-pending-supplier-key]").count(), 1);
-  assert.equal(await page.locator('[data-submission-batch-key="record:legacy-0"]').count(), 1);
+  assert.equal(await page.locator('[data-record-id="legacy-0"]').count(), 1);
 });
 
 test("processed and all views continue to use product grouping", async () => {
@@ -200,12 +197,12 @@ test("processed and all views continue to use product grouping", async () => {
 });
 
 test("company and selected product use different hierarchy colors", async () => {
-  const company = page.locator('[data-submission-batch-key="batch:batch-a"]');
+  const company = page.locator("[data-pending-supplier-key]").first();
   const product = company.locator('[data-record-id="a-0"]');
   await product.click();
   assert.equal(
-    await company.locator(".submission-batch-head").evaluate(element => getComputedStyle(element).backgroundColor),
-    "rgb(234, 219, 192)"
+    await company.locator(".pending-supplier-head").evaluate(element => getComputedStyle(element).backgroundColor),
+    "rgb(243, 239, 230)"
   );
   assert.equal(await product.evaluate(element => getComputedStyle(element).backgroundColor), "rgb(231, 239, 229)");
 });

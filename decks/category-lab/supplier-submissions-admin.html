@@ -555,36 +555,13 @@
       font-size: 11px;
       white-space: nowrap;
     }
-    .pending-supplier-head:focus-visible,
-    .submission-batch-head:focus-visible {
+    .pending-supplier-head:focus-visible {
       outline: 2px solid var(--ink);
       outline-offset: -3px;
     }
     .pending-supplier-group[aria-expanded="false"] > .pending-supplier-body {
       display: none;
     }
-    .submission-batch {
-      border-bottom: 1px solid var(--line-soft);
-    }
-    .submission-batch.active {
-      background: transparent;
-    }
-    .submission-batch-head {
-      width: 100%;
-      border: 0;
-      border-bottom: 1px solid var(--line-soft);
-      border-radius: 0;
-      background: var(--company-bg);
-      color: var(--ink);
-      padding: 14px 18px 12px;
-      text-align: left;
-      white-space: normal;
-    }
-    .submission-batch[aria-expanded="true"] > .submission-batch-head {
-      background: var(--company-active-bg);
-    }
-    .submission-batch-title,
-    .submission-batch-meta,
     .pending-batch-item-head,
     .pending-batch-item-meta {
       display: flex;
@@ -592,18 +569,10 @@
       justify-content: space-between;
       gap: 12px;
     }
-    .submission-batch-title strong {
-      font-family: var(--serif);
-      font-size: 15px;
-    }
-    .submission-batch-meta,
     .pending-batch-item-meta {
       margin-top: 5px;
       color: var(--muted);
       font-size: 11px;
-    }
-    .submission-batch[aria-expanded="false"] .submission-batch-body {
-      display: none;
     }
     .pending-batch-item {
       width: 100%;
@@ -611,7 +580,7 @@
       border-bottom: 1px solid var(--line-soft);
       border-radius: 0;
       background: transparent;
-      padding: 14px 18px 14px 28px;
+      padding: 14px 18px 14px 24px;
       color: var(--ink);
       text-align: left;
       white-space: normal;
@@ -2129,7 +2098,6 @@
     const expandedSupplierGroupKeys = new Set();
     const collapsedSupplierGroupKeys = new Set();
     const collapsedProductTypeKeys = new Set();
-    const collapsedSubmissionBatchKeys = new Set();
     const collapsedPendingSupplierKeys = new Set();
     let groupingSourceKey = "";
     let cloudbaseAdminCode = sessionStorage.getItem("categorylabCloudbaseAdminCode") || "";
@@ -2712,9 +2680,8 @@
     }
 
     function pendingSubmissionBatches() {
-      const matchingIds = new Set(visibleRecords().map(row => row.id));
       const byKey = new Map();
-      records.filter(row => row.status === "待处理").forEach(row => {
+      visibleRecords().filter(row => row.status === "待处理").forEach(row => {
         const key = submissionBatchKey(row);
         if (!byKey.has(key)) byKey.set(key, []);
         byKey.get(key).push(row);
@@ -2730,13 +2697,10 @@
           return {
             key,
             supplier: first.supplier_name || "未知供应商",
-            sampleDate: first.sample_date || "",
             submittedAt: Number.isFinite(submittedAt) ? submittedAt : 0,
-            records: orderedRecords,
-            matchesSearch: orderedRecords.some(row => matchingIds.has(row.id))
+            records: orderedRecords
           };
         })
-        .filter(batch => batch.matchesSearch)
         .sort((a, b) => b.submittedAt - a.submittedAt || a.key.localeCompare(b.key, "zh-CN"));
     }
 
@@ -3331,12 +3295,11 @@
       }).join("");
     }
 
-    function pendingSubmissionItemHtml(row, index) {
+    function pendingSubmissionItemHtml(row) {
       return `
         <button class="pending-batch-item ${row.id === activeRecordId ? "active" : ""}" data-record-id="${escapeAttr(row.id)}" type="button">
           <span class="pending-batch-item-head">
             <span class="pending-batch-product-name">${escapeHtml(compactText(row.product_name, "未命名产品"))}</span>
-            <span class="item-time">第 ${index + 1} 项</span>
           </span>
           <span class="pending-batch-item-meta">
             <span>${escapeHtml(compactText(row.version_label, "未填版本"))} · ${escapeHtml(compactText(row.product_type, "未分类"))} · ${escapeHtml(compactText(row.test_category, "未分类"))}</span>
@@ -3359,31 +3322,10 @@
           <section class="pending-supplier-group" data-pending-supplier-key="${escapeAttr(group.key)}" aria-expanded="${supplierExpanded}">
             <button class="pending-supplier-head" data-pending-supplier-toggle="${escapeAttr(group.key)}" type="button" aria-expanded="${supplierExpanded}">
               <span class="pending-supplier-name">${escapeHtml(group.supplier)}</span>
-              <span class="pending-supplier-meta">${group.batches.length} 次提交 · ${group.productCount} 个产品 <span aria-hidden="true">${supplierExpanded ? "▼" : "▶"}</span></span>
+              <span class="pending-supplier-meta">${group.productCount} 个产品 <span aria-hidden="true">${supplierExpanded ? "▼" : "▶"}</span></span>
             </button>
             <div class="pending-supplier-body">
-              ${group.batches.map(batch => {
-                const expanded = !collapsedSubmissionBatchKeys.has(batch.key);
-                const submittedAt = batch.submittedAt ? dateText(new Date(batch.submittedAt).toISOString()) : "未记录";
-                const active = batch.records.some(row => row.id === activeRecordId);
-                return `
-                  <section class="submission-batch ${active ? "active" : ""}" data-submission-batch-key="${escapeAttr(batch.key)}" aria-expanded="${expanded}">
-                    <button class="submission-batch-head" data-submission-batch-toggle="${escapeAttr(batch.key)}" type="button" aria-expanded="${expanded}">
-                      <span class="submission-batch-title">
-                        <strong>送样 ${escapeHtml(batch.sampleDate || "未填写")}</strong>
-                        <span data-submission-batch-count>${batch.records.length} 个产品</span>
-                      </span>
-                      <span class="submission-batch-meta">
-                        <span>提交 ${escapeHtml(submittedAt)}</span>
-                        <span aria-hidden="true">${expanded ? "▼" : "▶"}</span>
-                      </span>
-                    </button>
-                    <div class="submission-batch-body">
-                      ${batch.records.map(pendingSubmissionItemHtml).join("")}
-                    </div>
-                  </section>
-                `;
-              }).join("")}
+              ${group.batches.flatMap(batch => batch.records).map(pendingSubmissionItemHtml).join("")}
             </div>
           </section>
         `;
@@ -4436,7 +4378,6 @@
           expandedSupplierGroupKeys.clear();
           collapsedSupplierGroupKeys.clear();
           collapsedProductTypeKeys.clear();
-          collapsedSubmissionBatchKeys.clear();
           collapsedPendingSupplierKeys.clear();
           supplierEditOpen = false;
           renderAll("");
@@ -4449,14 +4390,6 @@
         const key = pendingSupplierToggle.dataset.pendingSupplierToggle;
         if (collapsedPendingSupplierKeys.has(key)) collapsedPendingSupplierKeys.delete(key);
         else collapsedPendingSupplierKeys.add(key);
-        renderList();
-        return;
-      }
-      const batchToggle = event.target.closest("[data-submission-batch-toggle]");
-      if (batchToggle) {
-        const key = batchToggle.dataset.submissionBatchToggle;
-        if (collapsedSubmissionBatchKeys.has(key)) collapsedSubmissionBatchKeys.delete(key);
-        else collapsedSubmissionBatchKeys.add(key);
         renderList();
         return;
       }
